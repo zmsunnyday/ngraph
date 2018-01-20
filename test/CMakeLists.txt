@@ -40,6 +40,7 @@ set (SRC
     runtime_manager.cpp
     serialize.cpp
     pattern.cpp
+    resource.cpp
     shape.cpp
     tensor.cpp
     type_prop.cpp
@@ -126,10 +127,11 @@ if(CUDA_INCLUDE_DIRS)
   target_link_libraries(unit-test ${CUDA_LIBRARIES} ${CUDNN_LIBRARIES})
 endif()
 
-target_link_libraries(unit-test ngraph libgtest pthread)
+target_link_libraries(unit-test ngraph libgtest header_tools pthread)
 target_link_libraries(unit-test ${CMAKE_DL_LIBS})
+include_directories(header_tools)
 
-add_dependencies(unit-test ngraph libgtest eigen)
+add_dependencies(unit-test ngraph header_tools libgtest eigen)
 
 add_custom_target(style-check
         COMMAND ${PROJECT_SOURCE_DIR}/maint/check-code-format.sh

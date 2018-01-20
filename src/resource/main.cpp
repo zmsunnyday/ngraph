@@ -67,17 +67,12 @@ int main(int argc, char** argv)
     time_t main_timestamp = get_timestamp(argv[0]);
     static vector<string> valid_ext = {".h", ".hpp", ".tcc", ""};
     string output_path;
-    string base_name;
 
     for (size_t i = 1; i < argc; i++)
     {
         if (string(argv[i]) == "--output")
         {
             output_path = argv[++i];
-        }
-        else if (string(argv[i]) == "--base_name")
-        {
-            base_name = argv[++i];
         }
     }
 
@@ -147,6 +142,7 @@ int main(int argc, char** argv)
         }
     }
 
+    update_needed = true;
     if (update_needed)
     {
         ofstream out(output_path);

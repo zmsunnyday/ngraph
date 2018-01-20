@@ -30,18 +30,31 @@ string uncomment(const string& s)
     stringstream out;
     for (size_t i = 0; i < s.size(); i++)
     {
-        char c = s[i];
-        if (i < s.size() - 1 && c == '/' && s[i + 1] == '/')
+        if (i < s.size() - 2)
         {
-            while (i < s.size() && c != '\n')
+            if (s[i] == '/' && s[i + 1] == '/')
             {
-                c = s[++i];
+                // line comment
+                i += 2;
+                while (s[i] != '\n')
+                {
+                    i++;
+                }
             }
-            out << "\n";
-        }
-        else
-        {
-            out << c;
+            else if (s[i] == '/' && s[i + 1] == '*')
+            {
+                // multi-line comment
+                i += 2;
+                while (s[i] != '*' && s[i + 1] != '/')
+                {
+                    i++;
+                }
+                i += 2;
+            }
+            else
+            {
+                out << s[i];
+            }
         }
     }
     return out.str();

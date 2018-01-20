@@ -13,12 +13,16 @@
 
 set (SRC
     main.cpp
-    util.cpp
-    uncomment.cpp
-    header_rewrite.cpp
 )
 
-add_executable(resource_generator ${SRC})
+add_subdirectory(header_tools)
+include_directories(header_tools)
 
+add_executable(resource_generator ${SRC} header_tools)
+add_dependencies(resource_generator header_tools)
+target_link_libraries(resource_generator header_tools)
+
+# include_directories("${LLVM_INCLUDE_DIR}")
+# message("LLVM AT ${LLVM_INCLUDE_DIR}")
 set_source_files_properties(main.cpp PROPERTIES COMPILE_DEFINITIONS
     "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\";CLANG_BUILTIN_HEADERS_PATH=\"${LLVM_LIB_DIR}/clang/5.0.0/include\";TBB_HEADERS_PATH=\"${TBB_ROOT}/include\";NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\";")
