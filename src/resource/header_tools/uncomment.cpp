@@ -28,6 +28,7 @@ void skip_comment(istream& s)
 string uncomment(const string& s)
 {
     stringstream out;
+    cout << "string size=" << s.size() << endl;
     for (size_t i = 0; i < s.size(); i++)
     {
         if (i < s.size() - 2)
@@ -40,21 +41,32 @@ string uncomment(const string& s)
                 {
                     i++;
                 }
+                out << '\n';
             }
             else if (s[i] == '/' && s[i + 1] == '*')
             {
                 // multi-line comment
                 i += 2;
-                while (s[i] != '*' && s[i + 1] != '/')
+                cout << "i=" << i << endl;
+                while (!(s[i] == '*' && s[i + 1] == '/'))
                 {
+                    cout << "1 i=" << i << endl;
                     i++;
                 }
-                i += 2;
+                cout << "2 i=" << i << endl;
+                i++;
+                cout << "3 i=" << i << " " << s[i] << endl;
             }
             else
             {
                 out << s[i];
+                cout << i << " " << s[i] << endl;
             }
+        }
+        else
+        {
+            out << s[i];
+            cout << i << " " << s[i] << endl;
         }
     }
     return out.str();
