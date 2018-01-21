@@ -21,7 +21,6 @@ find_package(Threads REQUIRED)
 
 add_subdirectory(header_tools)
 include_directories(header_tools)
-include_directories(SYSTEM ${LLVM_INCLUDE_DIR})
 link_directories(${LLVM_LIB_DIR})
 
 add_executable(resource_generator ${SRC} header_tools)

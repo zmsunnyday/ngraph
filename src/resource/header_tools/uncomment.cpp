@@ -24,9 +24,11 @@ using namespace std;
 
 // start 23,749,645 in 1,912 files
 
-void skip_comment(istream& s)
-{
-}
+// string uncomment(const string& s)
+// {
+//     clang::tooling::runToolOnCode(new clang::PreprocessOnlyAction, "class X {};");
+//     return string();
+// }
 
 string uncomment(const string& s)
 {

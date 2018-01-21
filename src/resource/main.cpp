@@ -156,6 +156,8 @@ int main(int argc, char** argv)
         size_t offset = 0;
         size_t total_size = 0;
         size_t total_count = 0;
+        stopwatch timer;
+        timer.start();
         for (const ResourceInfo& path : include_paths)
         {
             for (const string& header_file : path.files)
@@ -163,7 +165,7 @@ int main(int argc, char** argv)
                 string header_data = read_file_to_string(header_file);
                 string base_path = header_file.substr(path.search_path.size() + 1);
                 header_data = rewrite_header(header_data, base_path);
-                // header_data = uncomment(header_data);
+                header_data = uncomment(header_data);
                 total_size += header_data.size();
                 total_count++;
 
@@ -186,6 +188,8 @@ int main(int argc, char** argv)
                 offset += header_data.size() + 1;
             }
         }
+        timer.stop();
+        cout << "collection time " << timer.get_milliseconds() << "ms\n";
         out << "    };\n";
         out << "    struct HeaderInfo\n";
         out << "    {\n";
