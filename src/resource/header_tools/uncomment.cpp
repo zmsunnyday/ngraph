@@ -15,6 +15,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
 #include "uncomment.hpp"
 
 using namespace std;
