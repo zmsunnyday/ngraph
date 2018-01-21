@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
 #include "header_rewrite.hpp"
 #include "uncomment.hpp"
 #include "util.hpp"
