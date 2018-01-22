@@ -53,7 +53,7 @@ using namespace llvm;
 using namespace llvm::opt;
 using namespace std;
 
-void Compiler::compile()
+void Compiler::compile(const string& source)
 {
     InitializeNativeTarget();
     LLVMInitializeNativeAsmPrinter();
@@ -61,7 +61,9 @@ void Compiler::compile()
 
     // Prepare compilation arguments
     vector<const char*> args;
-    args.push_back("code.cpp");
+    string source_name = "code.cpp";
+    args.push_back(source_name.c_str());
+    args.push_back("-H");
 
     // Prepare DiagnosticEngine
     IntrusiveRefCntPtr<DiagnosticOptions> diag_options = new DiagnosticOptions();
@@ -72,15 +74,7 @@ void Compiler::compile()
     // Create and initialize CompilerInstance
     m_compiler = std::unique_ptr<CompilerInstance>(new CompilerInstance());
     DiagnosticConsumer* diag_consumer;
-    bool enable_diag_output = true;
-    if (enable_diag_output)
-    {
-        diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
-    }
-    else
-    {
-        diag_consumer = new IgnoringDiagConsumer();
-    }
+    diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
     m_compiler->createDiagnostics(diag_consumer);
 
     // Initialize CompilerInvocation
@@ -130,6 +124,47 @@ void Compiler::compile()
     target_options.FeaturesAsWritten.emplace_back("+avx");
     target_options.FeaturesAsWritten.emplace_back("+avx2");
     target_options.FeaturesAsWritten.emplace_back("+fma");
+
+    // Map code filename to a memoryBuffer
+    StringRef source_ref(source);
+    unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
+    PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
+    preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
+
+    // Create and execute action
+    std::unique_ptr<clang::CodeGenAction> m_compiler_action;
+    m_compiler_action.reset(new EmitCodeGenOnlyAction());
+    // std::unique_ptr<llvm::Module> rc;
+    // bool reinitialize = false;
+    if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+    {
+        // rc = m_compiler_action->takeModule();
+    }
+    // else
+    // {
+    //     reinitialize = true;
+    // }
+
+    // buffer.release();
+
+    // preprocessor_options.RemappedFileBuffers.pop_back();
+
+    // unique_ptr<codegen::Module> result;
+    // if (rc)
+    // {
+    //     result = move(unique_ptr<codegen::Module>(new codegen::Module(move(rc))));
+    // }
+    // else
+    // {
+    //     result = move(unique_ptr<codegen::Module>(nullptr));
+    // // }
+
+    // if (reinitialize)
+    // {
+    //     codegen::StaticCompiler::initialize();
+    // }
+
+    // return result;
 }
 
 void Compiler::configure_search_path()

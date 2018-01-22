@@ -14,15 +14,13 @@
 
 #pragma once
 
-namespace clang
-{
-    class CompilerInstance;
-}
+#include <clang/Frontend/CompilerInstance.h>
+#include <memory>
 
 class Compiler
 {
 public:
-    void compile();
+    void compile(const std::string& source);
     void configure_search_path();
 
 private:
