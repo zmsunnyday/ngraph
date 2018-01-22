@@ -27,5 +27,3 @@ add_executable(resource_generator ${SRC} header_tools)
 add_dependencies(resource_generator header_tools ext_llvm)
 target_link_libraries(resource_generator header_tools ${LLVM_LINK_LIBS} Threads::Threads)
 
-set_source_files_properties(main.cpp PROPERTIES COMPILE_DEFINITIONS
-    "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\";CLANG_BUILTIN_HEADERS_PATH=\"${LLVM_LIB_DIR}/clang/5.0.0/include\";TBB_HEADERS_PATH=\"${TBB_ROOT}/include\";NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\";")

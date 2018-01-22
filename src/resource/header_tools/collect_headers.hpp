@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// Copyright 2017 Nervana Systems Inc.
+// Copyright 2018 Nervana Systems Inc.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,5 +15,26 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-const std::string rewrite_header(const std::string& s, const std::string& path);
+class ResourceInfo
+{
+public:
+    ResourceInfo(const std::string& source,
+                 const std::vector<std::string>& _subdirs,
+                 bool recursive = false)
+        : search_path(source)
+        , subdirs(_subdirs)
+        , is_recursive(recursive)
+
+    {
+    }
+
+    const std::string search_path;
+    const std::vector<std::string> subdirs;
+    const bool is_recursive;
+
+    std::vector<std::string> files;
+};
+
+std::vector<ResourceInfo> collect_headers();

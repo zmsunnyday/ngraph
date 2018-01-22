@@ -20,47 +20,12 @@
 #include <string>
 #include <vector>
 
+#include "collect_headers.hpp"
 #include "header_rewrite.hpp"
 #include "uncomment.hpp"
 #include "util.hpp"
 
 using namespace std;
-
-class ResourceInfo
-{
-public:
-    ResourceInfo(const string& source, const vector<string>& _subdirs, bool recursive = false)
-        : search_path(source)
-        , subdirs(_subdirs)
-        , is_recursive(recursive)
-
-    {
-    }
-
-    const string search_path;
-    const vector<string> subdirs;
-    const bool is_recursive;
-
-    vector<string> files;
-};
-
-string find_path(const string& path)
-{
-    string rc;
-    iterate_files(path,
-                  [&](const string& file, bool is_dir) {
-                      if (is_dir)
-                      {
-                          string dir_name = get_file_name(file);
-                          if (is_version_number(dir_name))
-                          {
-                              rc = file;
-                          }
-                      }
-                  },
-                  true);
-    return rc;
-}
 
 int main(int argc, char** argv)
 {
@@ -76,19 +41,6 @@ int main(int argc, char** argv)
         }
     }
 
-    string cpp0 = find_path("/usr/include/x86_64-linux-gnu/c++/");
-    string cpp1 = find_path("/usr/include/c++/");
-
-    vector<ResourceInfo> include_paths;
-    include_paths.push_back({CLANG_BUILTIN_HEADERS_PATH, {}, true});
-    include_paths.push_back({"/usr/include/x86_64-linux-gnu", {"asm", "sys", "bits", "gnu"}});
-    include_paths.push_back({"/usr/include", {"linux", "asm-generic"}});
-    include_paths.push_back({cpp0, {"bits"}});
-    include_paths.push_back({cpp1, {"bits", "ext", "debug", "backward"}});
-    include_paths.push_back({EIGEN_HEADERS_PATH, {}, true});
-    include_paths.push_back({NGRAPH_HEADERS_PATH, {}, true});
-    include_paths.push_back({TBB_HEADERS_PATH, {}, true});
-
     if (output_path.empty())
     {
         cout << "must specify output path with --output option" << endl;
@@ -96,6 +48,8 @@ int main(int argc, char** argv)
     }
 
     time_t output_timestamp = get_timestamp(output_path);
+
+    vector<ResourceInfo> include_paths = collect_headers();
 
     for (ResourceInfo& path : include_paths)
     {
@@ -142,7 +96,6 @@ int main(int argc, char** argv)
         }
     }
 
-    update_needed = true;
     if (update_needed)
     {
         ofstream out(output_path);
@@ -165,7 +118,7 @@ int main(int argc, char** argv)
                 string header_data = read_file_to_string(header_file);
                 string base_path = header_file.substr(path.search_path.size() + 1);
                 header_data = rewrite_header(header_data, base_path);
-                header_data = uncomment(header_data);
+                // header_data = uncomment(header_data);
                 total_size += header_data.size();
                 total_count++;
 

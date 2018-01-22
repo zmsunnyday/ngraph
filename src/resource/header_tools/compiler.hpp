@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// Copyright 2017 Nervana Systems Inc.
+// Copyright 2018 Nervana Systems Inc.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,6 +14,20 @@
 
 #pragma once
 
-#include <string>
+namespace clang
+{
+    class CompilerInstance;
+}
 
-const std::string rewrite_header(const std::string& s, const std::string& path);
+class Compiler
+{
+public:
+    void compile();
+    void configure_search_path();
+
+private:
+    void add_header_search_path(const std::string& path);
+    bool is_version_number(const std::string& path);
+
+    std::unique_ptr<clang::CompilerInstance> m_compiler;
+};
