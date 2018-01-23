@@ -118,6 +118,7 @@ void runtime::cpu::CPU_Emitter::EmitAdd(codegen::CodeWriter& writer,
     writer << "Eigen::Map<Eigen::Array<" << args[1].get_element_type().c_type_string() << ", "
            << args[1].get_size() << ", 1>, Eigen::Unaligned> arg1(" << args[1].get_name() << ");\n";
     writer << "out = arg0 + arg1;\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -204,6 +205,7 @@ void runtime::cpu::CPU_Emitter::EmitDot(codegen::CodeWriter& writer,
         writer << first.get_name() << "[0]\n    * " << emit_vector(second) << ";\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if ((arg0_shape.size() == 1) && (arg1_shape.size() == 1))
     {
@@ -213,6 +215,7 @@ void runtime::cpu::CPU_Emitter::EmitDot(codegen::CodeWriter& writer,
                << "    " << emit_vector(args[0]) << ".dot(" << emit_vector(args[1]) << ");\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if ((arg0_shape.size() == 2) && (arg1_shape.size() == 1))
     {
@@ -222,6 +225,7 @@ void runtime::cpu::CPU_Emitter::EmitDot(codegen::CodeWriter& writer,
                << "    " << emit_matrix(args[0]) << " * " << emit_vector(args[1]) << ";\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if ((arg0_shape.size() == 2) && (arg1_shape.size() == 2))
     {
@@ -251,6 +255,7 @@ void runtime::cpu::CPU_Emitter::EmitDot(codegen::CodeWriter& writer,
             writer.indent--;
             writer << "}\n";
         }
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_kernels.hpp")");
     }
     else
     {
@@ -263,6 +268,7 @@ void runtime::cpu::CPU_Emitter::EmitDot(codegen::CodeWriter& writer,
         writer << "            {" << join(args[1].get_shape()) << "},\n";
         writer << "            {" << join(out[0].get_shape()) << "},\n";
         writer << "            " << dot->get_reduction_axes_count() << ");\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/kernel/dot.hpp")");
     }
 }
 
@@ -277,6 +283,7 @@ void runtime::cpu::CPU_Emitter::EmitMultiply(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "   " << emit_array1d(args[0]) << " *\n"
            << "   " << emit_array1d(args[1]) << ";\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -331,6 +338,7 @@ void runtime::cpu::CPU_Emitter::EmitAbs(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n";
     writer << "Eigen::abs(" << emit_array1d(args[0]) << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -432,6 +440,7 @@ void runtime::cpu::CPU_Emitter::EmitConcat(codegen::CodeWriter& writer,
                                 axis);
         }
     }
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     auto axis = (dynamic_cast<const op::Concat*>(n))->get_concatenation_axis();
 
@@ -475,6 +484,7 @@ void runtime::cpu::CPU_Emitter::EmitDivide(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << " /\n"
            << "    " << emit_array1d(args[1]) << ";\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -498,6 +508,7 @@ void runtime::cpu::CPU_Emitter::EmitEqual(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " ==\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -521,6 +532,7 @@ void runtime::cpu::CPU_Emitter::EmitGreater(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " >\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -544,6 +556,7 @@ void runtime::cpu::CPU_Emitter::EmitGreaterEq(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " >=\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -567,6 +580,7 @@ void runtime::cpu::CPU_Emitter::EmitLess(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " <\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -590,6 +604,7 @@ void runtime::cpu::CPU_Emitter::EmitLessEq(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " <=\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -612,6 +627,7 @@ void runtime::cpu::CPU_Emitter::EmitLog(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    Eigen::log(" << emit_array1d(args[0]) << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -634,6 +650,7 @@ void runtime::cpu::CPU_Emitter::EmitMaximum(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "        " << emit_array1d(args[0]) << ".max(\n"
            << "        " << emit_array1d(args[1]) << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -658,6 +675,7 @@ void runtime::cpu::CPU_Emitter::EmitMinimum(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".min(\n"
            << "    " << emit_array1d(args[1]) << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -681,6 +699,7 @@ void runtime::cpu::CPU_Emitter::EmitNegative(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    -" << emit_array1d(args[0]) << ";\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -703,6 +722,7 @@ void runtime::cpu::CPU_Emitter::EmitNotEqual(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    (" << emit_array1d(args[0]) << " !=\n"
            << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -727,6 +747,7 @@ void runtime::cpu::CPU_Emitter::EmitSelect(codegen::CodeWriter& writer,
            << "   " << emit_array1d(args[0]) << "\n"
            << "    .select(" << emit_array1d(args[1]) << ",\n"
            << "       " << emit_array1d(args[2]) << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -750,6 +771,7 @@ void runtime::cpu::CPU_Emitter::EmitSubtract(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << " -\n"
            << "    " << emit_array1d(args[1]) << ";\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -792,6 +814,7 @@ void runtime::cpu::CPU_Emitter::EmitBroadcast(codegen::CodeWriter& writer,
                << "    " << emit_array1d(args[0]) << "(0, 0);\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (arg_shape.size() == 1 && result_shape.size() == 2)
     {
@@ -803,6 +826,7 @@ void runtime::cpu::CPU_Emitter::EmitBroadcast(codegen::CodeWriter& writer,
                    << "    " << emit_vector(args[0]) << ";\n";
             writer.indent--;
             writer << "}\n";
+            writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
         }
         else if (broadcast->get_broadcast_axes() == AxisSet{0})
         {
@@ -821,6 +845,7 @@ void runtime::cpu::CPU_Emitter::EmitBroadcast(codegen::CodeWriter& writer,
 
             writer.indent--;
             writer << "}\n";
+            writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
         }
         else
         {
@@ -863,6 +888,7 @@ void runtime::cpu::CPU_Emitter::EmitConvert(codegen::CodeWriter& writer,
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << "\n"
            << "    .template cast<" << result_element_type.c_type_string() << ">();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -945,6 +971,7 @@ void runtime::cpu::CPU_Emitter::EmitReshape(codegen::CodeWriter& writer,
                    << "        " << emit_matrix(args[0]) << ".transpose();\n";
             writer.indent--;
             writer << "}\n";
+            writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
         }
     }
     // Other cases (reordering of axes for tensors with rank>2) are not handled yet.
@@ -1109,6 +1136,7 @@ void runtime::cpu::CPU_Emitter::EmitReduce(codegen::CodeWriter& writer,
                    << "    " << emit_array1d(args[1]) << "(0, 0);\n";
             writer.indent--;
             writer << "}\n";
+            writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
         }
         else
         {
@@ -1236,6 +1264,7 @@ void runtime::cpu::CPU_Emitter::EmitSign(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".sign();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1293,6 +1322,7 @@ void runtime::cpu::CPU_Emitter::EmitSlice(codegen::CodeWriter& writer,
                << to_string(upper_bounds[0] - lower_bounds[0]) << ");\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (!strided && arg_rank == 2)
     {
@@ -1305,6 +1335,7 @@ void runtime::cpu::CPU_Emitter::EmitSlice(codegen::CodeWriter& writer,
                << "        " << to_string(upper_bounds[1] - lower_bounds[1]) << ");\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     // Other cases (reordering of axes for tensors with rank>2) are not handled yet.
     else
@@ -1365,6 +1396,7 @@ void runtime::cpu::CPU_Emitter::EmitSum(codegen::CodeWriter& writer,
                << "    " << emit_array1d(args[0]) << ".sum();\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (arg_rank == 2 && reduction_axes == AxisSet{1})
     {
@@ -1374,6 +1406,7 @@ void runtime::cpu::CPU_Emitter::EmitSum(codegen::CodeWriter& writer,
                << "    " << emit_matrix(args[0]) << ".rowwise().sum();\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (arg_rank == 2 && reduction_axes == AxisSet{0})
     {
@@ -1383,6 +1416,7 @@ void runtime::cpu::CPU_Emitter::EmitSum(codegen::CodeWriter& writer,
                << "    " << emit_matrix(args[0]) << ".colwise().sum();\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else
     {
@@ -1415,6 +1449,7 @@ void runtime::cpu::CPU_Emitter::EmitExp(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".exp();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1436,6 +1471,7 @@ void runtime::cpu::CPU_Emitter::EmitSin(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".sin();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1457,6 +1493,7 @@ void runtime::cpu::CPU_Emitter::EmitSinh(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".sinh();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1478,6 +1515,7 @@ void runtime::cpu::CPU_Emitter::EmitCos(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".cos();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1499,6 +1537,7 @@ void runtime::cpu::CPU_Emitter::EmitCosh(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".cosh();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1520,6 +1559,7 @@ void runtime::cpu::CPU_Emitter::EmitTan(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".tan();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1563,6 +1603,7 @@ void runtime::cpu::CPU_Emitter::EmitAsin(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".asin();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1584,6 +1625,7 @@ void runtime::cpu::CPU_Emitter::EmitAcos(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".acos();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1605,6 +1647,7 @@ void runtime::cpu::CPU_Emitter::EmitAtan(codegen::CodeWriter& writer,
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
            << "    " << emit_array1d(args[0]) << ".atan();\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1629,6 +1672,7 @@ void runtime::cpu::CPU_Emitter::EmitPower(codegen::CodeWriter& writer,
     writer << emit_array1d(args[0]) << ".pow(\n ";
     writer << emit_array1d(args[1]) << ");\n";
     writer.indent--;
+    writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
 #else
     writer << "#pragma omp parallel for\n";
     writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1688,6 +1732,7 @@ void runtime::cpu::CPU_Emitter::EmitReplaceSlice(
                << "    " << emit_vector(args[1]) << ";\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (!strided && arg0_rank == 2)
     {
@@ -1703,6 +1748,7 @@ void runtime::cpu::CPU_Emitter::EmitReplaceSlice(
                << "    " << emit_matrix(args[1]) << ";\n";
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     // Other cases (reordering of axes for tensors with rank>2) are not handled yet.
     else
@@ -1774,6 +1820,7 @@ void runtime::cpu::CPU_Emitter::EmitOneHot(codegen::CodeWriter& writer,
 
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     else if (arg_rank == 1)
     {
@@ -1816,6 +1863,7 @@ void runtime::cpu::CPU_Emitter::EmitOneHot(codegen::CodeWriter& writer,
 
         writer.indent--;
         writer << "}\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/cpu/cpu_eigen_utils.hpp")");
     }
     // Other cases are not handled yet.
     else
@@ -1825,6 +1873,7 @@ void runtime::cpu::CPU_Emitter::EmitOneHot(codegen::CodeWriter& writer,
         writer << "                   {" << join(args[0].get_shape()) << "},\n";
         writer << "                   {" << join(out[0].get_shape()) << "},\n";
         writer << "                   " << oh->get_one_hot_axis() << ");\n";
+        writer.add_include_directive(R"(#include "ngraph/runtime/kernel/one_hot.hpp")");
     }
 }
 
@@ -2082,6 +2131,7 @@ void runtime::cpu::CPU_Emitter::EmitNot(codegen::CodeWriter& writer,
     writer << "kernel::logical_not(" << args[0].get_name() << ",\n"
            << "                    " << out[0].get_name() << ",\n"
            << "                    " << out[0].get_size() << ");\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/kernel/not.hpp")");
 }
 
 void runtime::cpu::CPU_Emitter::EmitMaxPool(codegen::CodeWriter& writer,
@@ -2159,6 +2209,7 @@ void runtime::cpu::CPU_Emitter::EmitReverse(codegen::CodeWriter& writer,
     writer << "                {" << join(arg_shape) << "},\n";
     writer << "                {" << join(result_shape) << "},\n";
     writer << "                {" << join(reverse->get_reversed_axes()) << "});\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/kernel/reverse.hpp")");
 }
 
 void runtime::cpu::CPU_Emitter::EmitReduceWindow(
@@ -2201,6 +2252,7 @@ void runtime::cpu::CPU_Emitter::EmitReduceWindow(
 
     writer.indent--;
     writer << "}\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/kernel/reduce_window.hpp")");
 }
 
 void runtime::cpu::CPU_Emitter::EmitSelectAndScatter(
@@ -2260,6 +2312,7 @@ void runtime::cpu::CPU_Emitter::EmitSelectAndScatter(
 
     writer.indent--;
     writer << "}\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/kernel/select_and_scatter.hpp")");
 }
 
 void runtime::cpu::CPU_Emitter::EmitAvgPool(codegen::CodeWriter& writer,
@@ -2343,6 +2396,7 @@ void runtime::cpu::CPU_Emitter::EmitPad(codegen::CodeWriter& writer,
     writer << "            {" << join(pad->get_padding_below()) << "},\n";
     writer << "            {" << join(pad->get_padding_above()) << "},\n";
     writer << "            {" << join(pad->get_padding_interior()) << "});\n";
+    writer.add_include_directive(R"(#include "ngraph/runtime/kernel/pad.hpp")");
 }
 
 void runtime::cpu::CPU_Emitter::EmitAvgPoolBackprop(
