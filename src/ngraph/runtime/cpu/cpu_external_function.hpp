@@ -73,6 +73,7 @@ namespace ngraph
                     codegen::CodeWriter& writer,
                     const Node&,
                     const std::unordered_map<descriptor::TensorView*, std::vector<size_t>>&);
+                std::string generate_includes(codegen::CodeWriter&);
 
                 bool is_functionally_identical(
                     const Node&,
