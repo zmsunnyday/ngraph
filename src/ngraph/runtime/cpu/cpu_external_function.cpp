@@ -234,7 +234,7 @@ bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>&
     {
         shared_ptr<Function> function = function_list[i];
 
-        // Rebuild the function and insert any P-nodes necessary
+        // Rebuild the function's graph and insert any P-nodes necessary
         for (shared_ptr<Node> node : function->get_ordered_ops())
         {
             NGRAPH_INFO << node->get_name() << ", " << node->placement;
@@ -246,6 +246,7 @@ bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>&
                 if (inode->placement != node->placement)
                 {
                     shared_ptr<Node> arg;
+                    NGRAPH_INFO << "source node " << *source_node;
                     if (inode->placement == "CPU")
                     {
                         arg = make_shared<CPU_to_ARGON>(source_node);
@@ -254,6 +255,8 @@ bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>&
                     {
                         arg = make_shared<ARGON_to_CPU>(source_node);
                     }
+                    arg->placement = inode->placement;
+                    NGRAPH_INFO << "arg node " << *arg;
                     new_args.push_back(arg);
                     NGRAPH_INFO << "transition " << inode->placement << " to " << node->placement;
                 }
@@ -266,8 +269,29 @@ bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>&
             node_map.insert({node->get_name(), new_node});
         }
 
-        function_list[i] = function;
+        // Rebuild the function itself
+        NGRAPH_INFO;
+        vector<shared_ptr<op::Parameter>> inputs;
+        vector<shared_ptr<Node>> outputs;
+        for (shared_ptr<op::Parameter> p : function->get_parameters())
+        {
+            inputs.push_back(dynamic_pointer_cast<op::Parameter>(node_map.at(p->get_name())));
+        }
+        NGRAPH_INFO;
+        for (shared_ptr<Node> out : function->get_results())
+        {
+            outputs.push_back(node_map.at(out->get_name()));
+        }
+        NGRAPH_INFO;
+
+        function_list[i] = make_shared<Function>(outputs, inputs);
+        NGRAPH_INFO;
+        for (shared_ptr<Node> node : function->get_ordered_ops())
+        {
+            NGRAPH_INFO << node->get_name() << ", " << node->placement;
+        }
     }
+    NGRAPH_INFO;
     return false;
 }
 
@@ -696,6 +720,7 @@ using namespace ngraph::runtime;
 
         for (shared_ptr<Node> node : current_function->get_ordered_ops())
         {
+            NGRAPH_INFO << *node;
             auto& n = *node; // Work around a compiler warning (*node inside typeid may have effects
             // with shared pointers, which is fine here but clang doesn't like it.)
             auto handler = dispatcher.find(type_index(typeid(n)));
