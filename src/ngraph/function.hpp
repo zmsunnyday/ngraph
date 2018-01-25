@@ -69,9 +69,9 @@ namespace ngraph
         std::shared_ptr<Node> get_result() const;
 
         std::string get_name() const;
-        void set_name(
-            const std::string&
-                name); //so we can use `dynamic_cast` in FunctionCall to double check if we are dealing with an XLA or regular function
+        // so we can use `dynamic_cast` in FunctionCall to double check if we are dealing with an
+        // XLA or regular function
+        void set_name(const std::string& name);
         std::list<std::shared_ptr<Node>> get_ops() const;
         std::list<std::shared_ptr<Node>> get_ordered_ops();
         friend std::ostream& operator<<(std::ostream&, const Function&);

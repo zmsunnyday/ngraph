@@ -205,6 +205,104 @@ runtime::cpu::CPU_ExternalFunction::CPU_ExternalFunction(
 {
 }
 
+bool runtime::cpu::SelectProviderPass::run_on_call_graph(const list<shared_ptr<Node>>& node_list)
+{
+    for (shared_ptr<Node> node : node_list)
+    {
+        std::string node_op = node->description();
+        if (node_op == "Dot")
+        {
+            node->placement = "ARGON";
+        }
+        else if (node_op == "Maximum")
+        {
+            node->placement = "ARGON";
+        }
+        else
+        {
+            node->placement = "CPU";
+        }
+        NGRAPH_INFO << *node << " " << node->placement;
+    }
+    return false;
+}
+
+bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>& function_list)
+{
+    unordered_map<string, shared_ptr<Node>> node_map;
+    for (size_t i = 0; i < function_list.size(); i++)
+    {
+        shared_ptr<Function> function = function_list[i];
+
+        // Rebuild the function and insert any P-nodes necessary
+        for (shared_ptr<Node> node : function->get_ordered_ops())
+        {
+            NGRAPH_INFO << node->get_name() << ", " << node->placement;
+            vector<shared_ptr<Node>> new_args;
+            vector<shared_ptr<Node>> input_ops = node->get_input_ops();
+            for (shared_ptr<Node> inode : input_ops)
+            {
+                auto source_node = node_map.at(inode->get_name());
+                if (inode->placement != node->placement)
+                {
+                    shared_ptr<Node> arg;
+                    if (inode->placement == "CPU")
+                    {
+                        arg = make_shared<CPU_to_ARGON>(source_node);
+                    }
+                    else
+                    {
+                        arg = make_shared<ARGON_to_CPU>(source_node);
+                    }
+                    new_args.push_back(arg);
+                    NGRAPH_INFO << "transition " << inode->placement << " to " << node->placement;
+                }
+                else
+                {
+                    new_args.push_back(source_node);
+                }
+            }
+            shared_ptr<Node> new_node = node->copy_with_new_args(new_args);
+            node_map.insert({node->get_name(), new_node});
+        }
+
+        function_list[i] = function;
+    }
+    return false;
+}
+
+runtime::cpu::CPU_to_ARGON::CPU_to_ARGON(shared_ptr<Node> arg)
+    : Node("CpuToArgon", {arg})
+{
+    add_output(arg->get_element_type(), arg->get_shape());
+}
+
+shared_ptr<Node>
+    runtime::cpu::CPU_to_ARGON::copy_with_new_args(const vector<shared_ptr<Node>>& new_args) const
+{
+    if (new_args.size() != 1)
+    {
+        throw ngraph_error("Incorrect number of new arguments");
+    }
+    return make_shared<CPU_to_ARGON>(new_args.at(0));
+}
+
+runtime::cpu::ARGON_to_CPU::ARGON_to_CPU(shared_ptr<Node> arg)
+    : Node("Argon2Cpu", {arg})
+{
+    add_output(arg->get_element_type(), arg->get_shape());
+}
+
+shared_ptr<Node>
+    runtime::cpu::ARGON_to_CPU::copy_with_new_args(const vector<shared_ptr<Node>>& new_args) const
+{
+    if (new_args.size() != 1)
+    {
+        throw ngraph_error("Incorrect number of new arguments");
+    }
+    return make_shared<ARGON_to_CPU>(new_args.at(0));
+}
+
 void runtime::cpu::CPU_ExternalFunction::compile()
 {
     if (m_is_compiled)
@@ -215,6 +313,8 @@ void runtime::cpu::CPU_ExternalFunction::compile()
     string function_name = m_function->get_name();
 
     pass::Manager pass_manager;
+    pass_manager.register_pass<SelectProviderPass>();
+    pass_manager.register_pass<InsertPNodesPass>();
     // For now, just make everyone row-major.
     pass_manager.register_pass<pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
     pass_manager.register_pass<pass::Liveness>();

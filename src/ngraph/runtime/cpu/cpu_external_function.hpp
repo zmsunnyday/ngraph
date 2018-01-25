@@ -24,6 +24,7 @@
 #include "ngraph/codegen/compiler.hpp"
 #include "ngraph/codegen/execution_engine.hpp"
 #include "ngraph/function.hpp"
+#include "ngraph/pass/pass.hpp"
 #include "ngraph/runtime/cpu/cpu_call_frame.hpp"
 #include "ngraph/runtime/cpu/cpu_tensor_view_wrapper.hpp"
 #include "ngraph/runtime/external_function.hpp"
@@ -79,6 +80,34 @@ namespace ngraph
                 bool m_emit_timing;
                 bool m_use_tbb;
                 std::unordered_map<std::string, std::string> m_variable_name_map;
+            };
+
+            class SelectProviderPass : public pass::CallGraphPass
+            {
+            public:
+                bool run_on_call_graph(const std::list<std::shared_ptr<Node>>&) override;
+            };
+
+            class InsertPNodesPass : public pass::ModulePass
+            {
+            public:
+                bool run_on_module(std::vector<std::shared_ptr<ngraph::Function>>&) override;
+            };
+
+            class CPU_to_ARGON : public Node
+            {
+            public:
+                CPU_to_ARGON(std::shared_ptr<Node> arg);
+                std::shared_ptr<Node> copy_with_new_args(
+                    const std::vector<std::shared_ptr<Node>>& new_args) const override;
+            };
+
+            class ARGON_to_CPU : public Node
+            {
+            public:
+                ARGON_to_CPU(std::shared_ptr<Node> arg);
+                std::shared_ptr<Node> copy_with_new_args(
+                    const std::vector<std::shared_ptr<Node>>& new_args) const override;
             };
         }
     }

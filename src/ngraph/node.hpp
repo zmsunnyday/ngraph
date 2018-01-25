@@ -150,6 +150,7 @@ namespace ngraph
         std::unordered_set<descriptor::Tensor*> liveness_live_list;
         std::unordered_set<descriptor::Tensor*> liveness_new_list;
         std::unordered_set<descriptor::Tensor*> liveness_free_list;
+        std::string placement;
 
         std::shared_ptr<Node> backprop_node(const std::shared_ptr<Node>& x,
                                             const std::shared_ptr<Node>& c);
