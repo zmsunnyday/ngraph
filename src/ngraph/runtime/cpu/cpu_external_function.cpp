@@ -286,7 +286,7 @@ bool runtime::cpu::InsertPNodesPass::run_on_module(vector<shared_ptr<Function>>&
 
         function_list[i] = make_shared<Function>(outputs, inputs);
         NGRAPH_INFO;
-        for (shared_ptr<Node> node : function->get_ordered_ops())
+        for (shared_ptr<Node> node : function_list[i]->get_ordered_ops())
         {
             NGRAPH_INFO << node->get_name() << ", " << node->placement;
         }
