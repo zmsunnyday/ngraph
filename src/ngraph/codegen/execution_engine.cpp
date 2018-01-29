@@ -14,7 +14,7 @@
 
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 
-#include "ngraph/codegen/execution_engine.hpp"
+#include "execution_engine.hpp"
 
 using namespace ngraph;
 

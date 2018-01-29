@@ -128,6 +128,8 @@ if(NGRAPH_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
+add_subdirectory(codegen)
+
 include_directories(
     "${NGRAPH_INCLUDE_PATH}"
     )
@@ -157,9 +159,6 @@ if (NGRAPH_CPU_ENABLE AND LLVM_INCLUDE_DIR AND
     # Add sources for the CPU backend
     # and all its dependencies
     set(SRC ${SRC}
-        codegen/code_writer.cpp
-        codegen/compiler.cpp
-        codegen/execution_engine.cpp
         runtime/cpu/cpu_call_frame.cpp
         runtime/cpu/cpu_backend.cpp
         runtime/cpu/cpu_manager.cpp
@@ -170,15 +169,6 @@ if (NGRAPH_CPU_ENABLE AND LLVM_INCLUDE_DIR AND
         runtime/cpu/cpu_external_function.cpp
         runtime/cpu/cpu_tensor_view_wrapper.cpp
     )
-    # LLVM binary builds are typically built without RTTI
-    # The built-in headers are in a version-specific directory
-    # This must be kept in sync with the LLVM + Clang version in use
-    set_source_files_properties(codegen/compiler.cpp PROPERTIES COMPILE_FLAGS "-fno-rtti")
-    set_source_files_properties(codegen/compiler.cpp PROPERTIES COMPILE_DEFINITIONS
-      "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\";MKLDNN_HEADERS_PATH=\"${MKLDNN_INCLUDE_DIR}\";CLANG_BUILTIN_HEADERS_PATH=\"${LLVM_LIB_DIR}/clang/5.0.0/include\";TBB_HEADERS_PATH=\"${TBB_ROOT}/include\";NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\";INSTALLED_HEADERS_PATH=\"${CMAKE_INSTALL_PREFIX}/include\";")
-    set(NGRAPH_CPU_DEBUGINFO_ENABLE 0 CACHE STRING "Enable debuginfo in the CPU backend")
-    set_property(SOURCE codegen/compiler.cpp APPEND_STRING PROPERTY COMPILE_DEFINITIONS
-      "NGCPU_DEBUGINFO=${NGRAPH_CPU_DEBUGINFO_ENABLE};")
 
 if (NGRAPH_ARGON_ENABLE)
     link_directories(${ARGON_LIB_DIR})
@@ -208,16 +198,8 @@ endif()
 endif()
 
 add_library(ngraph SHARED ${SRC})
-if (NGRAPH_CPU_ENABLE AND LLVM_INCLUDE_DIR AND MKLDNN_INCLUDE_DIR)
-    # Generate the resource file containing all headers used by the codegen compiler
-    add_custom_target(header_resource
-        resource_generator --output ${CMAKE_BINARY_DIR}/header_resource.hpp --base codegen
-        DEPENDS resource_generator eigen ext_llvm ext_mkldnn
-        BYPRODUCTS
-    )
-    add_dependencies(ngraph header_resource)
-    include_directories(${CMAKE_BINARY_DIR})
-endif()
+
+add_dependencies(ngraph codegen)
 
 if (NOT APPLE)
     # NGraph links against one or more libraries (ex. LLVM) but we don't want to
@@ -270,6 +252,9 @@ endif()
 
 if(NGRAPH_CPU_ENABLE)
     target_link_libraries(ngraph PRIVATE ${TBB_IMPORTED_TARGETS})
+
+    # TODO should only be used if codegen required
+    target_link_libraries(ngraph PRIVATE codegen)
 endif()
 
 # Nvidia

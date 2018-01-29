@@ -120,7 +120,7 @@ if(MKLDNN_INCLUDE_DIR)
 endif()
 
 if(LLVM_INCLUDE_DIR)
-    target_link_libraries(unit-test ${LLVM_LINK_LIBS})
+    target_link_libraries(unit-test ${LLVM_LINK_LIBS} codegen)
     add_dependencies(unit-test ext_llvm)
 endif()
 

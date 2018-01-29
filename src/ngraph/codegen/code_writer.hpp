@@ -17,8 +17,6 @@
 #include <sstream>
 #include <string>
 
-#include "ngraph/log.hpp"
-
 namespace ngraph
 {
     namespace codegen

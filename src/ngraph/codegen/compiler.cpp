@@ -44,8 +44,8 @@
 #include <llvm/Support/Timer.h>
 #include <llvm/Support/raw_ostream.h>
 
+#include "compiler.hpp"
 #include "header_resource.hpp"
-#include "ngraph/codegen/compiler.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"

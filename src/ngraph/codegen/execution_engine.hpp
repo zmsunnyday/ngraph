@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "ngraph/codegen/compiler.hpp"
+#include "compiler.hpp"
 
 namespace ngraph
 {
