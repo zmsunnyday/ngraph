@@ -66,6 +66,8 @@ void Compiler::compile(const string& source)
     args.push_back("-H");
 
     // Prepare DiagnosticEngine
+    string output;
+    raw_string_ostream raw_out(output);
     IntrusiveRefCntPtr<DiagnosticOptions> diag_options = new DiagnosticOptions();
     diag_options->ErrorLimit = 20;
     IntrusiveRefCntPtr<DiagnosticIDs> diag_id(new DiagnosticIDs());
@@ -74,7 +76,14 @@ void Compiler::compile(const string& source)
     // Create and initialize CompilerInstance
     m_compiler = std::unique_ptr<CompilerInstance>(new CompilerInstance());
     DiagnosticConsumer* diag_consumer;
-    diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
+    // if (m_enable_diag_output)
+    // {
+        // diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
+    // }
+    // else
+    // {
+        diag_consumer = new IgnoringDiagConsumer();
+    // }
     m_compiler->createDiagnostics(diag_consumer);
 
     // Initialize CompilerInvocation
@@ -132,8 +141,8 @@ void Compiler::compile(const string& source)
     preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
 
     // Create and execute action
-    std::unique_ptr<clang::CodeGenAction> m_compiler_action;
-    m_compiler_action.reset(new EmitCodeGenOnlyAction());
+    std::unique_ptr<clang::FrontendAction> m_compiler_action;
+    m_compiler_action.reset(new PreprocessOnlyAction());
     if (m_compiler->ExecuteAction(*m_compiler_action) == true)
     {
         // rc = m_compiler_action->takeModule();
