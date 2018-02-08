@@ -13,7 +13,10 @@
 // ----------------------------------------------------------------------------
 
 #include <iostream>
+#include <unordered_set>
 
+#include <clang/AST/ASTConsumer.h>
+#include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Basic/DiagnosticOptions.h>
 #include <clang/Basic/TargetInfo.h>
 #include <clang/CodeGen/CodeGenAction.h>
@@ -22,6 +25,7 @@
 #include <clang/Driver/Options.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/CompilerInvocation.h>
+#include <clang/Frontend/FrontendAction.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Frontend/FrontendDiagnostic.h>
 #include <clang/Frontend/TextDiagnosticBuffer.h>
@@ -53,6 +57,70 @@ using namespace llvm;
 using namespace llvm::opt;
 using namespace std;
 
+class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor>
+{
+public:
+    FindNamedClassVisitor(unordered_set<string>& files)
+        : files_encountered(files)
+    {
+    }
+    bool VisitDecl(Decl* decl)
+    {
+        // For debugging, dumping the AST nodes will show which nodes are already
+        // being visited.
+        // decl->dump();
+
+        // The return value indicates whether we want the visitation to proceed.
+        // Return false to stop the traversal of the AST.
+
+        if (decl->getLocation().isFileID())
+        {
+            string filename =
+                decl->getASTContext().getSourceManager().getFilename(decl->getLocation());
+            if (filename != "code.cpp" && filename != "")
+            {
+                files_encountered.insert(filename);
+            }
+        }
+
+        return true;
+    }
+
+    unordered_set<string>& files_encountered;
+};
+
+class FindNamedClassConsumer : public clang::ASTConsumer
+{
+public:
+    FindNamedClassConsumer(unordered_set<string>& files)
+        : Visitor(files)
+    {
+    }
+    virtual void HandleTranslationUnit(clang::ASTContext& Context)
+    {
+        cout << "HandleTranslationUnit " << endl;
+
+        // // Traversing the translation unit decl via a RecursiveASTVisitor
+        // // will visit all nodes in the AST.
+        Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+    }
+
+private:
+    // A RecursiveASTVisitor implementation.
+    FindNamedClassVisitor Visitor;
+};
+
+class FindNamedClassAction : public clang::ASTFrontendAction
+{
+public:
+    virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler,
+                                                                  llvm::StringRef InFile)
+    {
+        return std::unique_ptr<clang::ASTConsumer>(new FindNamedClassConsumer(files_encountered));
+    }
+    unordered_set<string> files_encountered;
+};
+
 void Compiler::compile(const string& source)
 {
     InitializeNativeTarget();
@@ -63,7 +131,7 @@ void Compiler::compile(const string& source)
     vector<const char*> args;
     string source_name = "code.cpp";
     args.push_back(source_name.c_str());
-    args.push_back("-H");
+    // args.push_back("-H");
 
     // Prepare DiagnosticEngine
     string output;
@@ -78,11 +146,11 @@ void Compiler::compile(const string& source)
     DiagnosticConsumer* diag_consumer;
     // if (m_enable_diag_output)
     // {
-        // diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
+    // diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
     // }
     // else
     // {
-        diag_consumer = new IgnoringDiagConsumer();
+    diag_consumer = new IgnoringDiagConsumer();
     // }
     m_compiler->createDiagnostics(diag_consumer);
 
@@ -142,11 +210,18 @@ void Compiler::compile(const string& source)
 
     // Create and execute action
     std::unique_ptr<clang::FrontendAction> m_compiler_action;
-    m_compiler_action.reset(new PreprocessOnlyAction());
+    FindNamedClassAction* action = new FindNamedClassAction();
+    m_compiler_action.reset(action);
     if (m_compiler->ExecuteAction(*m_compiler_action) == true)
     {
         // rc = m_compiler_action->takeModule();
     }
+
+    for (const string& file : action->files_encountered)
+    {
+        cout << file << endl;
+    }
+    cout << "total header count " << action->files_encountered.size() << endl;
 
     buffer.release();
 
