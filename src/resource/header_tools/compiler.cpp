@@ -134,37 +134,14 @@ void Compiler::compile(const string& source)
     // Create and execute action
     std::unique_ptr<clang::CodeGenAction> m_compiler_action;
     m_compiler_action.reset(new EmitCodeGenOnlyAction());
-    // std::unique_ptr<llvm::Module> rc;
-    // bool reinitialize = false;
     if (m_compiler->ExecuteAction(*m_compiler_action) == true)
     {
         // rc = m_compiler_action->takeModule();
     }
-    // else
-    // {
-    //     reinitialize = true;
-    // }
 
-    // buffer.release();
+    buffer.release();
 
-    // preprocessor_options.RemappedFileBuffers.pop_back();
-
-    // unique_ptr<codegen::Module> result;
-    // if (rc)
-    // {
-    //     result = move(unique_ptr<codegen::Module>(new codegen::Module(move(rc))));
-    // }
-    // else
-    // {
-    //     result = move(unique_ptr<codegen::Module>(nullptr));
-    // // }
-
-    // if (reinitialize)
-    // {
-    //     codegen::StaticCompiler::initialize();
-    // }
-
-    // return result;
+    preprocessor_options.RemappedFileBuffers.pop_back();
 }
 
 void Compiler::configure_search_path()
