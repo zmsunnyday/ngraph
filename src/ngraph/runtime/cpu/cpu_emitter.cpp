@@ -2085,8 +2085,8 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
 
         writer << "memory::dims dilates{" << join(convolution->get_window_dilation_strides_backward()) << "};\n"
                << "memory::dims strides{" << join(convolution->get_window_movement_strides_backward()) << "};\n"
-               << "memory::dims padding_l{" << join(convolution->get_padding_above_forward()) << "};\n"
-               << "memory::dims padding_r{" << join(convolution->get_padding_below_forward()) << "};\n";
+               << "memory::dims padding_l{" << join(convolution->get_padding_below_forward()) << "};\n"
+               << "memory::dims padding_r{" << join(convolution->get_padding_above_forward()) << "};\n";
         writer << "/*\n"
                << join(convolution->get_window_movement_strides_backward()) << "\n"
                << join(convolution->get_window_dilation_strides_backward()) << "\n"
@@ -2190,8 +2190,8 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
 
         writer << "memory::dims dilates{" << join(convolution->get_window_dilation_strides_backward()) << "};\n"
                << "memory::dims strides{" << join(convolution->get_window_movement_strides_backward()) << "};\n"
-               << "memory::dims padding_l{" << join(convolution->get_padding_above_forward()) << "};\n"
-               << "memory::dims padding_r{" << join(convolution->get_padding_below_forward()) << "};\n";
+               << "memory::dims padding_l{" << join(convolution->get_padding_below_forward()) << "};\n"
+               << "memory::dims padding_r{" << join(convolution->get_padding_above_forward()) << "};\n";
         writer << "/*\n"
                << join(convolution->get_window_movement_strides_backward()) << "\n"
                << join(convolution->get_window_dilation_strides_backward()) << "\n"
