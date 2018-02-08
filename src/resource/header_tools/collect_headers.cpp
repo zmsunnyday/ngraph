@@ -68,6 +68,7 @@ static string find_path(const string& path)
 
 vector<ResourceInfo> collect_headers()
 {
+    cout << "collect_header" << endl;
     Compiler c;
     c.compile(s_header);
 
