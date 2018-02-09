@@ -1,16 +1,18 @@
-// ----------------------------------------------------------------------------
-// Copyright 2017 Nervana Systems Inc.
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// ----------------------------------------------------------------------------
+/*******************************************************************************
+* Copyright 2017-2018 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 #pragma once
 
@@ -104,7 +106,6 @@ namespace ngraph
                                                  m_padding_below,
                                                  m_padding_above);
             }
-            bool is_functionally_identical(const Node&) const override;
 
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,
                                            const std::shared_ptr<Node>& delta) override;
@@ -124,38 +125,38 @@ namespace ngraph
             Shape m_padding_above;
         };
 
-        class AvgPoolBprop : public RequiresTensorViewArgs
+        class AvgPoolBackprop : public RequiresTensorViewArgs
         {
         public:
-            AvgPoolBprop(const std::shared_ptr<Node>& arg,
-                         const std::shared_ptr<Node>& delta,
-                         const Shape& window_shape,
-                         const Strides& window_movement_strides,
-                         const Shape& padding_below,
-                         const Shape& padding_above);
+            AvgPoolBackprop(const Shape& forward_arg_shape,
+                            const std::shared_ptr<Node>& delta,
+                            const Shape& window_shape,
+                            const Strides& window_movement_strides,
+                            const Shape& padding_below,
+                            const Shape& padding_above);
 
             virtual std::shared_ptr<Node> copy_with_new_args(
                 const std::vector<std::shared_ptr<Node>>& new_args) const override
             {
-                if (new_args.size() != 2)
+                if (new_args.size() != 1)
                     throw ngraph_error("Incorrect number of new arguments");
 
-                AvgPoolBprop* avpn = new AvgPoolBprop(new_args.at(0),
-                                                      new_args.at(1),
-                                                      m_window_shape,
-                                                      m_window_movement_strides,
-                                                      m_padding_below,
-                                                      m_padding_above);
-                return std::shared_ptr<op::AvgPoolBprop>(avpn);
+                AvgPoolBackprop* avpn = new AvgPoolBackprop(m_forward_arg_shape,
+                                                            new_args.at(0),
+                                                            m_window_shape,
+                                                            m_window_movement_strides,
+                                                            m_padding_below,
+                                                            m_padding_above);
+                return std::shared_ptr<op::AvgPoolBackprop>(avpn);
             }
 
+            const Shape& get_forward_arg_shape() const { return m_forward_arg_shape; }
             const Shape& get_window_shape() const { return m_window_shape; }
             const Strides& get_window_movement_strides() const { return m_window_movement_strides; }
             const Shape& get_padding_below() const { return m_padding_below; }
             const Shape& get_padding_above() const { return m_padding_above; }
-            bool is_functionally_identical(const Node&) const override;
-
         protected:
+            Shape m_forward_arg_shape;
             Shape m_window_shape;
             Strides m_window_movement_strides;
             Shape m_padding_below;

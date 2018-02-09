@@ -1,16 +1,18 @@
-// ----------------------------------------------------------------------------
-// Copyright 2017 Nervana Systems Inc.
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// ----------------------------------------------------------------------------
+/*******************************************************************************
+* Copyright 2017-2018 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 #include "gtest/gtest.h"
 
@@ -3326,7 +3328,7 @@ TEST(type_prop, max_pool_invalid_0d_input)
     catch (const ngraph_error& error)
     {
         EXPECT_EQ(error.what(),
-                  std::string("Max pool data batch input must have rank of at "
+                  std::string("Max-pool data batch input must have rank of at "
                               "least 3 (one batch axis, one channel axis, at "
                               "least one spatial dimension)."));
     }
@@ -3351,7 +3353,7 @@ TEST(type_prop, max_pool_invalid_1d_input)
     catch (const ngraph_error& error)
     {
         EXPECT_EQ(error.what(),
-                  std::string("Max pool data batch input must have rank of at "
+                  std::string("Max-pool data batch input must have rank of at "
                               "least 3 (one batch axis, one channel axis, at "
                               "least one spatial dimension)."));
     }
@@ -3376,7 +3378,7 @@ TEST(type_prop, max_pool_invalid_2d_input)
     catch (const ngraph_error& error)
     {
         EXPECT_EQ(error.what(),
-                  std::string("Max pool data batch input must have rank of at "
+                  std::string("Max-pool data batch input must have rank of at "
                               "least 3 (one batch axis, one channel axis, at "
                               "least one spatial dimension)."));
     }
@@ -3400,7 +3402,7 @@ TEST(type_prop, max_pool_invalid_0_batch_size)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(), std::string("Max pool data batch size is zero."));
+        EXPECT_EQ(error.what(), std::string("Max-pool data batch size is zero."));
     }
     catch (...)
     {
@@ -3422,7 +3424,7 @@ TEST(type_prop, max_pool_invalid_0_channels)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(), std::string("Max pool requires at least one feature channel."));
+        EXPECT_EQ(error.what(), std::string("Max-pool requires at least one feature channel."));
     }
     catch (...)
     {
@@ -3446,7 +3448,7 @@ TEST(type_prop, max_pool_invalid_wrong_number_of_window_dimensions_too_many)
     {
         EXPECT_EQ(
             error.what(),
-            std::string("Max pool window shape rank does not match number of spatial dimensions."));
+            std::string("Max-pool window shape rank does not match number of spatial dimensions."));
     }
     catch (...)
     {
@@ -3470,7 +3472,7 @@ TEST(type_prop, max_pool_invalid_wrong_number_of_window_dimensions_too_few)
     {
         EXPECT_EQ(
             error.what(),
-            std::string("Max pool window shape rank does not match number of spatial dimensions."));
+            std::string("Max-pool window shape rank does not match number of spatial dimensions."));
     }
     catch (...)
     {
@@ -3494,7 +3496,7 @@ TEST(type_prop, max_pool_invalid_movement_stride_rank)
     catch (const ngraph_error& error)
     {
         EXPECT_EQ(error.what(),
-                  std::string("Max pool window movement stride rank does not "
+                  std::string("Max-pool window movement stride rank does not "
                               "match number of spatial dimensions."));
     }
     catch (...)
@@ -3517,7 +3519,8 @@ TEST(type_prop, max_pool_invalid_input_data_size_0)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(), std::string("Max pool input spatial dimension is zero."));
+        EXPECT_EQ(error.what(),
+                  std::string("Max-pool input spatial dimension is zero even after padding."));
     }
     catch (...)
     {
@@ -3539,7 +3542,7 @@ TEST(type_prop, max_pool_invalid_window_size_0)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(), std::string("Max pool window shape has a zero-length axis."));
+        EXPECT_EQ(error.what(), std::string("Max-pool window shape has a zero-length axis."));
     }
     catch (...)
     {
@@ -3561,8 +3564,10 @@ TEST(type_prop, max_pool_invalid_dilated_too_large)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(),
-                  std::string("Max pool window shape is larger than the spatial dimensions."));
+        EXPECT_EQ(
+            error.what(),
+            std::string(
+                "Max-pool window shape is larger than the spatial dimensions even after padding."));
     }
     catch (...)
     {
@@ -3585,7 +3590,7 @@ TEST(type_prop, max_pool_invalid_movement_stride_0)
     }
     catch (const ngraph_error& error)
     {
-        EXPECT_EQ(error.what(), std::string("Max pool window axis movement stride is zero."));
+        EXPECT_EQ(error.what(), std::string("Max-pool window axis movement stride is zero."));
     }
     catch (...)
     {
