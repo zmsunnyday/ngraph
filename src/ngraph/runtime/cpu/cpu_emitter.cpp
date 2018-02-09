@@ -91,7 +91,6 @@ static const string& get_mkldnn_data_type(const string& type)
 void runtime::cpu::CPU_Emitter::EmitMKLDNNPreamble(codegen::CodeWriter& writer)
 {
     writer << "using namespace mkldnn;\n";
-    writer << "using namespace mkldnn;\n";
     writer << "auto cpu_engine = engine(engine::cpu, 0);\n";
 }
 
@@ -2057,22 +2056,27 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
     auto arg1_rank = arg1_shape.size();
 
     bool filter_dilated = false;
-    for (size_t s : convolution->get_window_dilation_strides_backward())
+    for (size_t s : convolution->get_window_dilation_strides_forward())
     {
         filter_dilated = filter_dilated || (s != 1);
     }
 
     bool data_dilated = false;
-    for (size_t s : convolution->get_data_dilation_strides_backward())
+    for (size_t s : convolution->get_data_dilation_strides_forward())
     {
         data_dilated = data_dilated || (s != 1);
     }
 
     writer << "// conv backprop filters\n";
-    if (!filter_dilated && !data_dilated && arg0_rank == 4 && arg1_rank == 4 && args[0].get_element_type() == element::f32)
+    if (!data_dilated && arg0_rank == 4 && arg1_rank == 4 && args[0].get_element_type() == element::f32)
     {
         const string& et = get_mkldnn_data_type(args[0].get_element_type().c_type_string());
+        Strides window_dilation_strides_adjusted;
 
+        for (size_t s : convolution->get_window_dilation_strides_forward())
+        {
+            window_dilation_strides_adjusted.push_back(s - 1);
+        }
         writer << "{\n";
         writer.indent++;
         writer << "// branch 0 \n";
@@ -2083,18 +2087,18 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
                << CreateMKLDNNMemoryDesc("result_desc", join(result_shape), et, "oihw")
                << CreateMKLDNNMemory("result", "result_desc", out[0].get_name());
 
-        writer << "memory::dims dilates{" << join(convolution->get_window_dilation_strides_backward()) << "};\n"
-               << "memory::dims strides{" << join(convolution->get_window_movement_strides_backward()) << "};\n"
+        writer << "memory::dims dilates{" << join(window_dilation_strides_adjusted) << "};\n"
+               << "memory::dims strides{" << join(convolution->get_window_movement_strides_forward()) << "};\n"
                << "memory::dims padding_l{" << join(convolution->get_padding_below_forward()) << "};\n"
                << "memory::dims padding_r{" << join(convolution->get_padding_above_forward()) << "};\n";
         writer << "/*\n"
-               << join(convolution->get_window_movement_strides_backward()) << "\n"
-               << join(convolution->get_window_dilation_strides_backward()) << "\n"
+               << join(convolution->get_window_movement_strides_forward()) << "\n"
+               << join(convolution->get_window_dilation_strides_forward()) << "\n"
                << join(convolution->get_padding_above_backward()) << "\n"
                << join(convolution->get_padding_below_backward()) << "\n"
                << join(convolution->get_padding_above_forward()) << "\n"
                << join(convolution->get_padding_below_forward()) << "\n"
-               << join(convolution->get_data_dilation_strides_backward()) << "\n"
+               << join(convolution->get_data_dilation_strides_forward()) << "\n"
                << "*/ try { \n" ;
 
         writer << "convolution_backward_weights::desc bwd_weights_desc("
@@ -2103,12 +2107,13 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
                   "result_desc, "
                   "delta_desc, "
                   "strides, "
+                  "dilates,"
                   "padding_l, "
                   "padding_r, "
                   "padding_kind::zero);\n";
         writer << "convolution_forward::primitive_desc fwd_pd({"
                << "prop_kind::forward, algorithm::convolution_direct, data_desc, "
-                  "result_desc, delta_desc, strides, padding_l, padding_r, padding_kind::zero}, cpu_engine);\n";
+                  "result_desc, delta_desc, strides, dilates, padding_l, padding_r, padding_kind::zero}, cpu_engine);\n";
         writer << "convolution_backward_weights::primitive_desc bwd_weights_pd(bwd_weights_desc, cpu_engine, fwd_pd);\n";
         writer << "convolution_backward_weights bwd_weights(bwd_weights_pd, data, delta, result);\n";
         writer << "auto s = stream(stream::kind::eager);\n"
@@ -2157,22 +2162,28 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
     auto arg1_rank = arg1_shape.size();
 
     bool filter_dilated = false;
-    for (size_t s : convolution->get_window_dilation_strides_backward())
+    for (size_t s : convolution->get_window_dilation_strides_forward())
     {
         filter_dilated = filter_dilated || (s != 1);
     }
 
     bool data_dilated = false;
-    for (size_t s : convolution->get_data_dilation_strides_backward())
+    for (size_t s : convolution->get_data_dilation_strides_forward())
     {
         data_dilated = data_dilated || (s != 1);
     }
 
     writer << "// conv backprop Data\n";
-    if (!filter_dilated && !data_dilated && arg0_rank == 4 && arg1_rank == 4 && args[0].get_element_type() == element::f32)
+    //if (!filter_dilated && !data_dilated && arg0_rank == 4 && arg1_rank == 4 && args[0].get_element_type() == element::f32)
+    if (!data_dilated && arg0_rank == 4 && arg1_rank == 4 && args[0].get_element_type() == element::f32)
     {
         const string& et = get_mkldnn_data_type(args[0].get_element_type().c_type_string());
+        Strides window_dilation_strides_adjusted;
 
+        for (size_t s : convolution->get_window_dilation_strides_forward())
+        {
+            window_dilation_strides_adjusted.push_back(s - 1);
+        }
         writer << "{\n";
         writer.indent++;
         writer << "// branch 0 \n";
@@ -2188,18 +2199,18 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
 //               << "memory::dims padding_l{0,0};\n"
 //               << "memory::dims padding_r{0,0};\n";
 
-        writer << "memory::dims dilates{" << join(convolution->get_window_dilation_strides_backward()) << "};\n"
-               << "memory::dims strides{" << join(convolution->get_window_movement_strides_backward()) << "};\n"
+        writer << "memory::dims dilates{" << join(window_dilation_strides_adjusted) << "};\n"
+               << "memory::dims strides{" << join(convolution->get_window_movement_strides_forward()) << "};\n"
                << "memory::dims padding_l{" << join(convolution->get_padding_below_forward()) << "};\n"
                << "memory::dims padding_r{" << join(convolution->get_padding_above_forward()) << "};\n";
         writer << "/*\n"
-               << join(convolution->get_window_movement_strides_backward()) << "\n"
-               << join(convolution->get_window_dilation_strides_backward()) << "\n"
+               << join(convolution->get_window_movement_strides_forward()) << "\n"
+               << join(convolution->get_window_dilation_strides_forward()) << "\n"
                << join(convolution->get_padding_above_backward()) << "\n"
                << join(convolution->get_padding_below_backward()) << "\n"
                << join(convolution->get_padding_above_forward()) << "\n"
                << join(convolution->get_padding_below_forward()) << "\n"
-               << join(convolution->get_data_dilation_strides_backward()) << "\n"
+               << join(convolution->get_data_dilation_strides_forward()) << "\n"
                << "*/ try { \n" ;
 
         writer << "convolution_backward_data::desc bwd_data_desc("
@@ -2208,12 +2219,13 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
                 "weight_desc, "
                 "delta_desc, "
                 "strides, "
+                "dilates, "
                 "padding_l, "
                 "padding_r, "
                 "padding_kind::zero);\n";
         writer << "convolution_forward::primitive_desc fwd_pd({"
                << "prop_kind::forward, algorithm::convolution_direct, result_desc, "
-                  "weight_desc, delta_desc, strides, padding_l, padding_r, padding_kind::zero}, cpu_engine);\n";
+                  "weight_desc, delta_desc, strides, dilates, padding_l, padding_r, padding_kind::zero}, cpu_engine);\n";
         writer << "convolution_backward_data::primitive_desc bwd_data_pd(bwd_data_desc, cpu_engine, fwd_pd);\n";
         writer << "convolution_backward_data bwd_data(bwd_data_pd, delta, weight, result);\n";
         writer << "auto s = stream(stream::kind::eager);\n"
