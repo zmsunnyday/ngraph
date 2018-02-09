@@ -39,6 +39,7 @@ std::string get_file_ext(const std::string& s);
 std::string to_hex(int value);
 void dump(std::ostream& out, const void* vdata, size_t size);
 time_t get_timestamp(const std::string& filename);
+bool starts_with(const std::string& s1, const std::string& s2);
 
 template <typename U, typename T>
 bool contains(const U& container, const T& obj)

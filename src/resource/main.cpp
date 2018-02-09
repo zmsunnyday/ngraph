@@ -49,49 +49,19 @@ int main(int argc, char** argv)
 
     time_t output_timestamp = get_timestamp(output_path);
 
-    vector<ResourceInfo> include_paths = collect_headers();
-
-    for (ResourceInfo& path : include_paths)
-    {
-        // cout << "path " << path.source_path << " -> " << path.target_path << endl;
-        vector<string> path_list;
-        path_list.push_back(path.search_path);
-        for (const string& p : path.subdirs)
-        {
-            path_list.push_back(path_join(path.search_path, p));
-        }
-        for (const string& p : path_list)
-        {
-            iterate_files(p,
-                          [&](const string& file, bool is_dir) {
-                              if (!is_dir)
-                              {
-                                  string ext = get_file_ext(file);
-                                  if (contains(valid_ext, ext))
-                                  {
-                                      //   cout << "add " << path.search_path << ", " << file << endl;
-                                      path.files.push_back(file);
-                                  }
-                              }
-                          },
-                          path.is_recursive);
-        }
-    }
+    HeaderInfo header_info = collect_headers();
 
     // test for changes to any headers
     bool update_needed = main_timestamp > output_timestamp;
     if (!update_needed)
     {
-        for (ResourceInfo& path : include_paths)
+        for (const string& header_file : header_info.headers)
         {
-            for (const string& header_file : path.files)
+            time_t file_timestamp = get_timestamp(header_file);
+            if (file_timestamp > output_timestamp)
             {
-                time_t file_timestamp = get_timestamp(header_file);
-                if (file_timestamp > output_timestamp)
-                {
-                    update_needed = true;
-                    break;
-                }
+                update_needed = true;
+                break;
             }
         }
     }
@@ -111,35 +81,41 @@ int main(int argc, char** argv)
         size_t total_count = 0;
         stopwatch timer;
         timer.start();
-        for (const ResourceInfo& path : include_paths)
+
+        for (const string& header_file : header_info.headers)
         {
-            for (const string& header_file : path.files)
+            string header_data = read_file_to_string(header_file);
+            string base_path;
+            for (const string& p : header_info.search_paths)
             {
-                string header_data = read_file_to_string(header_file);
-                string base_path = header_file.substr(path.search_path.size() + 1);
-                header_data = rewrite_header(header_data, base_path);
-                // header_data = uncomment(header_data);
-                total_size += header_data.size();
-                total_count++;
-
-                // data layout is triplet of strings containing:
-                // 1) search path
-                // 2) header path within search path
-                // 3) header data
-                // all strings are null terminated and the length includes the null
-                // The + 1 below is to account for the null terminator
-                dump(out, path.search_path.c_str(), path.search_path.size() + 1);
-                offset_size_list.push_back({offset, path.search_path.size() + 1});
-                offset += path.search_path.size() + 1;
-
-                dump(out, header_file.c_str(), header_file.size() + 1);
-                offset_size_list.push_back({offset, header_file.size() + 1});
-                offset += header_file.size() + 1;
-
-                dump(out, header_data.c_str(), header_data.size() + 1);
-                offset_size_list.push_back({offset, header_data.size() + 1});
-                offset += header_data.size() + 1;
+                if (starts_with(header_file, p))
+                {
+                    base_path = p;
+                    break;
+                }
             }
+            header_data = rewrite_header(header_data, base_path);
+            // header_data = uncomment(header_data);
+            total_size += header_data.size();
+            total_count++;
+
+            // data layout is triplet of strings containing:
+            // 1) search path
+            // 2) header path within search path
+            // 3) header data
+            // all strings are null terminated and the length includes the null
+            // The + 1 below is to account for the null terminator
+            dump(out, base_path.c_str(), base_path.size() + 1);
+            offset_size_list.push_back({offset, base_path.size() + 1});
+            offset += base_path.size() + 1;
+
+            dump(out, header_file.c_str(), header_file.size() + 1);
+            offset_size_list.push_back({offset, header_file.size() + 1});
+            offset += header_file.size() + 1;
+
+            dump(out, header_data.c_str(), header_data.size() + 1);
+            offset_size_list.push_back({offset, header_data.size() + 1});
+            offset += header_data.size() + 1;
         }
         timer.stop();
         cout << "collection time " << timer.get_milliseconds() << "ms\n";

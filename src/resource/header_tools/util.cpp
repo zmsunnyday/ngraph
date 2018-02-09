@@ -253,3 +253,8 @@ time_t get_timestamp(const std::string& filename)
     }
     return rc;
 }
+
+bool starts_with(const std::string& s1, const std::string& s2)
+{
+    return s1.compare(0, s2.size(), s2) == 0;
+}

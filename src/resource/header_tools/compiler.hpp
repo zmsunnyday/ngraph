@@ -16,11 +16,15 @@
 
 #include <clang/Frontend/CompilerInstance.h>
 #include <memory>
+#include <string>
+#include <vector>
+
+#include "collect_headers.hpp"
 
 class Compiler
 {
 public:
-    void compile(const std::string& source);
+    HeaderInfo collect_headers(const std::string& source);
     void configure_search_path();
 
 private:
@@ -28,4 +32,5 @@ private:
     bool is_version_number(const std::string& path);
 
     std::unique_ptr<clang::CompilerInstance> m_compiler;
+    std::vector<std::string> m_search_path_list;
 };

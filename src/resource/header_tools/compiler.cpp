@@ -121,7 +121,7 @@ public:
     unordered_set<string> files_encountered;
 };
 
-void Compiler::compile(const string& source)
+HeaderInfo Compiler::collect_headers(const string& source)
 {
     InitializeNativeTarget();
     LLVMInitializeNativeAsmPrinter();
@@ -144,14 +144,7 @@ void Compiler::compile(const string& source)
     // Create and initialize CompilerInstance
     m_compiler = std::unique_ptr<CompilerInstance>(new CompilerInstance());
     DiagnosticConsumer* diag_consumer;
-    // if (m_enable_diag_output)
-    // {
-    // diag_consumer = new TextDiagnosticPrinter(errs(), &*diag_options);
-    // }
-    // else
-    // {
     diag_consumer = new IgnoringDiagConsumer();
-    // }
     m_compiler->createDiagnostics(diag_consumer);
 
     // Initialize CompilerInvocation
@@ -214,18 +207,18 @@ void Compiler::compile(const string& source)
     m_compiler_action.reset(action);
     if (m_compiler->ExecuteAction(*m_compiler_action) == true)
     {
-        // rc = m_compiler_action->takeModule();
     }
-
-    for (const string& file : action->files_encountered)
-    {
-        cout << file << endl;
-    }
-    cout << "total header count " << action->files_encountered.size() << endl;
 
     buffer.release();
 
     preprocessor_options.RemappedFileBuffers.pop_back();
+
+    HeaderInfo rc;
+    rc.headers.insert(
+        rc.headers.begin(), action->files_encountered.begin(), action->files_encountered.end());
+    rc.search_paths = m_search_path_list;
+
+    return rc;
 }
 
 void Compiler::configure_search_path()
@@ -277,6 +270,7 @@ void Compiler::add_header_search_path(const string& path)
 {
     HeaderSearchOptions& hso = m_compiler->getInvocation().getHeaderSearchOpts();
     hso.AddPath(path, clang::frontend::System, false, false);
+    m_search_path_list.push_back(path);
 }
 
 bool Compiler::is_version_number(const string& path)

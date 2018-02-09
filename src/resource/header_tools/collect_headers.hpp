@@ -17,24 +17,11 @@
 #include <string>
 #include <vector>
 
-class ResourceInfo
+class HeaderInfo
 {
 public:
-    ResourceInfo(const std::string& source,
-                 const std::vector<std::string>& _subdirs,
-                 bool recursive = false)
-        : search_path(source)
-        , subdirs(_subdirs)
-        , is_recursive(recursive)
-
-    {
-    }
-
-    const std::string search_path;
-    const std::vector<std::string> subdirs;
-    const bool is_recursive;
-
-    std::vector<std::string> files;
+    std::vector<std::string> headers;
+    std::vector<std::string> search_paths;
 };
 
-std::vector<ResourceInfo> collect_headers();
+HeaderInfo collect_headers();
