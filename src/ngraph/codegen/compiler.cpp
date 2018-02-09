@@ -121,7 +121,7 @@ static std::string GetExecutablePath(const char* Argv0)
 
 codegen::StaticCompiler::StaticCompiler()
     : m_precompiled_header_valid(false)
-    , m_debuginfo_enabled(false)
+    , m_debuginfo_enabled(true)
     , m_enable_diag_output((std::getenv("NGRAPH_COMPILER_DIAG_ENABLE") != nullptr))
     , m_source_name("code.cpp")
 {

@@ -33,6 +33,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             # Uncomment below with any in-flight MKL-DNN patches
             # PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/third-party/patches/mkldnn-cmake-openmp.patch
             CMAKE_ARGS
+                -DCMAKE_BUILD_TYPEC=Debug
                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_INSTALL_PREFIX=${MKLDNN_INSTALL_DIR}
@@ -46,6 +47,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             # Uncomment below with any in-flight MKL-DNN patches
             # PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/third-party/patches/mkldnn-cmake-openmp.patch
             CMAKE_ARGS
+                -DCMAKE_BUILD_TYPEC=Debug
                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_INSTALL_PREFIX=${MKLDNN_INSTALL_DIR}

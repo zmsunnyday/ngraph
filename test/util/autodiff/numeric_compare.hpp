@@ -15,6 +15,7 @@
 #include "util/all_close.hpp"
 #include "util/autodiff/backprop_derivative.hpp"
 #include "util/autodiff/numeric_derivative.hpp"
+#include "util/test_tools.hpp"
 
 template <typename T>
 bool autodiff_numeric_compare(const std::shared_ptr<ngraph::runtime::Manager>& manager,
@@ -22,17 +23,35 @@ bool autodiff_numeric_compare(const std::shared_ptr<ngraph::runtime::Manager>& m
                               std::function<std::shared_ptr<ngraph::Function>()> make_graph,
                               const std::vector<std::shared_ptr<ngraph::runtime::TensorView>>& args,
                               T rtol,
-                              T atol)
-{
+                              T atol) {
     T delta = static_cast<T>(0.001);
     auto f = make_graph();
     auto results_num = ngraph::autodiff::numeric_derivative<T>(
-        manager, backend, f, args, delta, f->get_parameters());
+            manager, backend, f, args, delta, f->get_parameters());
 
     auto g = make_graph();
     auto results_sym =
-        ngraph::autodiff::backprop_derivative<T>(manager, backend, g, args, g->get_parameters());
+            ngraph::autodiff::backprop_derivative<T>(manager, backend, g, args, g->get_parameters());
 
+    for (int i = 0; i < results_sym.size(); ++i) {
+
+        {
+            std::cout << "sym: \n";
+            std::vector<float> r = read_vector<float>(results_sym[i]);
+            for (int i = 0; i < r.size(); ++i) {
+                std::cout << r[i] << " ";
+            }
+            std::cout << std::endl;
+        }
+        {
+            std::cout << "num: \n";
+            std::vector<float> r = read_vector<float>(results_num[i]);
+            for (int i = 0; i < r.size(); ++i) {
+                std::cout << r[i] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
     return ngraph::test::all_close(results_num, results_sym, rtol, atol);
 }
 
