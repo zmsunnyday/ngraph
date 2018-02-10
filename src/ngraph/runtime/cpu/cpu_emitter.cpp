@@ -1962,12 +1962,12 @@ void runtime::cpu::CPU_Emitter::EmitConvolution(codegen::CodeWriter& writer,
                << join(convolution->get_window_movement_strides()) << "}, {"
                << join(convolution->get_padding_below()) << "}, {"
                << join(convolution->get_padding_above()) << "}, padding_kind::zero}, cpu_engine);";
-        writer << "auto src_format = fwd_pd.src_primitive_desc().desc().data.format;";
-        writer << "auto wei_format = fwd_pd.weights_primitive_desc().desc().data.format;";
-        writer << "auto dst_format = fwd_pd.dst_primitive_desc().desc().data.format;";
-        writer << "std::cout << \"src format \" << src_format << std::endl;";
-        writer << "std::cout << \"wei format \" << wei_format << std::endl;";
-        writer << "std::cout << \"dst format \" << dst_format << std::endl;";
+//        writer << "auto src_format = fwd_pd.src_primitive_desc().desc().data.format;";
+//        writer << "auto wei_format = fwd_pd.weights_primitive_desc().desc().data.format;";
+//        writer << "auto dst_format = fwd_pd.dst_primitive_desc().desc().data.format;";
+//        writer << "std::cout << \"src format \" << src_format << std::endl;";
+//        writer << "std::cout << \"wei format \" << wei_format << std::endl;";
+//        writer << "std::cout << \"dst format \" << dst_format << std::endl;";
         writer.indent--;
         writer << "}\n";
     }
@@ -2093,6 +2093,7 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
         writer << "{\n";
         writer.indent++;
         writer << "// branch 0 \n";
+        writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
         writer << CreateMKLDNNMemoryDesc("data_desc", join(arg0_shape), et, "nchw")
                << CreateMKLDNNMemory("data", "data_desc", args[0].get_name())
                << CreateMKLDNNMemoryDesc("delta_desc", join(arg1_shape), et, "nchw")
@@ -2200,6 +2201,7 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
         writer << "{\n";
         writer.indent++;
         writer << "// branch 0 \n";
+        writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
         writer << CreateMKLDNNMemoryDesc("weight_desc", join(arg0_shape), et, "oihw")
                << CreateMKLDNNMemory("weight", "weight_desc", args[0].get_name())
                << CreateMKLDNNMemoryDesc("delta_desc", join(arg1_shape), et, "nchw")
