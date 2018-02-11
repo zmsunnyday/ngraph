@@ -2070,7 +2070,7 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropFilters(
         }
         // mkldnn scoped block
         {
-            mkldnn::ScopedEmitterUtil<> mkldnn_util(writer);
+            mkldnn::ScopedEmitterUtil<mkldnn::CatchExceptionEmitter> mkldnn_util(writer);
             mkldnn_util.emit_memory_desc("data_desc", join(arg0_shape), elem_type, "nchw");
             mkldnn_util.emit_memory_desc("delta_desc", join(arg1_shape), elem_type, "nchw");
             mkldnn_util.emit_memory_desc("result_desc", join(result_shape), elem_type, "oihw");
@@ -2150,7 +2150,7 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
         }
         // mkldnn scoped block
         {
-            mkldnn::ScopedEmitterUtil<> mkldnn_util(writer);
+            mkldnn::ScopedEmitterUtil<mkldnn::CatchExceptionEmitter> mkldnn_util(writer);
             mkldnn_util.emit_memory_desc("weight_desc", join(arg0_shape), elem_type, "oihw");
             mkldnn_util.emit_memory_desc("delta_desc", join(arg1_shape), elem_type, "nchw");
             mkldnn_util.emit_memory_desc("result_desc", join(result_shape), elem_type, "nchw");
@@ -2169,7 +2169,7 @@ void runtime::cpu::CPU_Emitter::EmitConvolutionBackpropData(
                           "algorithm::convolution_direct, result_desc, weight_desc, delta_desc, "
                           "strides, dilates, padding_l, padding_r, padding_kind::zero}, cpu_engine);\n"
                       "convolution_backward_data::primitive_desc bwd_data_pd(bwd_data_desc, "
-                      "cpu_engine, fwd_pd);\n"
+                          "cpu_engine, fwd_pd);\n"
                       "convolution_backward_data bwd_data(bwd_data_pd, delta, weight, result);\n"
                       "stream s = stream(stream::kind::eager);\n"
                       "s.submit({bwd_data}).wait();\n";
