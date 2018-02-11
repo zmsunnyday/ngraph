@@ -21,57 +21,91 @@
 
 namespace ngraph
 {
-namespace runtime
-{
-namespace cpu
-{
-namespace mkldnn
-{
-inline void emit_memory_desc(codegen::CodeWriter& writer,
-                             const std::string& var,
-                             const std::string& shape,
-                             const std::string& type,
-                             const std::string& layout)
-{
+    namespace runtime
+    {
+        namespace cpu
+        {
+            namespace mkldnn
+            {
+                struct CatchException
+                {
+                    static void block_begin(codegen::CodeWriter& writer)
+                    {
+                        writer << "try {\n";
+                        writer.indent++;
+                    }
 
-    writer << "memory::desc " + var + " = memory::desc({" + shape + "}, " + type + ", "
-        "memory::format::" + layout + ");\n";
-};
+                    static void block_end(codegen::CodeWriter& writer)
+                    {
+                        writer.indent--;
+                        writer << "} catch (const mkldnn::error& e) {\n";
+                        writer.indent++;
+                        writer
+                            << "std::cerr << \"MKLDNN ERROR (\" << e.status << \"): \" << e.message << std::endl; \n"
+                                "throw; \n";
+                        writer.indent--;
+                        writer << "}\n";
+                    }
+                };
 
-inline void emit_memory(codegen::CodeWriter& writer,
-                        const std::string& var,
-                        const std::string& desc,
-                        const std::string& data)
-{
+                template<typename ExceptionPolicy = CatchException>
+                class ScopedEmitterUtil
+                {
+                public:
+                    // disable copy
+                    ScopedEmitterUtil(ScopedEmitterUtil const&) = delete;
+                    ScopedEmitterUtil& operator=(ScopedEmitterUtil const&) = delete;
+                    // avoid rvalue (temporary) parameter
+                    ScopedEmitterUtil(const codegen::CodeWriter&&) = delete;
 
-    writer << "memory " + var + " = memory({" + desc + ", cpu_engine}, " + data + ");\n";
-};
+                    ScopedEmitterUtil(codegen::CodeWriter& writer)
+                        : m_writer(writer)
+                    {
+                        m_writer << "{\n";
+                        m_writer.indent++;
+                        ExceptionPolicy::block_begin(m_writer);
+                        m_writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
+                    }
+                    ~ScopedEmitterUtil()
+                    {
+                        ExceptionPolicy::block_end(m_writer);
+                        m_writer.indent--;
+                        m_writer << "}\n";
+                    }
 
-inline void emit_memory_dims(codegen::CodeWriter& writer,
-                             const std::string& var,
-                             const std::string& dims)
-{
+                    void emit_memory_desc(const std::string& var,
+                                          const std::string& shape,
+                                          const std::string& type,
+                                          const std::string& layout)
+                    {
 
-    writer << "memory::dims " << var << "{" << dims << "};\n";
-};
+                        m_writer
+                            << "memory::desc " + var + " = memory::desc({" + shape + "}, " + type
+                                + ", "
+                                    "memory::format::" + layout + ");\n";
+                    };
 
-inline void emit_exception_block_begin(codegen::CodeWriter& writer)
-{
-    writer << "try {\n";
-    writer.indent++;
-}
+                    void emit_memory(const std::string& var,
+                                     const std::string& desc,
+                                     const std::string& data)
+                    {
 
-inline void emit_exception_block_end(codegen::CodeWriter& writer)
-{
-    writer.indent--;
-    writer << "} catch (const mkldnn::error& e) {\n";
-    writer.indent++;
-    writer << "std::cerr << \"MKLDNN ERROR (\" << e.status << \"): \" << e.message << std::endl; \n"
-        "throw; \n";
-    writer.indent--;
-    writer << "}\n";
-}
-}
-}
-}
+                        m_writer
+                            << "memory " + var + " = memory({" + desc + ", cpu_engine}, " + data
+                                + ");\n";
+                    };
+
+                    void emit_memory_dims(const std::string& var,
+                                          const std::string& dims)
+                    {
+
+                        m_writer << "memory::dims " << var << "{" << dims << "};\n";
+                    };
+
+                private:
+                    codegen::CodeWriter& m_writer;
+                };
+            }
+        }
+    }
 }
