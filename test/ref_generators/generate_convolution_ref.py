@@ -213,9 +213,9 @@ def emit_test(t,f):
 TEST (${BACKEND_NAME}, %s)
 {
     Shape shape_a{%s};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{%s};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{%s};
     auto make_graph = [A, B] {
         return make_shared<Function>(make_shared<op::Convolution>(A, B,

@@ -207,24 +207,24 @@ TEST(util, traverse_functions)
 {
     // First create "f(A,B,C) = (A+B)*C".
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C}, "f");
 
     // Now make "g(X,Y,Z) = f(X,Y,Z) + f(X,Y,Z)"
-    auto X = make_shared<op::Parameter>(element::f32, shape);
-    auto Y = make_shared<op::Parameter>(element::f32, shape);
-    auto Z = make_shared<op::Parameter>(element::f32, shape);
+    auto X = op::Parameter::create(element::f32, shape);
+    auto Y = op::Parameter::create(element::f32, shape);
+    auto Z = op::Parameter::create(element::f32, shape);
     auto g = make_shared<Function>(make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}) +
                                        make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}),
                                    op::Parameters{X, Y, Z},
                                    "g");
 
     // Now make "h(X,Y,Z) = g(X,Y,Z) + g(X,Y,Z)"
-    auto X1 = make_shared<op::Parameter>(element::f32, shape);
-    auto Y1 = make_shared<op::Parameter>(element::f32, shape);
-    auto Z1 = make_shared<op::Parameter>(element::f32, shape);
+    auto X1 = op::Parameter::create(element::f32, shape);
+    auto Y1 = op::Parameter::create(element::f32, shape);
+    auto Z1 = op::Parameter::create(element::f32, shape);
     auto h = make_shared<Function>(make_shared<op::FunctionCall>(g, Nodes{X1, Y1, Z1}) +
                                        make_shared<op::FunctionCall>(g, Nodes{X1, Y1, Z1}),
                                    op::Parameters{X1, Y1, Z1},
@@ -240,9 +240,9 @@ class CloneTest : public ::testing::Test
 public:
     // (A + B) * C
     Shape shape = Shape{2, 2};
-    std::shared_ptr<op::Parameter> A = make_shared<op::Parameter>(element::f32, shape);
-    std::shared_ptr<op::Parameter> B = make_shared<op::Parameter>(element::f32, shape);
-    std::shared_ptr<op::Parameter> C = make_shared<op::Parameter>(element::f32, shape);
+    std::shared_ptr<op::Parameter> A = op::Parameter::create(element::f32, shape);
+    std::shared_ptr<op::Parameter> B = op::Parameter::create(element::f32, shape);
+    std::shared_ptr<op::Parameter> C = op::Parameter::create(element::f32, shape);
     std::shared_ptr<Node> AplusB = A + B;
     std::shared_ptr<Node> AplusBtimesC = AplusB * C;
 
@@ -302,7 +302,7 @@ TEST_F(CloneTest, clone_nodes_full)
 TEST_F(CloneTest, clone_nodes_partial)
 {
     // map A -> A' prior to clone
-    auto Aprime = make_shared<op::Parameter>(element::f32, shape);
+    auto Aprime = op::Parameter::create(element::f32, shape);
     node_map.add(A, Aprime);
 
     auto cloned_nodes = clone_nodes(nodes, node_map);
@@ -321,9 +321,9 @@ TEST_F(CloneTest, clone_function_full)
 TEST(graph_util, clone_multiple_results)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto A_add_B = make_shared<op::Add>(A, B);
     auto A_add_B_mul_C = make_shared<op::Multiply>(A_add_B, C);
 

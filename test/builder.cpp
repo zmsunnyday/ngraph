@@ -26,7 +26,7 @@ shared_ptr<runtime::TensorView>
     make_reduce_result(function<shared_ptr<Node>(const shared_ptr<Node>&, const AxisSet&)> func)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{2};
     auto f = make_shared<Function>(func(A, {0}), op::Parameters{A});
     auto manager = runtime::Manager::get("INTERPRETER");
@@ -46,7 +46,7 @@ shared_ptr<runtime::TensorView> make_reduce_result_true(
     function<shared_ptr<Node>(const shared_ptr<Node>&, const AxisSet&, bool)> func)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{2};
     auto f = make_shared<Function>(func(A, {0}, true), op::Parameters{A});
     auto manager = runtime::Manager::get("INTERPRETER");
@@ -66,7 +66,7 @@ shared_ptr<runtime::TensorView> make_reduce_result_false(
     function<shared_ptr<Node>(const shared_ptr<Node>&, const AxisSet&, bool)> func)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{2};
     auto f = make_shared<Function>(func(A, {0}, false), op::Parameters{A});
     auto manager = runtime::Manager::get("INTERPRETER");
@@ -117,19 +117,19 @@ TEST(builder, numpy_transpose)
 {
     // 2D Transpose
     Shape shape{2, 4};
-    auto param = make_shared<op::Parameter>(element::f32, shape);
+    auto param = op::Parameter::create(element::f32, shape);
     auto transposed = dynamic_pointer_cast<op::Reshape>(builder::numpy_transpose(param));
     EXPECT_EQ(Shape({4, 2}), transposed->get_output_shape());
 
     // Multidimensional Transpose
     shape = Shape{2, 4, 8};
-    param = make_shared<op::Parameter>(element::f32, shape);
+    param = op::Parameter::create(element::f32, shape);
     transposed = dynamic_pointer_cast<op::Reshape>(builder::numpy_transpose(param));
     EXPECT_EQ(Shape({8, 4, 2}), transposed->get_output_shape());
 
     // Dimshuffle
     shape = Shape{2, 4, 8};
-    param = make_shared<op::Parameter>(element::f32, shape);
+    param = op::Parameter::create(element::f32, shape);
     transposed =
         dynamic_pointer_cast<op::Reshape>(builder::numpy_transpose(param, AxisVector{2, 0, 1}));
     EXPECT_EQ(Shape({8, 2, 4}), transposed->get_output_shape());

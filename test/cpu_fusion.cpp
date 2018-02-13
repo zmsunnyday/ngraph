@@ -48,9 +48,9 @@ TEST(cpu_fusion, gemm_pattern)
     Shape shape_w{2, 4};
     Shape shape_x{4, 1};
     Shape shape_b{1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_w);
-    auto B = make_shared<op::Parameter>(element::f32, shape_x);
-    auto C = make_shared<op::Parameter>(element::f32, shape_b);
+    auto A = op::Parameter::create(element::f32, shape_w);
+    auto B = op::Parameter::create(element::f32, shape_x);
+    auto C = op::Parameter::create(element::f32, shape_b);
 
     auto dot = make_shared<op::Dot>(A, B);
     auto broadcast = make_shared<op::Broadcast>(C, dot->get_shape(), AxisSet{0});
@@ -95,8 +95,8 @@ TEST(cpu_fusion, gemm_cpu)
     Shape shapeA{3, 2};
     Shape shapeB{2, 3};
     Shape shapeC{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shapeA);
-    auto B = make_shared<op::Parameter>(element::f32, shapeB);
+    auto A = op::Parameter::create(element::f32, shapeA);
+    auto B = op::Parameter::create(element::f32, shapeB);
 
     auto reshape_w = make_shared<op::Reshape>(A, AxisVector{1, 0}, Shape{2, 3});
     auto reshape_x = make_shared<op::Reshape>(B, AxisVector{1, 0}, Shape{3, 2});
@@ -135,9 +135,9 @@ TEST(cpu_fusion, cpu_fusion_pass_basic)
     Shape shape_w{2, 4};
     Shape shape_x{4, 1};
     Shape shape_b{1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_w);
-    auto B = make_shared<op::Parameter>(element::f32, shape_x);
-    auto C = make_shared<op::Parameter>(element::f32, shape_b);
+    auto A = op::Parameter::create(element::f32, shape_w);
+    auto B = op::Parameter::create(element::f32, shape_x);
+    auto C = op::Parameter::create(element::f32, shape_b);
 
     auto dot = make_shared<op::Dot>(A, B);
     auto broadcast = make_shared<op::Broadcast>(C, dot->get_shape(), AxisSet{0});

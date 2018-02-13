@@ -36,7 +36,7 @@ std::shared_ptr<Function> autodiff::backprop_function(const std::shared_ptr<Func
 {
     auto Y_out = f->get_output_op(0);
     auto Xs = f->get_parameters();
-    auto C = std::make_shared<op::Parameter>(Y_out->get_element_type(), Y_out->get_shape());
+    auto C = op::Parameter::create(Y_out->get_element_type(), Y_out->get_shape());
     std::vector<std::shared_ptr<Node>> dYdXs(Xs.size());
     transform(Xs.begin(), Xs.end(), dYdXs.begin(), [C, Y_out](const std::shared_ptr<Node>& X) {
         return Y_out->backprop_node(X, C);

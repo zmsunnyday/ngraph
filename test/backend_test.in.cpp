@@ -46,8 +46,8 @@ static const vector<element::Type> s_known_element_types = {element::from<float>
 TEST(${BACKEND_NAME}, aliased_output)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto C = A + B;
     auto D = A * B;
     auto f = make_shared<Function>(Nodes{C, C, D, D, C}, op::Parameters{A, B});
@@ -82,7 +82,7 @@ TEST(${BACKEND_NAME}, aliased_output)
 TEST(${BACKEND_NAME}, parameter_as_output)
 {
     Shape shape{3, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(A, op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -105,8 +105,8 @@ TEST(${BACKEND_NAME}, parameter_as_output)
 TEST(${BACKEND_NAME}, ab)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(A + B, op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -130,9 +130,9 @@ TEST(${BACKEND_NAME}, ab)
 TEST(${BACKEND_NAME}, abc)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -166,9 +166,9 @@ TEST(${BACKEND_NAME}, abc)
 TEST(${BACKEND_NAME}, abc_int64)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::i64, shape);
-    auto B = make_shared<op::Parameter>(element::i64, shape);
-    auto C = make_shared<op::Parameter>(element::i64, shape);
+    auto A = op::Parameter::create(element::i64, shape);
+    auto B = op::Parameter::create(element::i64, shape);
+    auto C = op::Parameter::create(element::i64, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -199,9 +199,9 @@ TEST(${BACKEND_NAME}, abc_int64)
 TEST(${BACKEND_NAME}, multiple_result)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto A_add_B = make_shared<op::Add>(A, B);
     auto A_add_B_mul_C = make_shared<op::Multiply>(A_add_B, C);
 
@@ -231,7 +231,7 @@ TEST(${BACKEND_NAME}, multiple_result)
 TEST(${BACKEND_NAME}, abs)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Abs>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -251,7 +251,7 @@ TEST(${BACKEND_NAME}, abs)
 TEST(${BACKEND_NAME}, ceiling)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Ceiling>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -271,11 +271,11 @@ TEST(${BACKEND_NAME}, ceiling)
 TEST(${BACKEND_NAME}, concat_matrix_colwise)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 3};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{2, 3};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{2, 8};
     auto f =
         make_shared<Function>(make_shared<op::Concat>(Nodes{A, B, C}, 1), op::Parameters{A, B, C});
@@ -302,11 +302,11 @@ TEST(${BACKEND_NAME}, concat_matrix_colwise)
 TEST(${BACKEND_NAME}, concat_matrix_rowwise)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{3, 2};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{8, 2};
     auto f =
         make_shared<Function>(make_shared<op::Concat>(Nodes{A, B, C}, 0), op::Parameters{A, B, C});
@@ -333,11 +333,11 @@ TEST(${BACKEND_NAME}, concat_matrix_rowwise)
 TEST(${BACKEND_NAME}, concat_matrix_int64)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::i64, shape_a);
+    auto A = op::Parameter::create(element::i64, shape_a);
     Shape shape_b{3, 2};
-    auto B = make_shared<op::Parameter>(element::i64, shape_b);
+    auto B = op::Parameter::create(element::i64, shape_b);
     Shape shape_c{3, 2};
-    auto C = make_shared<op::Parameter>(element::i64, shape_c);
+    auto C = op::Parameter::create(element::i64, shape_c);
     Shape shape_r{8, 2};
     auto f =
         make_shared<Function>(make_shared<op::Concat>(Nodes{A, B, C}, 0), op::Parameters{A, B, C});
@@ -364,11 +364,11 @@ TEST(${BACKEND_NAME}, concat_matrix_int64)
 TEST(${BACKEND_NAME}, concat_vector)
 {
     Shape shape_a{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{6};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{2};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{12};
     auto f =
         make_shared<Function>(make_shared<op::Concat>(Nodes{A, B, C}, 0), op::Parameters{A, B, C});
@@ -457,11 +457,11 @@ TEST(${BACKEND_NAME}, concat_5d)
     }
 
     Shape shape_a{2, 3, 4, 3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 3, 3, 3, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{2, 3, 2, 3, 2};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{2, 3, 9, 3, 2};
 
     auto r = make_shared<op::Concat>(Nodes{A, B, C}, 2);
@@ -523,8 +523,8 @@ TEST(${BACKEND_NAME}, divide)
     Shape shape{2, 2};
 
     auto make_external = [&]() {
-        auto A = make_shared<op::Parameter>(element::f32, shape);
-        auto B = make_shared<op::Parameter>(element::f32, shape);
+        auto A = op::Parameter::create(element::f32, shape);
+        auto B = op::Parameter::create(element::f32, shape);
         auto f = make_shared<Function>(make_shared<op::Divide>(A, B), op::Parameters{A, B});
 
         auto external = manager->compile(f);
@@ -552,8 +552,8 @@ TEST(${BACKEND_NAME}, divide_by_zero_float32)
     Shape shape{2, 2};
 
     auto make_external = [&]() {
-        auto A = make_shared<op::Parameter>(element::f32, shape);
-        auto B = make_shared<op::Parameter>(element::f32, shape);
+        auto A = op::Parameter::create(element::f32, shape);
+        auto B = op::Parameter::create(element::f32, shape);
         auto f = make_shared<Function>(make_shared<op::Divide>(A, B), op::Parameters{A, B});
 
         auto external = manager->compile(f);
@@ -585,8 +585,8 @@ TEST(${BACKEND_NAME}, divide_by_zero_int32)
     Shape shape{2, 2};
 
     auto make_external = [&]() {
-        auto A = make_shared<op::Parameter>(element::i32, shape);
-        auto B = make_shared<op::Parameter>(element::i32, shape);
+        auto A = op::Parameter::create(element::i32, shape);
+        auto B = op::Parameter::create(element::i32, shape);
         auto f = make_shared<Function>(make_shared<op::Divide>(A, B), op::Parameters{A, B});
 
         auto external = manager->compile(f);
@@ -608,8 +608,8 @@ TEST(${BACKEND_NAME}, divide_by_zero_int32)
 TEST(${BACKEND_NAME}, equal)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Equal>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -631,7 +631,7 @@ TEST(${BACKEND_NAME}, equal)
 TEST(${BACKEND_NAME}, floor)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Floor>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -651,8 +651,8 @@ TEST(${BACKEND_NAME}, floor)
 TEST(${BACKEND_NAME}, dot_0_0)
 {
     Shape shape{0};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     Shape shape_r{};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -685,8 +685,8 @@ TEST(${BACKEND_NAME}, dot_matrix_2x0_0x2)
     auto backend = manager->allocate_backend();
 
     auto make_external = [&]() {
-        auto A = make_shared<op::Parameter>(element::f32, shape_a);
-        auto B = make_shared<op::Parameter>(element::f32, shape_b);
+        auto A = op::Parameter::create(element::f32, shape_a);
+        auto B = op::Parameter::create(element::f32, shape_b);
         auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
         auto external = manager->compile(f);
@@ -712,9 +712,9 @@ TEST(${BACKEND_NAME}, dot_matrix_2x0_0x2)
 TEST(${BACKEND_NAME}, dot_matrix_0x2_2x0)
 {
     Shape shape_a{0, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 0};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{0, 0};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -737,9 +737,9 @@ TEST(${BACKEND_NAME}, dot_matrix_0x2_2x0)
 TEST(${BACKEND_NAME}, dot_matrix_3x2_2x0)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 0};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{3, 0};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -762,9 +762,9 @@ TEST(${BACKEND_NAME}, dot_matrix_3x2_2x0)
 TEST(${BACKEND_NAME}, dot_scalar_0x2)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{0, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{0, 2};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -787,9 +787,9 @@ TEST(${BACKEND_NAME}, dot_scalar_0x2)
 TEST(${BACKEND_NAME}, dot_2x0_0)
 {
     Shape shape_a{2, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{0};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -815,8 +815,8 @@ TEST(${BACKEND_NAME}, dot_2x0_0)
 TEST(${BACKEND_NAME}, dot1d)
 {
     Shape shape{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     Shape shape_r{};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -839,8 +839,8 @@ TEST(${BACKEND_NAME}, dot1d)
 TEST(${BACKEND_NAME}, dot2d)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     Shape shape_r{2, 2};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -886,8 +886,8 @@ TEST(${BACKEND_NAME}, dot2d)
 TEST(${BACKEND_NAME}, dot3d_3d)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     Shape shape_r{2, 2, 2, 2};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -934,9 +934,9 @@ TEST(${BACKEND_NAME}, dot3d_3d)
 TEST(${BACKEND_NAME}, dot3d_2d)
 {
     Shape shape_a{4, 2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 4};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{4, 2, 4};
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
@@ -964,8 +964,8 @@ TEST(${BACKEND_NAME}, dot_scalar_tensor_arg0)
 {
     Shape shape_a{};
     Shape shape_b{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto A = op::Parameter::create(element::f32, shape_a);
+    auto B = op::Parameter::create(element::f32, shape_b);
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -988,8 +988,8 @@ TEST(${BACKEND_NAME}, dot_scalar_tensor_arg1)
 {
     Shape shape_a{2, 2, 2};
     Shape shape_b{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto A = op::Parameter::create(element::f32, shape_a);
+    auto B = op::Parameter::create(element::f32, shape_b);
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1011,8 +1011,8 @@ TEST(${BACKEND_NAME}, dot_scalar_tensor_arg1)
 TEST(${BACKEND_NAME}, dot_scalar_scalar)
 {
     Shape shape{};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1035,8 +1035,8 @@ TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
     Shape shape_a{4, 4};
     Shape shape_b{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto A = op::Parameter::create(element::f32, shape_a);
+    auto B = op::Parameter::create(element::f32, shape_b);
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
     Shape shape_r{4};
 
@@ -1060,8 +1060,8 @@ TEST(${BACKEND_NAME}, dot_matrix_vector_int64)
 {
     Shape shape_a{4, 4};
     Shape shape_b{4};
-    auto A = make_shared<op::Parameter>(element::i64, shape_a);
-    auto B = make_shared<op::Parameter>(element::i64, shape_b);
+    auto A = op::Parameter::create(element::i64, shape_a);
+    auto B = op::Parameter::create(element::i64, shape_b);
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::Parameters{A, B});
     Shape shape_r{4};
 
@@ -1084,8 +1084,8 @@ TEST(${BACKEND_NAME}, dot_matrix_vector_int64)
 TEST(${BACKEND_NAME}, greater)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Greater>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1107,8 +1107,8 @@ TEST(${BACKEND_NAME}, greater)
 TEST(${BACKEND_NAME}, greatereq)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::GreaterEq>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1130,8 +1130,8 @@ TEST(${BACKEND_NAME}, greatereq)
 TEST(${BACKEND_NAME}, less)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Less>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1153,8 +1153,8 @@ TEST(${BACKEND_NAME}, less)
 TEST(${BACKEND_NAME}, lesseq)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::LessEq>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1176,8 +1176,8 @@ TEST(${BACKEND_NAME}, lesseq)
 TEST(${BACKEND_NAME}, lesseq_bool)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::boolean, shape);
-    auto B = make_shared<op::Parameter>(element::boolean, shape);
+    auto A = op::Parameter::create(element::boolean, shape);
+    auto B = op::Parameter::create(element::boolean, shape);
     auto f = make_shared<Function>(make_shared<op::LessEq>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1202,7 +1202,7 @@ TEST(${BACKEND_NAME}, lesseq_bool)
 TEST(${BACKEND_NAME}, log)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Log>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1228,8 +1228,8 @@ TEST(${BACKEND_NAME}, log)
 TEST(${BACKEND_NAME}, maximum)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Maximum>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1251,8 +1251,8 @@ TEST(${BACKEND_NAME}, maximum)
 TEST(${BACKEND_NAME}, minimum)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Minimum>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1274,7 +1274,7 @@ TEST(${BACKEND_NAME}, minimum)
 TEST(${BACKEND_NAME}, negative)
 {
     Shape shape{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Negative>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1294,8 +1294,8 @@ TEST(${BACKEND_NAME}, negative)
 TEST(${BACKEND_NAME}, notequal)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::NotEqual>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1317,9 +1317,9 @@ TEST(${BACKEND_NAME}, notequal)
 TEST(${BACKEND_NAME}, select)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::boolean, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::boolean, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Select>(A, B, C), op::Parameters{A, B, C});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1343,8 +1343,8 @@ TEST(${BACKEND_NAME}, select)
 TEST(${BACKEND_NAME}, subtract)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1483,15 +1483,15 @@ TEST(${BACKEND_NAME}, function_call)
 {
     // First create "f(A,B,C) = (A+B)*C".
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C});
 
     // Now make "g(X,Y,Z) = f(X,Y,Z) + f(X,Y,Z)"
-    auto X = make_shared<op::Parameter>(element::f32, shape);
-    auto Y = make_shared<op::Parameter>(element::f32, shape);
-    auto Z = make_shared<op::Parameter>(element::f32, shape);
+    auto X = op::Parameter::create(element::f32, shape);
+    auto Y = op::Parameter::create(element::f32, shape);
+    auto Z = op::Parameter::create(element::f32, shape);
     auto g = make_shared<Function>(make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}) +
                                        make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}),
                                    op::Parameters{X, Y, Z});
@@ -1523,7 +1523,7 @@ TEST(${BACKEND_NAME}, function_call)
 TEST(${BACKEND_NAME}, broadcast_scalar_vector)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{4};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
                                    op::Parameters{A});
@@ -1545,7 +1545,7 @@ TEST(${BACKEND_NAME}, broadcast_scalar_vector)
 TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1}),
                                    op::Parameters{A});
@@ -1567,7 +1567,7 @@ TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
 TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1, 2}),
                                    op::Parameters{A});
@@ -1589,7 +1589,7 @@ TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
 TEST(${BACKEND_NAME}, broadcast_trivial)
 {
     Shape shape{2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f =
         make_shared<Function>(make_shared<op::Broadcast>(A, shape, AxisSet{}), op::Parameters{A});
 
@@ -1610,7 +1610,7 @@ TEST(${BACKEND_NAME}, broadcast_trivial)
 TEST(${BACKEND_NAME}, broadcast_vector_colwise)
 {
     Shape shape_a{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 4};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{1}),
                                    op::Parameters{A});
@@ -1632,7 +1632,7 @@ TEST(${BACKEND_NAME}, broadcast_vector_colwise)
 TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
 {
     Shape shape_a{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 4};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
                                    op::Parameters{A});
@@ -1654,7 +1654,7 @@ TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
 TEST(${BACKEND_NAME}, broadcast_vector_rowwise_int64)
 {
     Shape shape_a{4};
-    auto A = make_shared<op::Parameter>(element::i64, shape_a);
+    auto A = op::Parameter::create(element::i64, shape_a);
     Shape shape_r{3, 4};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
                                    op::Parameters{A});
@@ -1676,7 +1676,7 @@ TEST(${BACKEND_NAME}, broadcast_vector_rowwise_int64)
 TEST(${BACKEND_NAME}, broadcast_matrix_0)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
                                    op::Parameters{A});
@@ -1698,7 +1698,7 @@ TEST(${BACKEND_NAME}, broadcast_matrix_0)
 TEST(${BACKEND_NAME}, broadcast_matrix_1)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{1}),
                                    op::Parameters{A});
@@ -1720,7 +1720,7 @@ TEST(${BACKEND_NAME}, broadcast_matrix_1)
 TEST(${BACKEND_NAME}, broadcast_matrix_2)
 {
     Shape shape_a{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{2}),
                                    op::Parameters{A});
@@ -1742,7 +1742,7 @@ TEST(${BACKEND_NAME}, broadcast_matrix_2)
 TEST(${BACKEND_NAME}, convert_int32_float32)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::i32, shape);
+    auto A = op::Parameter::create(element::i32, shape);
     auto f = make_shared<Function>(make_shared<op::Convert>(A, element::f32), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -1762,7 +1762,7 @@ TEST(${BACKEND_NAME}, convert_int32_float32)
 TEST(${BACKEND_NAME}, convert_int32_bool)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::i32, shape);
+    auto A = op::Parameter::create(element::i32, shape);
     auto f =
         make_shared<Function>(make_shared<op::Convert>(A, element::boolean), op::Parameters{A});
 
@@ -1783,7 +1783,7 @@ TEST(${BACKEND_NAME}, convert_int32_bool)
 TEST(${BACKEND_NAME}, convert_float32_bool)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f =
         make_shared<Function>(make_shared<op::Convert>(A, element::boolean), op::Parameters{A});
 
@@ -1805,14 +1805,14 @@ TEST(${BACKEND_NAME}, convert_float32_bool)
 TEST(${BACKEND_NAME}, reduce_trivial)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape{2, 2};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{}),
                                    op::Parameters{g_A, g_B});
 
@@ -1835,14 +1835,14 @@ TEST(${BACKEND_NAME}, reduce_trivial)
 TEST(${BACKEND_NAME}, reduce_to_scalar)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape{2, 2};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{0, 1}),
                                    op::Parameters{g_A, g_B});
 
@@ -1870,15 +1870,15 @@ TEST(${BACKEND_NAME}, reduce_to_scalar)
 TEST(${BACKEND_NAME}, reduce_matrix_columns)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
 
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{3, 2};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{2};
 
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{0}),
@@ -1908,15 +1908,15 @@ TEST(${BACKEND_NAME}, reduce_matrix_columns)
 TEST(${BACKEND_NAME}, reduce_matrix_rows)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
 
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{3, 2};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{3};
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{1}),
                                    op::Parameters{g_A, g_B});
@@ -1945,14 +1945,14 @@ TEST(${BACKEND_NAME}, reduce_matrix_rows)
 TEST(${BACKEND_NAME}, reduce_matrix_rows_zero)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{3, 0};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{3};
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{1}),
                                    op::Parameters{g_A, g_B});
@@ -1981,14 +1981,14 @@ TEST(${BACKEND_NAME}, reduce_matrix_rows_zero)
 TEST(${BACKEND_NAME}, reduce_matrix_cols_zero)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0, 2};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{2};
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{0}),
                                    op::Parameters{g_A, g_B});
@@ -2017,14 +2017,14 @@ TEST(${BACKEND_NAME}, reduce_matrix_cols_zero)
 TEST(${BACKEND_NAME}, reduce_vector_zero)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{};
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{0}),
                                    op::Parameters{g_A, g_B});
@@ -2053,14 +2053,14 @@ TEST(${BACKEND_NAME}, reduce_vector_zero)
 TEST(${BACKEND_NAME}, reduce_matrix_to_scalar_zero_by_zero)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x+y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Add>(f_A, f_B), op::Parameters{f_A, f_B});
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0, 0};
-    auto g_A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto g_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto g_A = op::Parameter::create(element::f32, shape_a);
+    auto g_B = op::Parameter::create(element::f32, Shape{});
     Shape shape_rt{};
     auto g = make_shared<Function>(make_shared<op::Reduce>(g_A, g_B, f, AxisSet{0, 1}),
                                    op::Parameters{g_A, g_B});
@@ -2089,14 +2089,14 @@ TEST(${BACKEND_NAME}, reduce_matrix_to_scalar_zero_by_zero)
 TEST(${BACKEND_NAME}, reduce_3d_to_vector)
 {
     // First, the reduction function (f(x:float32[],y:float32[]) = x*y).
-    auto f_A = make_shared<op::Parameter>(element::f32, Shape{});
-    auto f_B = make_shared<op::Parameter>(element::f32, Shape{});
+    auto f_A = op::Parameter::create(element::f32, Shape{});
+    auto f_B = op::Parameter::create(element::f32, Shape{});
     auto f = make_shared<Function>(make_shared<op::Multiply>(f_A, f_B), op::Parameters{f_A, f_B});
 
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_rt{3};
     auto g = make_shared<Function>(make_shared<op::Reduce>(A, B, f, AxisSet{0, 1}),
                                    op::Parameters{A, B});
@@ -2124,7 +2124,7 @@ TEST(${BACKEND_NAME}, reduce_3d_to_vector)
 TEST(${BACKEND_NAME}, reshape_t2v_012)
 {
     Shape shape_a{2, 2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{12};
     auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2146,7 +2146,7 @@ TEST(${BACKEND_NAME}, reshape_t2v_012)
 TEST(${BACKEND_NAME}, reshape_t2s_012)
 {
     Shape shape_a{1, 1, 1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{};
     auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2168,7 +2168,7 @@ TEST(${BACKEND_NAME}, reshape_t2s_012)
 TEST(${BACKEND_NAME}, reshape_t2s_120)
 {
     Shape shape_a{1, 1, 1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{};
     auto r = make_shared<op::Reshape>(A, AxisVector{1, 2, 0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2190,7 +2190,7 @@ TEST(${BACKEND_NAME}, reshape_t2s_120)
 TEST(${BACKEND_NAME}, reshape_s2t)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 1, 1, 1, 1};
     auto r = make_shared<op::Reshape>(A, AxisVector{}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2212,7 +2212,7 @@ TEST(${BACKEND_NAME}, reshape_s2t)
 TEST(${BACKEND_NAME}, reshape_v2m_col)
 {
     Shape shape_a{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 1};
     auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2234,7 +2234,7 @@ TEST(${BACKEND_NAME}, reshape_v2m_col)
 TEST(${BACKEND_NAME}, reshape_v2m_row)
 {
     Shape shape_a{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 3};
     auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2256,7 +2256,7 @@ TEST(${BACKEND_NAME}, reshape_v2m_row)
 TEST(${BACKEND_NAME}, reshape_v2t_middle)
 {
     Shape shape_a{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 3, 1};
     auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2278,7 +2278,7 @@ TEST(${BACKEND_NAME}, reshape_v2t_middle)
 TEST(${BACKEND_NAME}, reshape_m2m_same)
 {
     Shape shape_a{3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 3};
     auto r = make_shared<op::Reshape>(A, AxisVector{0, 1}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2300,7 +2300,7 @@ TEST(${BACKEND_NAME}, reshape_m2m_same)
 TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 {
     Shape shape_a{3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 3};
     auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2322,7 +2322,7 @@ TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 3};
     auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2391,7 +2391,7 @@ TEST(${BACKEND_NAME}, reshape_6d)
     }
 
     Shape shape_a{2, 2, 3, 3, 2, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 2, 2, 4, 3, 2};
 
     auto r = make_shared<op::Reshape>(A, AxisVector{2, 4, 0, 5, 3, 1}, shape_r);
@@ -2438,7 +2438,7 @@ TEST(${BACKEND_NAME}, reshape_6d)
 TEST(${BACKEND_NAME}, sin)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sin>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2463,7 +2463,7 @@ TEST(${BACKEND_NAME}, sin)
 TEST(${BACKEND_NAME}, cos)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Cos>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2488,7 +2488,7 @@ TEST(${BACKEND_NAME}, cos)
 TEST(${BACKEND_NAME}, tan)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Tan>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2513,7 +2513,7 @@ TEST(${BACKEND_NAME}, tan)
 TEST(${BACKEND_NAME}, asin)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Asin>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2537,7 +2537,7 @@ TEST(${BACKEND_NAME}, asin)
 TEST(${BACKEND_NAME}, acos)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Acos>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2561,7 +2561,7 @@ TEST(${BACKEND_NAME}, acos)
 TEST(${BACKEND_NAME}, atan)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Atan>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2585,7 +2585,7 @@ TEST(${BACKEND_NAME}, atan)
 TEST(${BACKEND_NAME}, sinh)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sinh>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2609,7 +2609,7 @@ TEST(${BACKEND_NAME}, sinh)
 TEST(${BACKEND_NAME}, cosh)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Cosh>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2633,7 +2633,7 @@ TEST(${BACKEND_NAME}, cosh)
 TEST(${BACKEND_NAME}, tanh)
 {
     Shape shape{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Tanh>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2657,7 +2657,7 @@ TEST(${BACKEND_NAME}, tanh)
 TEST(${BACKEND_NAME}, exp)
 {
     Shape shape{8};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Exp>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2679,7 +2679,7 @@ TEST(${BACKEND_NAME}, exp)
 TEST(${BACKEND_NAME}, slice_scalar)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{};
     auto r = make_shared<op::Slice>(A, Coordinate{}, Coordinate{});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2701,7 +2701,7 @@ TEST(${BACKEND_NAME}, slice_scalar)
 TEST(${BACKEND_NAME}, slice_matrix)
 {
     Shape shape_a{4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3, 2};
     auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2723,7 +2723,7 @@ TEST(${BACKEND_NAME}, slice_matrix)
 TEST(${BACKEND_NAME}, slice_vector)
 {
     Shape shape_a{16};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{12};
     auto r = make_shared<op::Slice>(A, Coordinate{2}, Coordinate{14});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2745,7 +2745,7 @@ TEST(${BACKEND_NAME}, slice_vector)
 TEST(${BACKEND_NAME}, slice_matrix_strided)
 {
     Shape shape_a{4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2};
     auto r = make_shared<op::Slice>(A, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2767,7 +2767,7 @@ TEST(${BACKEND_NAME}, slice_matrix_strided)
 TEST(${BACKEND_NAME}, slice_3d)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto r = make_shared<op::Slice>(A, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2795,7 +2795,7 @@ TEST(${BACKEND_NAME}, slice_3d)
 TEST(${BACKEND_NAME}, slice_3d_strided)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 2});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2823,7 +2823,7 @@ TEST(${BACKEND_NAME}, slice_3d_strided)
 TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
     auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 3});
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -2922,7 +2922,7 @@ TEST(${BACKEND_NAME}, tensor_constant_int64)
 TEST(${BACKEND_NAME}, sum_trivial)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2943,7 +2943,7 @@ TEST(${BACKEND_NAME}, sum_trivial)
 TEST(${BACKEND_NAME}, sum_trivial_5d)
 {
     Shape shape{2, 2, 2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2966,7 +2966,7 @@ TEST(${BACKEND_NAME}, sum_trivial_5d)
 TEST(${BACKEND_NAME}, sum_to_scalar)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -2990,7 +2990,7 @@ TEST(${BACKEND_NAME}, sum_to_scalar)
 TEST(${BACKEND_NAME}, sum_matrix_columns)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{2};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::Parameters{A});
 
@@ -3015,7 +3015,7 @@ TEST(${BACKEND_NAME}, sum_matrix_columns)
 TEST(${BACKEND_NAME}, sum_matrix_rows)
 {
     Shape shape_a{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::Parameters{A});
 
@@ -3040,7 +3040,7 @@ TEST(${BACKEND_NAME}, sum_matrix_rows)
 TEST(${BACKEND_NAME}, sum_matrix_rows_zero)
 {
     Shape shape_a{3, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::Parameters{A});
 
@@ -3067,7 +3067,7 @@ TEST(${BACKEND_NAME}, sum_matrix_cols_zero)
 {
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{2};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::Parameters{A});
 
@@ -3093,7 +3093,7 @@ TEST(${BACKEND_NAME}, sum_matrix_cols_zero)
 TEST(${BACKEND_NAME}, sum_vector_zero)
 {
     Shape shape_a{0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::Parameters{A});
 
@@ -3119,7 +3119,7 @@ TEST(${BACKEND_NAME}, sum_vector_zero)
 TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero)
 {
     Shape shape_a{0, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::Parameters{A});
 
@@ -3145,7 +3145,7 @@ TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero)
 TEST(${BACKEND_NAME}, sum_3d_to_matrix_most_sig)
 {
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3, 3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::Parameters{A});
 
@@ -3176,7 +3176,7 @@ TEST(${BACKEND_NAME}, sum_3d_to_matrix_most_sig)
 TEST(${BACKEND_NAME}, sum_3d_to_matrix_least_sig)
 {
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3, 3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{2}), op::Parameters{A});
 
@@ -3207,7 +3207,7 @@ TEST(${BACKEND_NAME}, sum_3d_to_matrix_least_sig)
 TEST(${BACKEND_NAME}, sum_3d_to_vector)
 {
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::Parameters{A});
 
@@ -3232,7 +3232,7 @@ TEST(${BACKEND_NAME}, sum_3d_to_vector)
 TEST(${BACKEND_NAME}, sum_3d_to_scalar)
 {
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1, 2}), op::Parameters{A});
 
@@ -3256,7 +3256,7 @@ TEST(${BACKEND_NAME}, sum_3d_to_scalar)
 TEST(${BACKEND_NAME}, sum_3d_eliminate_zero_dim)
 {
     Shape shape_a{3, 0, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3, 2};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::Parameters{A});
 
@@ -3280,7 +3280,7 @@ TEST(${BACKEND_NAME}, sum_3d_eliminate_zero_dim)
 TEST(${BACKEND_NAME}, sum_to_scalar_stable)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -3301,7 +3301,7 @@ TEST(${BACKEND_NAME}, sum_to_scalar_stable)
 TEST(${BACKEND_NAME}, sum_3d_to_vector_stable)
 {
     Shape shape_a{3, 3, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_rt{3};
     auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::Parameters{A});
 
@@ -3324,7 +3324,7 @@ TEST(${BACKEND_NAME}, sum_3d_to_vector_stable)
 TEST(${BACKEND_NAME}, sign)
 {
     Shape shape{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sign>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -3344,8 +3344,8 @@ TEST(${BACKEND_NAME}, sign)
 TEST(${BACKEND_NAME}, power)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Power>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -3367,8 +3367,8 @@ TEST(${BACKEND_NAME}, power)
 TEST(${BACKEND_NAME}, constant_equality_bool)
 {
     Shape shape{4};
-    // auto A = make_shared<op::Parameter>(element::boolean, shape);
-    // auto B = make_shared<op::Parameter>(element::boolean, shape);
+    // auto A = op::Parameter::create(element::boolean, shape);
+    // auto B = op::Parameter::create(element::boolean, shape);
     // auto f = make_shared<Function>(make_shared<op::Equal>(A, B), op::Parameters{A, B});
 
     auto A = op::Constant::create(element::boolean, shape, {true, false, true, false});
@@ -3390,7 +3390,7 @@ TEST(${BACKEND_NAME}, constant_equality_bool)
 TEST(${BACKEND_NAME}, sqrt)
 {
     Shape shape{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Sqrt>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -3410,9 +3410,9 @@ TEST(${BACKEND_NAME}, sqrt)
 TEST(${BACKEND_NAME}, replace_slice_scalar)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{};
     auto r = make_shared<op::ReplaceSlice>(A, B, Coordinate{}, Coordinate{});
     auto f = make_shared<Function>(r, op::Parameters{A, B});
@@ -3436,9 +3436,9 @@ TEST(${BACKEND_NAME}, replace_slice_scalar)
 TEST(${BACKEND_NAME}, replace_slice_matrix)
 {
     Shape shape_a{4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{4, 4};
     auto r = make_shared<op::ReplaceSlice>(A, B, Coordinate{0, 1}, Coordinate{3, 3});
     auto f = make_shared<Function>(r, op::Parameters{A, B});
@@ -3463,9 +3463,9 @@ TEST(${BACKEND_NAME}, replace_slice_matrix)
 TEST(${BACKEND_NAME}, replace_slice_vector)
 {
     Shape shape_a{16};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{12};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{16};
     auto r = make_shared<op::ReplaceSlice>(A, B, Coordinate{2}, Coordinate{14});
     auto f = make_shared<Function>(r, op::Parameters{A, B});
@@ -3491,7 +3491,7 @@ TEST(${BACKEND_NAME}, replace_slice_vector)
 TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3};
     auto r = make_shared<op::OneHot>(A, Shape{3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3513,7 +3513,7 @@ TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
 TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3};
     auto r = make_shared<op::OneHot>(A, Shape{3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3535,7 +3535,7 @@ TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
 TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3};
     auto r = make_shared<op::OneHot>(A, Shape{3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3557,7 +3557,7 @@ TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
 TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{3};
     auto r = make_shared<op::OneHot>(A, Shape{3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3589,7 +3589,7 @@ TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
 TEST(${BACKEND_NAME}, one_hot_scalar_oob_in_3)
 {
     Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3};
     auto r = make_shared<op::OneHot>(A, Shape{3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3621,7 +3621,7 @@ TEST(${BACKEND_NAME}, one_hot_scalar_oob_in_3)
 TEST(${BACKEND_NAME}, one_hot_vector_0)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3, 8};
     auto r = make_shared<op::OneHot>(A, Shape{3, 8}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3645,7 +3645,7 @@ TEST(${BACKEND_NAME}, one_hot_vector_0)
 TEST(${BACKEND_NAME}, one_hot_vector_1)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{8, 3};
     auto r = make_shared<op::OneHot>(A, Shape{8, 3}, 1);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3669,7 +3669,7 @@ TEST(${BACKEND_NAME}, one_hot_vector_1)
 TEST(${BACKEND_NAME}, one_hot_vector_1_barely_oob)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{8, 3};
     auto r = make_shared<op::OneHot>(A, Shape{8, 3}, 1);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3701,7 +3701,7 @@ TEST(${BACKEND_NAME}, one_hot_vector_1_barely_oob)
 TEST(${BACKEND_NAME}, one_hot_vector_1_far_oob)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{8, 3};
     auto r = make_shared<op::OneHot>(A, Shape{8, 3}, 1);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3733,7 +3733,7 @@ TEST(${BACKEND_NAME}, one_hot_vector_1_far_oob)
 TEST(${BACKEND_NAME}, one_hot_matrix_0)
 {
     Shape shape_a{3, 3};
-    auto A = make_shared<op::Parameter>(element::i32, shape_a);
+    auto A = op::Parameter::create(element::i32, shape_a);
     Shape shape_r{3, 3, 3};
     auto r = make_shared<op::OneHot>(A, Shape{3, 3, 3}, 0);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3763,7 +3763,7 @@ TEST(${BACKEND_NAME}, one_hot_matrix_0)
 TEST(${BACKEND_NAME}, one_hot_vector_1_fp)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{8, 3};
     auto r = make_shared<op::OneHot>(A, Shape{8, 3}, 1);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3787,7 +3787,7 @@ TEST(${BACKEND_NAME}, one_hot_vector_1_fp)
 TEST(${BACKEND_NAME}, one_hot_vector_1_fp_nonint)
 {
     Shape shape_a{8};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{8, 3};
     auto r = make_shared<op::OneHot>(A, Shape{8, 3}, 1);
     auto f = make_shared<Function>(r, op::Parameters{A});
@@ -3819,9 +3819,9 @@ TEST(${BACKEND_NAME}, one_hot_vector_1_fp_nonint)
 TEST(${BACKEND_NAME}, replace_slice_3d)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{4, 4, 4};
     auto r = make_shared<op::ReplaceSlice>(A, B, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
     auto f = make_shared<Function>(r, op::Parameters{A, B});
@@ -3858,9 +3858,9 @@ TEST(${BACKEND_NAME}, replace_slice_3d)
 TEST(${BACKEND_NAME}, replace_slice_3d_strided)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{4, 4, 4};
     auto r = make_shared<op::ReplaceSlice>(
         A, B, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 2});
@@ -3898,9 +3898,9 @@ TEST(${BACKEND_NAME}, replace_slice_3d_strided)
 TEST(${BACKEND_NAME}, replace_slice_3d_strided_different_strides)
 {
     Shape shape_a{4, 4, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{4, 4, 4};
     auto r = make_shared<op::ReplaceSlice>(
         A, B, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 3});
@@ -3966,9 +3966,9 @@ TEST(DISABLED_${BACKEND_NAME}, dot_3d_multi_axis)
     }
 
     Shape shape_a{2, 3, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 4, 5};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 5};
 
     auto r = make_shared<op::Dot>(A, B, 2);
@@ -4020,9 +4020,9 @@ TEST(DISABLED_${BACKEND_NAME}, dot_3d_one_axis_arbitrary)
                          1, 20, 35, 2, 1, 0, 1, 25, 3, 6, 7, 8};
 
     Shape shape_a{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 4, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 4, 4, 2};
 
     auto r = make_shared<op::Dot>(A, B);
@@ -4091,9 +4091,9 @@ TEST(DISABLED_${BACKEND_NAME}, dot_4d_5d_multi_axis)
     }
 
     Shape shape_a{2, 3, 3, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{3, 4, 2, 3, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 3, 2, 3, 2};
 
     auto r = make_shared<op::Dot>(A, B, 2);
@@ -4155,9 +4155,9 @@ TEST(DISABLED_${BACKEND_NAME}, dot_4d_5d_multi_axis_more)
     }
 
     Shape shape_a{2, 3, 3, 4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 3, 3, 4, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2};
 
     auto r = make_shared<op::Dot>(A, B, 4);
@@ -4220,9 +4220,9 @@ TEST(DISABLED_${BACKEND_NAME}, dot_4d_5d_multi_axis_big_fp64_VERY_SLOW)
     }
 
     Shape shape_a{20, 30, 30, 40};
-    auto A = make_shared<op::Parameter>(element::f64, shape_a);
+    auto A = op::Parameter::create(element::f64, shape_a);
     Shape shape_b{20, 30, 30, 40, 20};
-    auto B = make_shared<op::Parameter>(element::f64, shape_b);
+    auto B = op::Parameter::create(element::f64, shape_b);
     Shape shape_r{20};
 
     auto r = make_shared<op::Dot>(A, B, 4);
@@ -4258,7 +4258,7 @@ TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image)
 {
     Shape shape_a{1, 1, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 12};
     auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape), op::Parameters{A});
 
@@ -4282,7 +4282,7 @@ TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image)
 {
     Shape shape_a{2, 1, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 12};
     auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape), op::Parameters{A});
 
@@ -4310,7 +4310,7 @@ TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image)
 {
     Shape shape_a{2, 2, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 12};
     auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape), op::Parameters{A});
 
@@ -4343,7 +4343,7 @@ TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image)
 {
     Shape shape_a{2, 2, 5, 5};
     Shape window_shape{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 4, 3};
     auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape), op::Parameters{A});
 
@@ -4412,7 +4412,7 @@ TEST(${BACKEND_NAME}, max_pool_2d_1channel_1image_padded)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{1, 0};
     Shape padding_above{1, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 6, 5};
     auto f = make_shared<Function>(
         make_shared<op::MaxPool>(
@@ -4460,7 +4460,7 @@ TEST(${BACKEND_NAME}, max_pool_2d_1channel_1image_padded_negative_values)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{0, 1};
     Shape padding_above{0, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 1, 15};
     auto f = make_shared<Function>(
         make_shared<op::MaxPool>(
@@ -4491,7 +4491,7 @@ TEST(${BACKEND_NAME}, max_pool_2d_1channel_1image_strided)
     Shape shape_a{1, 1, 8, 8};
     Shape window_shape{2, 3};
     auto window_movement_strides = Strides{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 3, 3};
     auto f = make_shared<Function>(
         make_shared<op::MaxPool>(A, window_shape, window_movement_strides), op::Parameters{A});
@@ -4523,7 +4523,7 @@ TEST(${BACKEND_NAME}, max_pool_2d_1channel_1image_strided)
 TEST(${BACKEND_NAME}, not)
 {
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::boolean, shape);
+    auto A = op::Parameter::create(element::boolean, shape);
     auto f = make_shared<Function>(make_shared<op::Not>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4543,7 +4543,7 @@ TEST(${BACKEND_NAME}, not)
 TEST(${BACKEND_NAME}, reverse_0d)
 {
     Shape shape{};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4563,7 +4563,7 @@ TEST(${BACKEND_NAME}, reverse_0d)
 TEST(${BACKEND_NAME}, reverse_1d_nochange)
 {
     Shape shape{8};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4583,7 +4583,7 @@ TEST(${BACKEND_NAME}, reverse_1d_nochange)
 TEST(${BACKEND_NAME}, reverse_1d_0)
 {
     Shape shape{8};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4603,7 +4603,7 @@ TEST(${BACKEND_NAME}, reverse_1d_0)
 TEST(${BACKEND_NAME}, reverse_2d_nochange)
 {
     Shape shape{4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4626,7 +4626,7 @@ TEST(${BACKEND_NAME}, reverse_2d_nochange)
 TEST(${BACKEND_NAME}, reverse_2d_0)
 {
     Shape shape{4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4649,7 +4649,7 @@ TEST(${BACKEND_NAME}, reverse_2d_0)
 TEST(${BACKEND_NAME}, reverse_2d_1)
 {
     Shape shape{4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4672,7 +4672,7 @@ TEST(${BACKEND_NAME}, reverse_2d_1)
 TEST(${BACKEND_NAME}, reverse_2d_01)
 {
     Shape shape{4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0, 1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4695,7 +4695,7 @@ TEST(${BACKEND_NAME}, reverse_2d_01)
 TEST(${BACKEND_NAME}, reverse_3d_nochange)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4721,7 +4721,7 @@ TEST(${BACKEND_NAME}, reverse_3d_nochange)
 TEST(${BACKEND_NAME}, reverse_3d_0)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4747,7 +4747,7 @@ TEST(${BACKEND_NAME}, reverse_3d_0)
 TEST(${BACKEND_NAME}, reverse_3d_1)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4773,7 +4773,7 @@ TEST(${BACKEND_NAME}, reverse_3d_1)
 TEST(${BACKEND_NAME}, reverse_3d_2)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{2}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4799,7 +4799,7 @@ TEST(${BACKEND_NAME}, reverse_3d_2)
 TEST(${BACKEND_NAME}, reverse_3d_01)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0, 1}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4825,7 +4825,7 @@ TEST(${BACKEND_NAME}, reverse_3d_01)
 TEST(${BACKEND_NAME}, reverse_3d_02)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0, 2}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4851,7 +4851,7 @@ TEST(${BACKEND_NAME}, reverse_3d_02)
 TEST(${BACKEND_NAME}, reverse_3d_12)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{1, 2}), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -4877,7 +4877,7 @@ TEST(${BACKEND_NAME}, reverse_3d_12)
 TEST(${BACKEND_NAME}, reverse_3d_012)
 {
     Shape shape{2, 4, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
     auto f =
         make_shared<Function>(make_shared<op::Reverse>(A, AxisSet{0, 1, 2}), op::Parameters{A});
 
@@ -4984,9 +4984,9 @@ TEST(${BACKEND_NAME}, abc_tbb)
     }
 
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -5028,15 +5028,15 @@ TEST(${BACKEND_NAME}, abc_tbb)
 TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_1channel_1image)
 {
     Shape shape_ra{};
-    auto RA = make_shared<op::Parameter>(element::f32, shape_ra);
+    auto RA = op::Parameter::create(element::f32, shape_ra);
     Shape shape_rb{};
-    auto RB = make_shared<op::Parameter>(element::f32, shape_rb);
+    auto RB = op::Parameter::create(element::f32, shape_rb);
     auto rf = make_shared<Function>(make_shared<op::Maximum>(RA, RB), op::Parameters{RA, RB});
 
     Shape shape_a{1, 1, 14};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{1, 1, 12};
     Shape window_shape{1, 1, 3};
     auto window_movement_strides = Strides{1, 1, 1};
@@ -5068,15 +5068,15 @@ TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_1channel_1image)
 TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_1channel_2image)
 {
     Shape shape_ra{};
-    auto RA = make_shared<op::Parameter>(element::f32, shape_ra);
+    auto RA = op::Parameter::create(element::f32, shape_ra);
     Shape shape_rb{};
-    auto RB = make_shared<op::Parameter>(element::f32, shape_rb);
+    auto RB = op::Parameter::create(element::f32, shape_rb);
     auto rf = make_shared<Function>(make_shared<op::Maximum>(RA, RB), op::Parameters{RA, RB});
 
     Shape shape_a{2, 1, 14};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 1, 12};
     Shape window_shape{1, 1, 3};
     auto window_movement_strides = Strides{1, 1, 1};
@@ -5112,15 +5112,15 @@ TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_1channel_2image)
 TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_2channel_2image)
 {
     Shape shape_ra{};
-    auto RA = make_shared<op::Parameter>(element::f32, shape_ra);
+    auto RA = op::Parameter::create(element::f32, shape_ra);
     Shape shape_rb{};
-    auto RB = make_shared<op::Parameter>(element::f32, shape_rb);
+    auto RB = op::Parameter::create(element::f32, shape_rb);
     auto rf = make_shared<Function>(make_shared<op::Maximum>(RA, RB), op::Parameters{RA, RB});
 
     Shape shape_a{2, 2, 14};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 2, 12};
     Shape window_shape{1, 1, 3};
     auto window_movement_strides = Strides{1, 1, 1};
@@ -5161,15 +5161,15 @@ TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_1d_2channel_2image)
 TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_2d_2channel_2image)
 {
     Shape shape_ra{};
-    auto RA = make_shared<op::Parameter>(element::f32, shape_ra);
+    auto RA = op::Parameter::create(element::f32, shape_ra);
     Shape shape_rb{};
-    auto RB = make_shared<op::Parameter>(element::f32, shape_rb);
+    auto RB = op::Parameter::create(element::f32, shape_rb);
     auto rf = make_shared<Function>(make_shared<op::Maximum>(RA, RB), op::Parameters{RA, RB});
 
     Shape shape_a{2, 2, 5, 5};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{2, 2, 4, 3};
     Shape window_shape{1, 1, 2, 3};
     auto window_movement_strides = Strides{1, 1, 1, 1};
@@ -5243,15 +5243,15 @@ TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_2d_2channel_2image)
 TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_2d_1channel_1image_strided)
 {
     Shape shape_ra{};
-    auto RA = make_shared<op::Parameter>(element::f32, shape_ra);
+    auto RA = op::Parameter::create(element::f32, shape_ra);
     Shape shape_rb{};
-    auto RB = make_shared<op::Parameter>(element::f32, shape_rb);
+    auto RB = op::Parameter::create(element::f32, shape_rb);
     auto rf = make_shared<Function>(make_shared<op::Maximum>(RA, RB), op::Parameters{RA, RB});
 
     Shape shape_a{1, 1, 8, 8};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{1, 1, 3, 3};
     Shape window_shape{1, 1, 2, 3};
     auto window_movement_strides = Strides{1, 1, 3, 2};
@@ -5294,25 +5294,25 @@ TEST(${BACKEND_NAME}, reduce_window_emulating_max_pool_2d_1channel_1image_stride
 TEST(${BACKEND_NAME}, select_and_scatter_with_overlap)
 {
     Shape shape_sel_a{};
-    auto SEL_A = make_shared<op::Parameter>(element::f32, shape_sel_a);
+    auto SEL_A = op::Parameter::create(element::f32, shape_sel_a);
     Shape shape_sel_b{};
-    auto SEL_B = make_shared<op::Parameter>(element::f32, shape_sel_b);
+    auto SEL_B = op::Parameter::create(element::f32, shape_sel_b);
     auto sel_f =
         make_shared<Function>(make_shared<op::Greater>(SEL_A, SEL_B), op::Parameters{SEL_A, SEL_B});
 
     Shape shape_scatter_a{};
-    auto SCATTER_A = make_shared<op::Parameter>(element::f32, shape_scatter_a);
+    auto SCATTER_A = op::Parameter::create(element::f32, shape_scatter_a);
     Shape shape_scatter_b{};
-    auto SCATTER_B = make_shared<op::Parameter>(element::f32, shape_scatter_b);
+    auto SCATTER_B = op::Parameter::create(element::f32, shape_scatter_b);
     auto scatter_f =
         make_shared<Function>(SCATTER_A + SCATTER_B, op::Parameters{SCATTER_A, SCATTER_B});
 
     Shape shape_a{4, 5};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{4, 5};
     Shape window_shape{2, 3};
     auto window_strides = Strides{2, 2};
@@ -5350,25 +5350,25 @@ TEST(${BACKEND_NAME}, select_and_scatter_with_overlap)
 TEST(${BACKEND_NAME}, select_and_scatter_without_overlap)
 {
     Shape shape_sel_a{};
-    auto SEL_A = make_shared<op::Parameter>(element::f32, shape_sel_a);
+    auto SEL_A = op::Parameter::create(element::f32, shape_sel_a);
     Shape shape_sel_b{};
-    auto SEL_B = make_shared<op::Parameter>(element::f32, shape_sel_b);
+    auto SEL_B = op::Parameter::create(element::f32, shape_sel_b);
     auto sel_f =
         make_shared<Function>(make_shared<op::Greater>(SEL_A, SEL_B), op::Parameters{SEL_A, SEL_B});
 
     Shape shape_scatter_a{};
-    auto SCATTER_A = make_shared<op::Parameter>(element::f32, shape_scatter_a);
+    auto SCATTER_A = op::Parameter::create(element::f32, shape_scatter_a);
     Shape shape_scatter_b{};
-    auto SCATTER_B = make_shared<op::Parameter>(element::f32, shape_scatter_b);
+    auto SCATTER_B = op::Parameter::create(element::f32, shape_scatter_b);
     auto scatter_f =
         make_shared<Function>(SCATTER_A + SCATTER_B, op::Parameters{SCATTER_A, SCATTER_B});
 
     Shape shape_a{4, 6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{4, 6};
     Shape window_shape{2, 3};
     auto window_strides = Strides{2, 3};
@@ -5406,25 +5406,25 @@ TEST(${BACKEND_NAME}, select_and_scatter_without_overlap)
 TEST(${BACKEND_NAME}, select_and_scatter_3d_without_overlap)
 {
     Shape shape_sel_a{};
-    auto SEL_A = make_shared<op::Parameter>(element::f32, shape_sel_a);
+    auto SEL_A = op::Parameter::create(element::f32, shape_sel_a);
     Shape shape_sel_b{};
-    auto SEL_B = make_shared<op::Parameter>(element::f32, shape_sel_b);
+    auto SEL_B = op::Parameter::create(element::f32, shape_sel_b);
     auto sel_f =
         make_shared<Function>(make_shared<op::Greater>(SEL_A, SEL_B), op::Parameters{SEL_A, SEL_B});
 
     Shape shape_scatter_a{};
-    auto SCATTER_A = make_shared<op::Parameter>(element::f32, shape_scatter_a);
+    auto SCATTER_A = op::Parameter::create(element::f32, shape_scatter_a);
     Shape shape_scatter_b{};
-    auto SCATTER_B = make_shared<op::Parameter>(element::f32, shape_scatter_b);
+    auto SCATTER_B = op::Parameter::create(element::f32, shape_scatter_b);
     auto scatter_f =
         make_shared<Function>(SCATTER_A + SCATTER_B, op::Parameters{SCATTER_A, SCATTER_B});
 
     Shape shape_a{2, 4, 6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{1, 2, 2};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_c{};
-    auto C = make_shared<op::Parameter>(element::f32, shape_c);
+    auto C = op::Parameter::create(element::f32, shape_c);
     Shape shape_r{2, 4, 6};
     Shape window_shape{2, 2, 3};
     auto window_strides = Strides{2, 2, 3};
@@ -5469,7 +5469,7 @@ void make_unary_empty_test(const string& backend_name)
     Nodes result_list;
     for (size_t i = 0; i < s_known_element_types.size(); i++)
     {
-        shared_ptr<op::Parameter> p = make_shared<op::Parameter>(s_known_element_types[i], shape);
+        shared_ptr<op::Parameter> p = op::Parameter::create(s_known_element_types[i], shape);
         params.push_back(p);
         result_list.push_back(make_shared<OP>(p));
     }
@@ -5521,7 +5521,7 @@ void make_binary_empty_test(const string& backend_name, bool is_comparison = fal
     op::Parameters A;
     for (size_t i = 0; i < s_known_element_types.size(); i++)
     {
-        A.push_back(make_shared<op::Parameter>(s_known_element_types[i], shape));
+        A.push_back(op::Parameter::create(s_known_element_types[i], shape));
     }
 
     Nodes result_list;
@@ -5626,7 +5626,7 @@ TEST(${BACKEND_NAME}, zero_sized_negative)
 TEST(${BACKEND_NAME}, zero_sized_not)
 {
     Shape shape{0};
-    auto A = make_shared<op::Parameter>(element::from<char>(), shape);
+    auto A = op::Parameter::create(element::from<char>(), shape);
     auto f = make_shared<Function>(make_shared<op::Not>(A), op::Parameters{A});
 
     auto manager = runtime::Manager::get("${BACKEND_NAME}");
@@ -5769,9 +5769,9 @@ TEST(${BACKEND_NAME}, zero_sized_subtract)
 TEST(${BACKEND_NAME}, convolution_outlining)
 {
     Shape shape_a{1, 2, 2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{2, 2, 1, 1};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{1, 2, 2, 2};
     auto conv1 = make_shared<op::Convolution>(A,
                                               B,
@@ -5811,7 +5811,7 @@ TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image)
 {
     Shape shape_a{1, 1, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 12};
     auto f = make_shared<Function>(make_shared<op::AvgPool>(A, window_shape), op::Parameters{A});
 
@@ -5849,7 +5849,7 @@ TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image)
 {
     Shape shape_a{2, 1, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 12};
     auto f = make_shared<Function>(make_shared<op::AvgPool>(A, window_shape), op::Parameters{A});
 
@@ -5901,7 +5901,7 @@ TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image)
 {
     Shape shape_a{2, 2, 14};
     Shape window_shape{3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 12};
     auto f = make_shared<Function>(make_shared<op::AvgPool>(A, window_shape), op::Parameters{A});
 
@@ -5981,7 +5981,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image)
 {
     Shape shape_a{2, 2, 5, 5};
     Shape window_shape{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 2, 4, 3};
     auto f = make_shared<Function>(make_shared<op::AvgPool>(A, window_shape), op::Parameters{A});
 
@@ -6050,7 +6050,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided)
     Shape shape_a{1, 1, 8, 8};
     Shape window_shape{2, 3};
     auto window_movement_strides = Strides{3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 3, 3};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(A, window_shape, window_movement_strides), op::Parameters{A});
@@ -6091,7 +6091,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_padded)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{1, 1};
     Shape padding_above{1, 1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{1, 1, 4, 4};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6124,7 +6124,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{1, 1};
     Shape padding_above{1, 1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 4, 4};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6164,7 +6164,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_below)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{1, 1};
     Shape padding_above{0, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 3, 3};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6202,7 +6202,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_above)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{0, 0};
     Shape padding_above{1, 1};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 3, 3};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6240,7 +6240,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3)
     auto window_movement_strides = Strides{1, 1};
     Shape padding_below{2, 2};
     Shape padding_above{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 5, 5};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6282,7 +6282,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided)
     auto window_movement_strides = Strides{2, 2};
     Shape padding_below{2, 2};
     Shape padding_above{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 3, 3};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6320,7 +6320,7 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_uneven)
     auto window_movement_strides = Strides{2, 3};
     Shape padding_below{2, 2};
     Shape padding_above{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_r{2, 1, 3, 2};
     auto f = make_shared<Function>(
         make_shared<op::AvgPool>(
@@ -6351,9 +6351,9 @@ TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_uneven)
 TEST(${BACKEND_NAME}, pad_interior_1d)
 {
     Shape shape_a{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{16};
     Shape padding_below{0};
     Shape padding_above{0};
@@ -6384,9 +6384,9 @@ TEST(${BACKEND_NAME}, pad_interior_1d)
 TEST(${BACKEND_NAME}, pad_exterior_1d)
 {
     Shape shape_a{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{15};
     Shape padding_below{4};
     Shape padding_above{5};
@@ -6417,9 +6417,9 @@ TEST(${BACKEND_NAME}, pad_exterior_1d)
 TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
 {
     Shape shape_a{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{25};
     Shape padding_below{4};
     Shape padding_above{5};
@@ -6451,9 +6451,9 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
 TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
 {
     Shape shape_a{2, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{7, 6};
     Shape padding_below{1, 0};
     Shape padding_above{2, 1};
@@ -6489,9 +6489,9 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
 TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
 {
     Shape shape_a{0, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{5, 5};
     Shape padding_below{2, 3};
     Shape padding_above{3, 2};
@@ -6525,9 +6525,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
 TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
 {
     Shape shape_a{0, 3};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{5, 5};
     Shape padding_below{2, 1};
     Shape padding_above{3, 1};
@@ -6561,9 +6561,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
 TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
 {
     Shape shape_a{3, 0};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape shape_r{5, 5};
     Shape padding_below{1, 3};
     Shape padding_above{1, 2};
@@ -6602,9 +6602,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
 TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
 {
     Shape shape_a{2, 0, 3, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto A = op::Parameter::create(element::f32, shape_a);
     Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto B = op::Parameter::create(element::f32, shape_b);
     Shape padding_below{1, 0, 0, 0};
     Shape padding_above{0, 2, 0, 0};
     Shape padding_interior{2, 1, 0, 0};

@@ -31,8 +31,8 @@ using namespace ngraph;
 TEST(INTERPRETER, nan_check_input)
 {
     Shape shape{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Divide>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("INTERPRETER");
@@ -57,8 +57,8 @@ TEST(INTERPRETER, nan_check_input)
 TEST(INTERPRETER, nan_check_output)
 {
     Shape shape{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Divide>(A, B), op::Parameters{A, B});
 
     auto manager = runtime::Manager::get("INTERPRETER");

@@ -46,15 +46,15 @@ TEST(pass_manager, module_add_function)
 {
     // First create "f(A,B,C) = (A+B)*C".
     Shape shape{2, 2};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto A = op::Parameter::create(element::f32, shape);
+    auto B = op::Parameter::create(element::f32, shape);
+    auto C = op::Parameter::create(element::f32, shape);
     auto f = make_shared<Function>((A + B) * C, op::Parameters{A, B, C});
 
     // Now make "g(X,Y,Z) = f(X,Y,Z) + f(X,Y,Z)"
-    auto X = make_shared<op::Parameter>(element::f32, shape);
-    auto Y = make_shared<op::Parameter>(element::f32, shape);
-    auto Z = make_shared<op::Parameter>(element::f32, shape);
+    auto X = op::Parameter::create(element::f32, shape);
+    auto Y = op::Parameter::create(element::f32, shape);
+    auto Z = op::Parameter::create(element::f32, shape);
     auto g = make_shared<Function>(make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}) +
                                        make_shared<op::FunctionCall>(f, Nodes{X, Y, Z}),
                                    op::Parameters{X, Y, Z});

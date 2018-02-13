@@ -29,9 +29,9 @@ TEST(builder_xla, simple)
 {
     Shape shape{2, 2};
 
-    auto pA = make_shared<op::Parameter>(element::f32, shape);
-    auto pB = make_shared<op::Parameter>(element::f32, shape);
-    auto pC = make_shared<op::Parameter>(element::f32, shape);
+    auto pA = op::Parameter::create(element::f32, shape);
+    auto pB = op::Parameter::create(element::f32, shape);
+    auto pC = op::Parameter::create(element::f32, shape);
 
     auto ABC = make_shared<xla::op::Tuple>(Nodes{pA, pB, pC});
 

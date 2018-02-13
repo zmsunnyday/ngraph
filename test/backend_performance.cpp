@@ -195,7 +195,7 @@ TEST(benchmark, concat_32x1x200_axis1_6)
         vector<std::shared_ptr<Node>> params_as_nodes(n_arrays);
         for (size_t i = 0; i < n_arrays; i++)
         {
-            auto param = make_shared<op::Parameter>(element::f32, shape_of_each_array);
+            auto param = op::Parameter::create(element::f32, shape_of_each_array);
             params[i] = param;
             params_as_nodes[i] = param;
         }

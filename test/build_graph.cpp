@@ -26,10 +26,10 @@ using namespace ngraph;
 TEST(build_graph, build_simple)
 {
     // Function with 4 parameters
-    auto arg0 = make_shared<op::Parameter>(element::f32, Shape{7, 3});
-    auto arg1 = make_shared<op::Parameter>(element::f32, Shape{3});
-    auto arg2 = make_shared<op::Parameter>(element::f32, Shape{32, 7});
-    auto arg3 = make_shared<op::Parameter>(element::f32, Shape{32, 7});
+    auto arg0 = op::Parameter::create(element::f32, Shape{7, 3});
+    auto arg1 = op::Parameter::create(element::f32, Shape{3});
+    auto arg2 = op::Parameter::create(element::f32, Shape{32, 7});
+    auto arg3 = op::Parameter::create(element::f32, Shape{32, 7});
     auto broadcast_1 = make_shared<op::Broadcast>(arg3, Shape{10, 32, 7}, AxisSet{0});
     auto b1 = make_shared<op::Broadcast>(arg3, Shape{10, 32, 7}, AxisSet{0});
     auto dot = make_shared<op::Dot>(arg2, arg0);
@@ -44,14 +44,14 @@ TEST(build_graph, build_simple)
 // Check node comparisons
 TEST(build_graph, node_comparison)
 {
-    auto arg0 = make_shared<op::Parameter>(element::f32, Shape{32, 3});
-    auto arg1 = make_shared<op::Parameter>(element::f32, Shape{3});
-    auto arg2 = make_shared<op::Parameter>(element::f32, Shape{32});
+    auto arg0 = op::Parameter::create(element::f32, Shape{32, 3});
+    auto arg1 = op::Parameter::create(element::f32, Shape{3});
+    auto arg2 = op::Parameter::create(element::f32, Shape{32});
 
     auto dot = make_shared<op::Dot>(arg0, arg1);
     auto add = make_shared<op::Add>(dot, arg2);
 
-    auto parg = make_shared<op::Parameter>(element::f32, Shape{});
+    auto parg = op::Parameter::create(element::f32, Shape{});
     auto pattern_dot = make_shared<op::Dot>(parg, parg);
 }
 
@@ -105,10 +105,10 @@ TEST(build_graph, arg_inverse)
 TEST(build_graph, function_undeclared_parameters)
 {
     // Function with 4 parameters
-    auto arg0 = make_shared<op::Parameter>(element::f32, Shape{7, 3});
-    auto arg1 = make_shared<op::Parameter>(element::f32, Shape{3});
-    auto arg2 = make_shared<op::Parameter>(element::f32, Shape{32, 7});
-    auto arg3 = make_shared<op::Parameter>(element::f32, Shape{32, 7});
+    auto arg0 = op::Parameter::create(element::f32, Shape{7, 3});
+    auto arg1 = op::Parameter::create(element::f32, Shape{3});
+    auto arg2 = op::Parameter::create(element::f32, Shape{32, 7});
+    auto arg3 = op::Parameter::create(element::f32, Shape{32, 7});
     auto broadcast_1 = make_shared<op::Broadcast>(arg3, Shape{10, 32, 7}, AxisSet{0});
     auto b1 = make_shared<op::Broadcast>(arg3, Shape{10, 32, 7}, AxisSet{0});
     auto dot = make_shared<op::Dot>(arg2, arg0);

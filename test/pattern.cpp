@@ -41,8 +41,8 @@ std::shared_ptr<Node> create_reduction(const std::shared_ptr<Node>& node,
                                        const AxisSet& reduction_axes)
 {
     const auto& et = node->get_element_type();
-    auto f_A = std::make_shared<op::Parameter>(et, Shape{});
-    auto f_B = std::make_shared<op::Parameter>(et, Shape{});
+    auto f_A = op::Parameter::create(et, Shape{});
+    auto f_B = op::Parameter::create(et, Shape{});
     auto f = std::make_shared<Function>(std::make_shared<T>(f_A, f_B), op::Parameters{f_A, f_B});
 
     auto init = std::make_shared<op::Constant>(et, Shape{}, std::vector<std::string>({init_val}));
@@ -262,9 +262,9 @@ TEST(pattern, graph_rewrite)
     pass_manager.register_pass<TestGraphRewrite>();
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
-        auto c = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
+        auto c = op::Parameter::create(element::i32, shape);
         auto iconst0 = construct_constant_node(0);
         auto graph_a = a + iconst0;
         auto graph_b = b + iconst0;
@@ -281,8 +281,8 @@ TEST(pattern, graph_rewrite)
     }
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
         auto iconst0 = construct_constant_node(0);
         auto sum = (a + iconst0);
         auto graph = b + sum;
@@ -297,8 +297,8 @@ TEST(pattern, graph_rewrite)
     }
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
         auto iconst1 = construct_constant_node(1);
         auto mul = (a * iconst1);
         auto graph = b + mul;
@@ -315,8 +315,8 @@ TEST(pattern, graph_rewrite)
     }
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
         auto iconst1 = construct_constant_node(1);
         auto graph = ((((a * iconst1) * iconst1) * iconst1) * iconst1) + b;
         run_passes(pass_manager, graph, {a, b});
@@ -328,8 +328,8 @@ TEST(pattern, graph_rewrite)
     }
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
         auto iconst0 = construct_constant_node(0);
         auto iconst1 = construct_constant_node(1);
         auto graph = b + (iconst0 + ((a + iconst0) * iconst1));
@@ -342,8 +342,8 @@ TEST(pattern, graph_rewrite)
     }
 
     {
-        auto a = make_shared<op::Parameter>(element::i32, shape);
-        auto b = make_shared<op::Parameter>(element::i32, shape);
+        auto a = op::Parameter::create(element::i32, shape);
+        auto b = op::Parameter::create(element::i32, shape);
         auto iconst1 = construct_constant_node(1);
         auto graph = b + (iconst1 * (iconst1 * (iconst1 * (iconst1 * a))));
         run_passes(pass_manager, graph, {a, b});
@@ -356,7 +356,7 @@ TEST(pattern, graph_rewrite)
 
     //Sum rewrite
     {
-        auto parm = make_shared<op::Parameter>(element::i32, Shape{2, 2});
+        auto parm = op::Parameter::create(element::i32, Shape{2, 2});
         auto axes = AxisSet{0, 1};
         auto sum_graph = xla_sum(parm, axes);
         auto innermost_abs = make_shared<op::Abs>(sum_graph);
@@ -375,7 +375,7 @@ TEST(pattern, graph_rewrite)
 TEST(pattern, matcher)
 {
     Shape shape{};
-    auto a = make_shared<op::Parameter>(element::i32, shape);
+    auto a = op::Parameter::create(element::i32, shape);
     TestMatcher n(nullptr);
     ASSERT_TRUE(n.match(a, a));
 
@@ -395,8 +395,8 @@ TEST(pattern, matcher)
         std::make_shared<pattern::op::Label>(a, [](std::shared_ptr<Node> no) { return false; });
     ASSERT_FALSE(n.match(pattern_false, a));
 
-    auto b = make_shared<op::Parameter>(element::i32, shape);
-    auto d = make_shared<op::Parameter>(element::i32, shape);
+    auto b = op::Parameter::create(element::i32, shape);
+    auto d = op::Parameter::create(element::i32, shape);
     ASSERT_FALSE(n.match(d, b));
 
     ASSERT_FALSE(n.match(abs + b, b + b));
@@ -408,7 +408,7 @@ TEST(pattern, matcher)
     ASSERT_TRUE(n.match(b + pattern, abs + b));
     ASSERT_EQ(n.get_pattern_map()[pattern], abs);
 
-    auto c = make_shared<op::Parameter>(element::i32, shape);
+    auto c = op::Parameter::create(element::i32, shape);
     ASSERT_TRUE(n.match(c * (b + pattern), c * (abs + b)));
     ASSERT_EQ(n.get_pattern_map()[pattern], abs);
 

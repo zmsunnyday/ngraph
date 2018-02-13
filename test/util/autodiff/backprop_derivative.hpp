@@ -137,7 +137,7 @@ namespace ngraph
             Shape y_shape = f->get_output_shape(0);
 
             // adjoint
-            auto c_param = std::make_shared<op::Parameter>(element::from<T>(), y_shape);
+            auto c_param = op::Parameter::create(element::from<T>(), y_shape);
             auto c_arg = backend->make_primary_tensor_view<T>(y_shape);
 
             // df/dX*

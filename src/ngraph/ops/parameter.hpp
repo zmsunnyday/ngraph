@@ -54,6 +54,21 @@ namespace ngraph
             /// \param shape The shape of the parameter.
             Parameter(const ngraph::element::Type& element_type, const Shape& shape);
 
+            /// \brief Wrapper around constructing a shared_ptr of a Parameter
+            ///
+            /// \param type The element type of the tensor.
+            /// \param shape The shape of the tensor.
+            static std::shared_ptr<op::Parameter> create(const element::Type& type, Shape shape);
+
+            /// \brief Wrapper around constructing a shared_ptr of a Parameter
+            ///
+            /// \param shape The shape of the tensor.
+            template <typename T>
+            static std::shared_ptr<op::Parameter> create(Shape shape)
+            {
+                return create(element::from<T>(), shape);
+            }
+
             virtual std::shared_ptr<Node> copy_with_new_args(
                 const std::vector<std::shared_ptr<Node>>& new_args) const override;
         };
