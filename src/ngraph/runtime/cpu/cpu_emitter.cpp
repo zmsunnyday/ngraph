@@ -2545,20 +2545,14 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
 {
   auto relu = static_cast<const op::Relu*>(node);
 
-  auto arg_shape = args[0].get_shape();
-  auto arg_rank = arg_shape.size();
-
-  auto result_shape = out[0].get_shape();
+  const auto& arg_shape = args[0].get_shape();
+  const size_t arg_rank = arg_shape.size();
+  const auto& result_shape = out[0].get_shape();
 
   if (arg_rank == 4 && args[0].get_element_type() == element::f32)
   {
       const string& elem_type = get_mkldnn_data_type(args[0].get_element_type().c_type_string());
-      Strides window_dilation_strides_adjusted;
 
-      for (size_t s : convolution->get_window_dilation_strides_forward())
-      {
-          window_dilation_strides_adjusted.push_back(s - 1);
-      }
       auto emit_memory_desc = [&writer](const std::string& var,
                                         const std::string& shape,
                                         const std::string& type,
@@ -2577,66 +2571,111 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
         writer << "memory::dims " << var << "{" << dims << "};\n";
       };
 
-    writer << "{\n";
-    writer.indent++;
+      writer << "{\n";
+      writer.indent++;
+      writer << "try {\n";
+      writer.indent++;
+      writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
+      emit_memory_desc("data_desc", join(arg_shape), elem_type, "nchw");
+      emit_memory_desc("result_desc", join(result_shape), elem_type, "nchw");
+      emit_memory("data", "data_desc", args[0].get_name());
+      emit_memory("result", "result_desc", out[0].get_name());
+      emit_memory_dims("dim", join(arg_shape));
 
-    writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
-    writer << "memory::desc input_data_desc = memory::desc({" << join(arg_shape) << "}, " << et
-           << ", memory::format::nchw);\n";
-    writer << "memory::desc result_desc = memory::desc({" << join(result_shape) << "}, " << et
-           << ", memory::format::nchw);\n";
 
-    writer << "memory input_data = memory({input_data_desc, cpu_engine}, " << args[0].get_name()
-           << ");\n";
-    writer << "memory result = memory({result_desc, cpu_engine}, " << out[0].get_name()
-           << ");\n";
-
-    // TODO(jmenon): Use a workspace
-    writer << "pooling_forward avg_pooling = pooling_forward({"
-           << "{prop_kind::forward_inference, algorithm::pooling_avg, "
-           << "input_data_desc, result_desc, {" << join(avg_pool->get_window_movement_strides())
-           << "}, {" << join(avg_pool->get_window_shape()) << "}, "
-           << "{" << join(avg_pool->get_padding_below()) << "}, "
-           << "{" << join(avg_pool->get_padding_above()) << "}, "
-           << "padding_kind::zero}, cpu_engine}, "
-           << "input_data, result);\n";
-
-    writer << "stream s = stream(stream::kind::eager);\n"
-           << "s.submit({avg_pooling}).wait();\n";
-    writer.indent--;
-    writer << "}\n";
+      writer << "relu_forward::desc relu_fwd_desc(prop_kind::forward_training, "
+          "algorithm::eltwise_relu, data_desc);\n";
+      writer << "relu_forward::primitive_desc relu_prim_desc(relu_fwd_desc, cpu_engine);\n";
+      writer << "relu_forward relu_fwd(relu_prim_desc, data, result);\n";
+      writer << "stream s = stream(stream::kind::eager);\n"
+          "s.submit({relu_fwd}).wait();\n";
+      writer.indent--;
+      writer << "} catch (const mkldnn::error& e) {\n";
+      writer.indent++;
+      writer << "throw ngraph::ngraph_error(\"MKLDNN ERROR (\" + std::to_string("
+          "e.status) + \"): \" + e.message);\n";
+      writer.indent--;
+      writer << "}\n";
+      writer.indent--;
+      writer << "}\n";
   }
   else
   {
-    writer << "kernel::relu<" << out[0].get_type() << ">(" << args[0].get_name() << ",\n";
-    writer << "                 " << out[0].get_name() << ",\n";
-    writer << "                 {" << join(arg_shape) << "},\n";
-    writer << "                 {" << join(result_shape) << "},\n";
-    writer << "                 {" << join(avg_pool->get_window_shape()) << "},\n";
-    writer << "                 {" << join(avg_pool->get_window_movement_strides()) << "},\n";
-    writer << "                 {" << join(avg_pool->get_padding_below()) << "},\n";
-    writer << "                 {" << join(avg_pool->get_padding_above()) << "});\n";
+      writer << "kernel::relu<" << out[0].get_type() << ">(" << args[0].get_name() << ",\n";
+      writer << "                 " << out[0].get_name() << ",\n";
+      writer << "                 " << args[0].get_size() << "\n";
+      writer << "                 );\n";
   }
 }
 
 void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitReluBackprop)
 {
-  auto relu_backprop = static_cast<const op::ReluBackprop*>(node);
+    auto relu_backprop = static_cast<const op::ReluBackprop *>(node);
 
-  auto delta_shape = args[1].get_shape();
-  auto out_shape = out[0].get_shape();
+    const auto &arg0_shape = args[0].get_shape();
+    const auto &arg1_shape = args[1].get_shape();
+    const size_t arg_rank = arg_shape.size();
+    const auto &result_shape = out[0].get_shape();
 
-  writer << "kernel::max_pool_backprop<" << out[0].get_type() << ">(" << args[0].get_name()
-         << ",\n";
-  writer << "                 " << args[1].get_name() << ",\n";
-  writer << "                 " << out[0].get_name() << ",\n";
-  writer << "                 {" << join(delta_shape) << "},\n";
-  writer << "                 {" << join(out_shape) << "},\n";
-  writer << "                 {" << join(mpb->get_window_shape()) << "},\n";
-  writer << "                 {" << join(mpb->get_window_movement_strides()) << "},\n";
-  writer << "                 {" << join(mpb->get_padding_below()) << "},\n";
-  writer << "                 {" << join(mpb->get_padding_above()) << "}\n";
-  writer << "                 );\n";
+    if (arg_rank == 4 && args[0].get_element_type() == element::f32)
+    {
+        const string& elem_type = get_mkldnn_data_type(args[0].get_element_type().c_type_string());
+
+        auto emit_memory_desc = [&writer](const std::string& var,
+                                          const std::string& shape,
+                                          const std::string& type,
+                                          const std::string& layout) {
+          writer << "memory::desc " << var << " = memory::desc({" << shape << "}, " << type
+                 << ", memory::format::" << layout << ");\n";
+        };
+
+        auto emit_memory =
+            [&writer](const std::string& var, const std::string& desc, const std::string& data) {
+              writer << "memory " << var << " = memory({" << desc << ", cpu_engine}, " << data
+                     << ");\n";
+            };
+
+        auto emit_memory_dims = [&writer](const std::string& var, const std::string& dims) {
+          writer << "memory::dims " << var << "{" << dims << "};\n";
+        };
+
+        writer << "{\n";
+        writer.indent++;
+        writer << "try {\n";
+        writer.indent++;
+        writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
+        emit_memory_desc("data_desc", join(arg0_shape), elem_type, "nchw");
+        emit_memory_desc("delta_desc", join(arg1_shape), elem_type, "nchw");
+        emit_memory_desc("result_desc", join(result_shape), elem_type, "nchw");
+        emit_memory("data", "data_desc", args[0].get_name());
+        emit_memory("result", "result_desc", out[0].get_name());
+        emit_memory_dims("dim", join(arg_shape));
+
+        writer << "relu_backward::desc relu_bwd_desc(algorithm::eltwise_relu, delta_desc, data_desc);\n";
+        writer << "relu_forward::desc relu_fwd_desc(prop_kind::forward_training, "
+            "algorithm::eltwise_relu, data_desc);\n";
+        writer << "relu_forward::primitive_desc relu_fwd_prim_desc(relu_fwd_desc, cpu_engine);\n";
+        writer << "relu_backward::primitive_desc relu_bwd_prim_desc(relu_bwd_desc, cpu_engine, "
+            "relu_fwd_prim_desc);\n";
+        writer << "relu_backward relu_bwd(relu_bwd_prim_desc, data, result, delta);\n";
+        writer << "stream s = stream(stream::kind::eager);\n"
+            "s.submit({relu_bwd}).wait();\n";
+        writer.indent--;
+        writer << "} catch (const mkldnn::error& e) {\n";
+        writer.indent++;
+        writer << "throw ngraph::ngraph_error(\"MKLDNN ERROR (\" + std::to_string("
+            "e.status) + \"): \" + e.message);\n";
+        writer.indent--;
+        writer << "}\n";
+        writer.indent--;
+        writer << "}\n";
+    }
+    else {
+        writer << "kernel::relu_backprop<" << out[0].get_type() << ">(" << args[0].get_name() << ",\n";
+        writer << "                 " << out[0].get_name() << ",\n";
+        writer << "                 " << args[0].get_size() << "\n";
+        writer << "                 );\n";
+    }
 }
 
 
