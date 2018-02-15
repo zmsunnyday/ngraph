@@ -38,6 +38,7 @@
 #include "ngraph/ops/pad.hpp"
 #include "ngraph/ops/reduce.hpp"
 #include "ngraph/ops/reduce_window.hpp"
+#include "ngraph/ops/relu.hpp"
 #include "ngraph/ops/replace_slice.hpp"
 #include "ngraph/ops/reshape.hpp"
 #include "ngraph/ops/reverse.hpp"
@@ -2539,6 +2540,105 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitMaxPoolBackprop)
     writer << "                 {" << join(mpb->get_padding_above()) << "}\n";
     writer << "                 );\n";
 }
+
+void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
+{
+  auto relu = static_cast<const op::Relu*>(node);
+
+  auto arg_shape = args[0].get_shape();
+  auto arg_rank = arg_shape.size();
+
+  auto result_shape = out[0].get_shape();
+
+  if (arg_rank == 4 && args[0].get_element_type() == element::f32)
+  {
+      const string& elem_type = get_mkldnn_data_type(args[0].get_element_type().c_type_string());
+      Strides window_dilation_strides_adjusted;
+
+      for (size_t s : convolution->get_window_dilation_strides_forward())
+      {
+          window_dilation_strides_adjusted.push_back(s - 1);
+      }
+      auto emit_memory_desc = [&writer](const std::string& var,
+                                        const std::string& shape,
+                                        const std::string& type,
+                                        const std::string& layout) {
+        writer << "memory::desc " << var << " = memory::desc({" << shape << "}, " << type
+               << ", memory::format::" << layout << ");\n";
+      };
+
+      auto emit_memory =
+          [&writer](const std::string& var, const std::string& desc, const std::string& data) {
+            writer << "memory " << var << " = memory({" << desc << ", cpu_engine}, " << data
+                   << ");\n";
+          };
+
+      auto emit_memory_dims = [&writer](const std::string& var, const std::string& dims) {
+        writer << "memory::dims " << var << "{" << dims << "};\n";
+      };
+
+    writer << "{\n";
+    writer.indent++;
+
+    writer << "engine cpu_engine = engine(engine::cpu, 0);\n";
+    writer << "memory::desc input_data_desc = memory::desc({" << join(arg_shape) << "}, " << et
+           << ", memory::format::nchw);\n";
+    writer << "memory::desc result_desc = memory::desc({" << join(result_shape) << "}, " << et
+           << ", memory::format::nchw);\n";
+
+    writer << "memory input_data = memory({input_data_desc, cpu_engine}, " << args[0].get_name()
+           << ");\n";
+    writer << "memory result = memory({result_desc, cpu_engine}, " << out[0].get_name()
+           << ");\n";
+
+    // TODO(jmenon): Use a workspace
+    writer << "pooling_forward avg_pooling = pooling_forward({"
+           << "{prop_kind::forward_inference, algorithm::pooling_avg, "
+           << "input_data_desc, result_desc, {" << join(avg_pool->get_window_movement_strides())
+           << "}, {" << join(avg_pool->get_window_shape()) << "}, "
+           << "{" << join(avg_pool->get_padding_below()) << "}, "
+           << "{" << join(avg_pool->get_padding_above()) << "}, "
+           << "padding_kind::zero}, cpu_engine}, "
+           << "input_data, result);\n";
+
+    writer << "stream s = stream(stream::kind::eager);\n"
+           << "s.submit({avg_pooling}).wait();\n";
+    writer.indent--;
+    writer << "}\n";
+  }
+  else
+  {
+    writer << "kernel::relu<" << out[0].get_type() << ">(" << args[0].get_name() << ",\n";
+    writer << "                 " << out[0].get_name() << ",\n";
+    writer << "                 {" << join(arg_shape) << "},\n";
+    writer << "                 {" << join(result_shape) << "},\n";
+    writer << "                 {" << join(avg_pool->get_window_shape()) << "},\n";
+    writer << "                 {" << join(avg_pool->get_window_movement_strides()) << "},\n";
+    writer << "                 {" << join(avg_pool->get_padding_below()) << "},\n";
+    writer << "                 {" << join(avg_pool->get_padding_above()) << "});\n";
+  }
+}
+
+void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitReluBackprop)
+{
+  auto relu_backprop = static_cast<const op::ReluBackprop*>(node);
+
+  auto delta_shape = args[1].get_shape();
+  auto out_shape = out[0].get_shape();
+
+  writer << "kernel::max_pool_backprop<" << out[0].get_type() << ">(" << args[0].get_name()
+         << ",\n";
+  writer << "                 " << args[1].get_name() << ",\n";
+  writer << "                 " << out[0].get_name() << ",\n";
+  writer << "                 {" << join(delta_shape) << "},\n";
+  writer << "                 {" << join(out_shape) << "},\n";
+  writer << "                 {" << join(mpb->get_window_shape()) << "},\n";
+  writer << "                 {" << join(mpb->get_window_movement_strides()) << "},\n";
+  writer << "                 {" << join(mpb->get_padding_below()) << "},\n";
+  writer << "                 {" << join(mpb->get_padding_above()) << "}\n";
+  writer << "                 );\n";
+}
+
 
 //------------------------------------------------------------------------------------------------
 // Utility methods

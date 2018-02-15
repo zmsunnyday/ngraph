@@ -71,6 +71,7 @@
 #include "ngraph/ops/power.hpp"
 #include "ngraph/ops/reduce.hpp"
 #include "ngraph/ops/reduce_window.hpp"
+#include "ngraph/ops/relu.hpp"
 #include "ngraph/ops/replace_slice.hpp"
 #include "ngraph/ops/reshape.hpp"
 #include "ngraph/ops/reverse.hpp"
@@ -219,6 +220,8 @@ static const runtime::cpu::OpMap dispatcher{
     {TI(ngraph::op::Pad), &runtime::cpu::CPU_Emitter::EmitPad},
     {TI(ngraph::op::BatchNorm), &runtime::cpu::CPU_Emitter::EmitBatchNorm},
     {TI(ngraph::op::MaxPoolBackprop), &runtime::cpu::CPU_Emitter::EmitMaxPoolBackprop},
+    {TI(ngraph::op::Relu), &runtime::cpu::CPU_Emitter::EmitRelu},
+    {TI(ngraph::op::ReluBackprop), &runtime::cpu::CPU_Emitter::EmitReluBackprop},
 };
 
 runtime::cpu::CPU_ExternalFunction::CPU_ExternalFunction(
