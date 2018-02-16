@@ -56,6 +56,7 @@ namespace ngraph
             const ngraph::Shape& get_shape() const;
             const ngraph::Strides& get_strides() const;
             size_t get_element_count() const;
+            const element::Type& get_element_type() const;
             const ngraph::descriptor::Tensor& get_tensor() const;
 
             std::shared_ptr<ngraph::descriptor::layout::TensorViewLayout>

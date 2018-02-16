@@ -64,6 +64,11 @@ size_t runtime::TensorView::get_element_count() const
     return rc;
 }
 
+const element::Type& runtime::TensorView::get_element_type() const
+{
+    return get_tensor_view_layout()->get_element_type();
+}
+
 const descriptor::Tensor& runtime::TensorView::get_tensor() const
 {
     return get_tensor_view_descriptor()->get_tensor();

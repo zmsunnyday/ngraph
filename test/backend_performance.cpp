@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -23,6 +24,7 @@
 #include "ngraph/codegen/compiler.hpp"
 #include "ngraph/codegen/execution_engine.hpp"
 #include "ngraph/file_util.hpp"
+#include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/ops/concat.hpp"
 #include "ngraph/runtime/backend.hpp"

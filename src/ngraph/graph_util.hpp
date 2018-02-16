@@ -100,4 +100,10 @@ namespace ngraph
     // NodeMap output (by reference) fully maps input and cloned function ops
     std::shared_ptr<ngraph::Function> clone_function(std::shared_ptr<ngraph::Function> func,
                                                      NodeMap& node_map);
+
+    namespace runtime
+    {
+        class TensorView;
+    }
+    void dump_tensor(const runtime::TensorView& tv, std::ostream& out);
 }

@@ -136,7 +136,7 @@ namespace ngraph
             {
                 // TODO: Audit all uses of Add and fix this to use
                 // the right alignment instead of Eigen::Unaligned
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << "Eigen::Map<Eigen::Array<" << out[0].get_element_type().c_type_string()
@@ -177,7 +177,7 @@ namespace ngraph
                     data_type = "MPI_DOUBLE";
                 }
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 writer << "MPI_Allreduce(" << args[0].get_name() << ", " << out[0].get_name()
                        << ", " << out[0].get_size() << ", " << data_type
@@ -225,7 +225,7 @@ namespace ngraph
                     n = arg1_shape[0];
                 }
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 
                 writer << "memcpy(" << out[0].get_name() << ", " << args[2].get_name() << ", "
@@ -341,7 +341,7 @@ namespace ngraph
                     auto& first = (arg0_shape.empty() ? args[0] : args[1]);
                     auto& second = (arg0_shape.empty() ? args[1] : args[0]);
 
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << "\n    = ";
                     writer << first.get_name() << "[0]\n    * " << emit_vector(second) << ";\n";
@@ -351,7 +351,7 @@ namespace ngraph
                 else if ((arg0_shape.size() == 1) && (arg1_shape.size() == 1) &&
                          dot->get_reduction_axes_count() == 1)
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " << \n"
                            << "    " << emit_vector(args[0]) << ".dot(" << emit_vector(args[1])
@@ -362,7 +362,7 @@ namespace ngraph
                 else if ((arg0_shape.size() == 2) && (arg1_shape.size() == 1) &&
                          dot->get_reduction_axes_count() == 1)
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " = \n"
                            << "    " << emit_matrix(args[0]) << " * " << emit_vector(args[1])
@@ -376,7 +376,7 @@ namespace ngraph
                     // Emit an MKL SGEMM call if possible
                     if (args[0].get_element_type() == element::f32)
                     {
-                        writer << "{   // " << node->get_name() << "\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << "cblas::cblas_sgemm("
                                << "cblas::Layout::RowMajor, "
@@ -393,7 +393,7 @@ namespace ngraph
                     }
                     else
                     {
-                        writer << "{   // " << node->get_name() << "\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << emit_matrix(out[0]) << " = \n"
                                << "    " << emit_matrix(args[0]) << " * " << emit_matrix(args[1])
@@ -417,7 +417,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Multiply)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -440,7 +440,7 @@ namespace ngraph
             {
                 auto get_tuple_element = static_cast<const ngraph::op::GetOutputElement*>(node);
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 writer << "memcpy(" << out[0].get_name() << ", "
                        << args[get_tuple_element->get_n()].get_name() << ", "
@@ -452,7 +452,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Abs)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n";
@@ -482,7 +482,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 if (result_shape.size() == 1)
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0], "out_vector") << ";\n";
 
@@ -502,7 +502,7 @@ namespace ngraph
                     auto axis =
                         (dynamic_cast<const ngraph::op::Concat*>(node))->get_concatenation_axis();
 
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_matrix(out[0], "out_matrix") << ";\n";
 
@@ -593,7 +593,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Divide)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 if (node->get_element_type().is_real() == false)
                 {
@@ -624,7 +624,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Equal)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -645,7 +645,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Greater)
             {
-                writer << "{   // " << node->get_name() << " xxx\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -666,7 +666,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::GreaterEq)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -687,7 +687,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Less)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -708,7 +708,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::LessEq)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -729,7 +729,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Log)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -749,7 +749,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Maximum)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -771,7 +771,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Minimum)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -793,7 +793,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Negative)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -813,7 +813,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::NotEqual)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -834,7 +834,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Select)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -856,7 +856,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Subtract)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -879,7 +879,7 @@ namespace ngraph
             {
                 auto broadcast = static_cast<const ngraph::op::Broadcast*>(node);
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 auto arg_shape = args[0].get_shape();
@@ -887,7 +887,7 @@ namespace ngraph
 
                 if (broadcast->get_broadcast_axes().empty())
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[0].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -896,7 +896,7 @@ namespace ngraph
                 }
                 else if (arg_shape.size() == 0)
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_array1d(out[0]) << " =\n"
                            << "    " << emit_array1d(args[0]) << "(0, 0);\n";
@@ -907,7 +907,7 @@ namespace ngraph
                 {
                     if (broadcast->get_broadcast_axes() == AxisSet{1})
                     {
-                        writer << "{   // " << node->get_name() << "\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << emit_matrix(out[0]) << ".colwise() =\n"
                                << "    " << emit_vector(args[0]) << ";\n";
@@ -916,7 +916,7 @@ namespace ngraph
                     }
                     else if (broadcast->get_broadcast_axes() == AxisSet{0})
                     {
-                        writer << "{   // " << node->get_name() << "\n";
+                        writer << "{\n";
                         writer.indent++;
 
                         writer << "Eigen::Map<Eigen::Matrix<"
@@ -973,7 +973,7 @@ namespace ngraph
             {
                 auto& result_element_type = out[0].get_element_type();
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1001,7 +1001,7 @@ namespace ngraph
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Reshape)
             {
                 auto reshape = static_cast<const ngraph::op::Reshape*>(node);
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 auto arg_shape = args[0].get_shape();
@@ -1024,7 +1024,7 @@ namespace ngraph
                 //  we can just copy.
                 if (same_layout || result_shape_product < 2)
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[0].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -1037,7 +1037,7 @@ namespace ngraph
                     // Emit an MKL transpose call if possible
                     if (result_element_type == ngraph::element::f32)
                     {
-                        writer << "{   // " << node->get_name() << " 2\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << "mkl::MKL_Somatcopy('R', 'T', " << to_string(arg_shape[0])
                                << ",\n"
@@ -1051,7 +1051,7 @@ namespace ngraph
                     }
                     else
                     {
-                        writer << "{   // " << node->get_name() << " 3\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << emit_matrix(out[0]) << " =\n"
                                << "        " << emit_matrix(args[0]) << ".transpose();\n";
@@ -1146,7 +1146,7 @@ namespace ngraph
                 // Trivial case: no reduction axes (this includes the scalar-reductee case).
                 if (reduction_axes.empty())
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[0].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -1184,7 +1184,7 @@ namespace ngraph
                     if (reductee_shape.at(0) == 0 ||
                         (reductee_shape.size() == 2 && reductee_shape.at(1) == 0))
                     {
-                        writer << "{   // " << node->get_name() << " 2\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << "memcpy(" << out[0].get_name() << ", " << args[1].get_name()
                                << ", " << out[0].get_size() * out[0].get_element_type().size()
@@ -1194,7 +1194,7 @@ namespace ngraph
                     }
                     else
                     {
-                        writer << "{   // " << node->get_name() << " 3\n";
+                        writer << "{\n";
                         writer.indent++;
                         string type = f_result_element_type.c_type_string();
                         writer << "auto f = [&](" << type << " x, " << type << " y) -> " << type
@@ -1218,7 +1218,7 @@ namespace ngraph
                 {
                     if (reductee_shape.at(1) == 0)
                     {
-                        writer << "{   // " << node->get_name() << " 4\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << emit_array1d(out[0]) << " =\n"
                                << "    " << emit_array1d(args[1]) << "(0, 0);\n";
@@ -1231,7 +1231,7 @@ namespace ngraph
                         //     dynamic_pointer_cast<CallFrame>(external->make_call_frame());
                         // ef->get_callees().emplace_back(cf);
 
-                        writer << "{   // " << node->get_name() << " 5\n";
+                        writer << "{\n";
                         writer.indent++;
                         string type = f_result_element_type.c_type_string();
                         writer << "auto f = [&](" << type << " x, " << type << " y) -> " << type
@@ -1255,7 +1255,7 @@ namespace ngraph
                 {
                     if (reductee_shape.at(0) == 0)
                     {
-                        writer << "{   // " << node->get_name() << " 6\n";
+                        writer << "{\n";
                         writer.indent++;
                         writer << emit_array1d(out[0]) << " =\n"
                                << "    " << emit_array1d(args[1]) << "(0, 0);\n";
@@ -1264,7 +1264,7 @@ namespace ngraph
                     }
                     else
                     {
-                        writer << "{   // " << node->get_name() << " 7\n";
+                        writer << "{\n";
                         writer.indent++;
                         string type = f_result_element_type.c_type_string();
                         writer << "auto f = [&](" << type << " x, " << type << " y) -> " << type
@@ -1286,7 +1286,7 @@ namespace ngraph
                 }
                 else
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
 
                     string type = f_result_element_type.c_type_string();
@@ -1315,7 +1315,7 @@ namespace ngraph
                     writer << "}\n";
                 }
 #else
-                writer << "{   // " << node->get_name() << " 1\n";
+                writer << "{\n";
                 writer.indent++;
 
                 string type = f_result_element_type.c_type_string();
@@ -1348,7 +1348,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Sign)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1370,7 +1370,7 @@ namespace ngraph
             {
                 const ngraph::op::Slice* slice = static_cast<const ngraph::op::Slice*>(node);
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 size_t arg_rank = args[0].get_shape().size();
@@ -1391,7 +1391,7 @@ namespace ngraph
                 // Scalar slice is necessarily just a copy.
                 if (!strided && arg_rank == 0)
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[0].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -1400,7 +1400,7 @@ namespace ngraph
                 }
                 else if (!strided && arg_rank == 1)
                 {
-                    writer << "{   // " << node->get_name() << " 2\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " =\n"
                            << "    " << emit_vector(args[0]) << ".segment(\n"
@@ -1411,7 +1411,7 @@ namespace ngraph
                 }
                 else if (!strided && arg_rank == 2)
                 {
-                    writer << "{   // " << node->get_name() << " 3\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_matrix(out[0]) << " = \n"
                            << "        " << emit_matrix(args[0]) << ".block("
@@ -1455,7 +1455,7 @@ namespace ngraph
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Sum)
             {
                 const ngraph::op::Sum* sum = static_cast<const ngraph::op::Sum*>(node);
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 const Shape& arg_shape = args[0].get_shape();
@@ -1465,7 +1465,7 @@ namespace ngraph
                 // Trivial case: no reduction axes.
                 if (reduction_axes.size() == 0)
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[0].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -1476,7 +1476,7 @@ namespace ngraph
                 else if ((arg_rank == 1 && reduction_axes == AxisSet{0}) ||
                          (arg_rank == 2 && reduction_axes == AxisSet{0, 1}))
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_array1d(out[0]) << " =\n"
                            << "    " << emit_array1d(args[0]) << ".sum();\n";
@@ -1485,7 +1485,7 @@ namespace ngraph
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{1})
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " =\n"
                            << "    " << emit_matrix(args[0]) << ".rowwise().sum();\n";
@@ -1494,7 +1494,7 @@ namespace ngraph
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{0})
                 {
-                    writer << "{   // " << node->get_name() << "\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " =\n"
                            << "    " << emit_matrix(args[0]) << ".colwise().sum();\n";
@@ -1527,7 +1527,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Exp)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1547,7 +1547,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Sin)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1567,7 +1567,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Sinh)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1587,7 +1587,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Cos)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1607,7 +1607,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Cosh)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1627,7 +1627,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Tan)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1651,7 +1651,7 @@ namespace ngraph
                 // so we fall-back to tanh
                 // TODO: Implement our own internal fast/approximate tanh if this actually gets used
                 // by models
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 0
                 writer << "#pragma omp parallel for\n";
@@ -1668,7 +1668,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Asin)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1688,7 +1688,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Acos)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1708,7 +1708,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Atan)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
@@ -1728,7 +1728,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Power)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " = \n";
@@ -1752,7 +1752,7 @@ namespace ngraph
             void CPU_Emitter::EMITTER_DECL(ngraph::op::ReplaceSlice)
             {
                 auto replace_slice = static_cast<const ngraph::op::Slice*>(node);
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 #if PREFER_EIGEN == 1
                 size_t arg0_rank = args[0].get_shape().size();
@@ -1773,7 +1773,7 @@ namespace ngraph
                 // Scalar slice is necessarily just a copy.
                 if (!strided && arg0_rank == 0)
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << "memcpy(" << out[0].get_name() << ", " << args[1].get_name() << ", "
                            << out[0].get_size() * out[0].get_element_type().size() << ");\n";
@@ -1782,7 +1782,7 @@ namespace ngraph
                 }
                 else if (!strided && arg0_rank == 1)
                 {
-                    writer << "{   // " << node->get_name() << " 2\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_vector(out[0]) << " =\n"
                            << "    " << emit_vector(args[0]) << ";\n"
@@ -1795,7 +1795,7 @@ namespace ngraph
                 }
                 else if (!strided && arg0_rank == 2)
                 {
-                    writer << "{   // " << node->get_name() << " 3\n";
+                    writer << "{\n";
                     writer.indent++;
                     writer << emit_matrix(out[0]) << " =\n"
                            << "    " << emit_matrix(args[0]) << ";\n"
@@ -1851,7 +1851,7 @@ namespace ngraph
 
                 if (arg_rank == 0)
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
 
                     writer << emit_vector(out[0], "out_vector") << ";\n";
@@ -1884,7 +1884,7 @@ namespace ngraph
                 }
                 else if (arg_rank == 1)
                 {
-                    writer << "{   // " << node->get_name() << " 1\n";
+                    writer << "{\n";
                     writer.indent++;
 
                     writer << emit_vector(args[0], "arg_vector") << ";\n";
@@ -1941,7 +1941,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Ceiling)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 size_t element_count = out[0].get_size();
 #if PREFER_EIGEN == 0
@@ -1959,7 +1959,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Floor)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 size_t element_count = out[0].get_size();
 #if PREFER_EIGEN == 0
@@ -1977,7 +1977,7 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Sqrt)
             {
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
                 size_t element_count = out[0].get_size();
 #if PREFER_EIGEN == 0
@@ -2405,7 +2405,7 @@ namespace ngraph
                 auto reduction_function = reduce_window->get_functions()[0];
                 auto& f_result_element_type = out[0].get_element_type();
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 
                 string type = f_result_element_type.c_type_string();
@@ -2447,7 +2447,7 @@ namespace ngraph
                 auto arg1_shape = args[1].get_shape();
                 auto result_shape = out[0].get_shape();
 
-                writer << "{   // " << node->get_name() << "\n";
+                writer << "{\n";
                 writer.indent++;
 
                 string type = node->get_output_element_type(0).c_type_string();

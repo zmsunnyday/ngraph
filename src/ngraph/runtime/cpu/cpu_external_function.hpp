@@ -116,6 +116,7 @@ namespace ngraph
                 std::unique_ptr<codegen::ExecutionEngine> m_execution_engine;
                 bool m_emit_timing;
                 bool m_use_tbb;
+                bool m_dump_tensors;
                 std::unordered_map<std::string, std::string> m_variable_name_map;
 
                 LayoutDescriptorPtrs parameter_layout_descriptors;

@@ -245,6 +245,7 @@ runtime::cpu::CPU_ExternalFunction::CPU_ExternalFunction(
     , m_compiled_function(nullptr)
     , m_emit_timing(std::getenv("NGRAPH_CPU_EMIT_TIMING") != nullptr)
     , m_use_tbb(std::getenv("NGRAPH_CPU_USE_TBB") != nullptr)
+    , m_dump_tensors(std::getenv("NGRAPH_CPU_DUMP_TENSORS") != nullptr)
 {
 }
 
@@ -683,6 +684,17 @@ using namespace ngraph::runtime;
                 node_output_names.emplace_back(tv->get_tensor().get_name());
             }
 
+            // Emit comment that describes the op we are about to emit.
+            if (!node->is_parameter() && !node->is_constant())
+            {
+                writer << "\n// " << node->get_name() << "(";
+                vector<string> parameter_nodes = node_input_names;
+                parameter_nodes.insert(
+                    parameter_nodes.end(), node_output_names.begin(), node_output_names.end());
+                writer << join(parameter_nodes);
+                writer << ")\n";
+            }
+
             // Emit operation prologue
             if (!node->is_parameter() && !node->is_constant())
             {
@@ -699,23 +711,13 @@ using namespace ngraph::runtime;
                            << "(G, [&](const tbb::flow::continue_msg &msg)\n{\n";
                     writer.indent++;
                 }
-                if (m_emit_timing)
-                {
-                    emit_debug_function_entry(writer, node.get(), in, out);
-                }
+                emit_debug_function_entry(writer, node.get(), in, out);
                 if (runtime::cpu::IsTracingEnabled() &&
                     current_function->get_name() == function_name)
                 {
                     writer << "start_ts = cpu::Clock::now();\n";
                 }
             }
-
-            writer << "\n// " << node->get_name() << "(";
-            vector<string> parameter_nodes = node_input_names;
-            parameter_nodes.insert(
-                parameter_nodes.end(), node_output_names.begin(), node_output_names.end());
-            writer << join(parameter_nodes);
-            writer << ")\n";
 
             // Emit operation body
             string func_name;
@@ -743,10 +745,7 @@ using namespace ngraph::runtime;
             if (!node->is_parameter() && !node->is_constant())
             {
                 handle_output_alias(writer, *node, output_alias_map);
-                if (m_emit_timing)
-                {
-                    emit_debug_function_exit(writer, node.get(), in, out);
-                }
+                emit_debug_function_exit(writer, node.get(), in, out);
                 if (runtime::cpu::IsTracingEnabled() &&
                     current_function->get_name() == function_name)
                 {
@@ -937,7 +936,10 @@ void runtime::cpu::CPU_ExternalFunction::emit_debug_function_entry(
     const std::vector<TensorViewWrapper>& in,
     const std::vector<TensorViewWrapper>& out)
 {
-    writer << "timer_" << node->get_name() << ".start();\n";
+    if (m_emit_timing)
+    {
+        writer << "timer_" << node->get_name() << ".start();\n";
+    }
 }
 
 void runtime::cpu::CPU_ExternalFunction::emit_debug_function_exit(
@@ -946,7 +948,17 @@ void runtime::cpu::CPU_ExternalFunction::emit_debug_function_exit(
     const std::vector<TensorViewWrapper>& in,
     const std::vector<TensorViewWrapper>& out)
 {
-    writer << "timer_" << node->get_name() << ".stop();\n";
+    if (m_emit_timing)
+    {
+        writer << "timer_" << node->get_name() << ".stop();\n";
+    }
+    if (m_dump_tensors)
+    {
+        for (const descriptor::Tensor* tensor : node->liveness_free_list)
+        {
+            writer << "// dumping tensor " << tensor->get_name() << "\n";
+        }
+    }
 }
 
 bool runtime::cpu::CPU_ExternalFunction::is_functionally_identical(
@@ -961,8 +973,6 @@ string runtime::cpu::CPU_ExternalFunction::emit_op_as_function(const Node& node,
     codegen::CodeWriter writer;
     writer << "static void " << function_name << "(";
     writer.indent++;
-    // Work around a compiler warning (*node inside typeid may have effects
-    // with shared pointers, which is fine here but clang doesn't like it.)
     auto handler = dispatcher.find(type_index(typeid(node)));
     vector<TensorViewWrapper> in;
     size_t arg_index = 0;
