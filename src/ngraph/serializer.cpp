@@ -90,57 +90,6 @@ static std::shared_ptr<ngraph::Function>
 static json write(const ngraph::Function&);
 static json write(const ngraph::Node&);
 
-// There should be a map from element type names to element types so deserialization can
-// find the singletons and serialization can serialize by name.
-static const element::Type& to_ref(const element::Type& t)
-{
-    if (t == element::boolean)
-    {
-        return element::boolean;
-    }
-    if (t == element::f32)
-    {
-        return element::f32;
-    }
-    if (t == element::f64)
-    {
-        return element::f64;
-    }
-    if (t == element::i8)
-    {
-        return element::i8;
-    }
-    if (t == element::i16)
-    {
-        return element::i16;
-    }
-    if (t == element::i32)
-    {
-        return element::i32;
-    }
-    if (t == element::i64)
-    {
-        return element::i64;
-    }
-    if (t == element::u8)
-    {
-        return element::u8;
-    }
-    if (t == element::u16)
-    {
-        return element::u16;
-    }
-    if (t == element::u32)
-    {
-        return element::u32;
-    }
-    if (t == element::u64)
-    {
-        return element::u64;
-    }
-    throw runtime_error("type not valid");
-}
-
 static json write_element_type(const ngraph::element::Type& n)
 {
     json j;
@@ -148,7 +97,7 @@ static json write_element_type(const ngraph::element::Type& n)
     return j;
 }
 
-static const element::Type& read_element_type(const json& j)
+static element::Type read_element_type(const json& j)
 {
     size_t bitwidth = 0;
     bool is_real;
@@ -176,7 +125,7 @@ static const element::Type& read_element_type(const json& j)
             }
         }
     }
-    return to_ref(element::Type(bitwidth, is_real, is_signed, c_type_string));
+    return element::Type(bitwidth, is_real, is_signed, c_type_string);
 }
 
 static json write_tensor_type(const element::Type& element_type, const Shape& shape)
@@ -405,14 +354,14 @@ static shared_ptr<ngraph::Function>
         {
             auto type_node_js =
                 node_js.count("element_type") == 0 ? node_js.at("value_type") : node_js;
-            auto& element_type = read_element_type(type_node_js.at("element_type"));
+            auto element_type = read_element_type(type_node_js.at("element_type"));
             auto shape = type_node_js.at("shape");
             auto value = node_js.at("value").get<vector<string>>();
             node = make_shared<op::Constant>(element_type, shape, value);
         }
         else if (node_op == "Convert")
         {
-            auto& target_type = read_element_type(node_js.at("target_type"));
+            auto target_type = read_element_type(node_js.at("target_type"));
             node = make_shared<op::Convert>(args[0], target_type);
         }
         else if (node_op == "Convolution")
@@ -662,7 +611,7 @@ static shared_ptr<ngraph::Function>
         {
             auto type_node_js =
                 node_js.count("element_type") == 0 ? node_js.at("value_type") : node_js;
-            auto& element_type = read_element_type(type_node_js.at("element_type"));
+            auto element_type = read_element_type(type_node_js.at("element_type"));
             auto shape = type_node_js.at("shape");
             node = make_shared<op::Parameter>(element_type, shape);
         }
