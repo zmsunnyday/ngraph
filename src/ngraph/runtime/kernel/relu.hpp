@@ -25,6 +25,7 @@ namespace ngraph
             template <typename T>
             void relu(T* arg, T* out, size_t count)
             {
+                std::cout << "kernel relu" << std::endl;
                 for (size_t i = 0; i < count; i++)
                 {
                     T zero = 0;

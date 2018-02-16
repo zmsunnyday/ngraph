@@ -66,7 +66,7 @@ namespace ngraph
                 {
                     throw ngraph_error("Incorrect number of new arguments");
                 }
-                return std::make_shared<Relu>(new_args.at(0));
+                return std::make_shared<ReluBackprop>(new_args.at(0));
             }
         };
     }

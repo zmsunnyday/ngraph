@@ -245,7 +245,7 @@ void runtime::cpu::CPU_ExternalFunction::compile()
     ngraph::pass::Manager pass_manager;
 
     // TODO: to be uncommented COREFusion once relu MKL implementation inplace
-    // pass_manager.register_pass<pass::COREFusion>(); 
+    pass_manager.register_pass<ngraph::pass::COREFusion>();
     pass_manager.register_pass<runtime::cpu::pass::CPUFusion>();
     pass_manager.register_pass<runtime::cpu::pass::CPULayout>();
     pass_manager.register_pass<ngraph::pass::Liveness>();
@@ -290,6 +290,7 @@ void runtime::cpu::CPU_ExternalFunction::compile()
 #include "ngraph/runtime/kernel/pad.hpp"
 #include "ngraph/runtime/kernel/reduce.hpp"
 #include "ngraph/runtime/kernel/reduce_window.hpp"
+#include "ngraph/runtime/kernel/relu.hpp"
 #include "ngraph/runtime/kernel/replace_slice.hpp"
 #include "ngraph/runtime/kernel/reshape.hpp"
 #include "ngraph/runtime/kernel/reverse.hpp"

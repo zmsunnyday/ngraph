@@ -18,12 +18,14 @@
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_set>
+//#include <ngraph/ngraph.hpp>
 
 #include "ngraph/node.hpp"
 #include "ngraph/ops/avg_pool.hpp"
 #include "ngraph/ops/batch_norm.hpp"
 #include "ngraph/ops/convolution.hpp"
 #include "ngraph/ops/max_pool.hpp"
+#include "ngraph/ops/relu.hpp"
 
 #include "mkldnn_utils.hpp"
 
@@ -44,7 +46,9 @@ namespace ngraph
                     TI(ngraph::op::ConvolutionBackpropData),
                     TI(ngraph::op::ConvolutionBackpropFilters),
                     TI(ngraph::op::MaxPool),
-                    TI(ngraph::op::BatchNorm)};
+                    TI(ngraph::op::BatchNorm),
+                    TI(ngraph::op::Relu),
+                    TI(ngraph::op::ReluBackprop)};
 
                 bool IsMKLDNNOp(ngraph::Node& op)
                 {

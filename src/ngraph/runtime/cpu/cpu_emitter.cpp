@@ -699,7 +699,8 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitLog)
 
 void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitMaximum)
 {
-    writer << "{   // " << node->get_name() << "\n";
+    std::cout << "INSIDE MAX" << std::endl;
+    writer << "{   // INSIDE MAX " << node->get_name() << "\n";
     writer.indent++;
 #if PREFER_EIGEN == 1
     writer << emit_array1d(out[0]) << " =\n"
@@ -2543,6 +2544,7 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitMaxPoolBackprop)
 
 void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
 {
+    std::cout << "INSIDE RELU" << std::endl;
   auto relu = static_cast<const op::Relu*>(node);
 
   const auto& arg_shape = args[0].get_shape();
@@ -2584,7 +2586,7 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
 
 
       writer << "relu_forward::desc relu_fwd_desc(prop_kind::forward_training, "
-          "algorithm::eltwise_relu, data_desc);\n";
+          "algorithm::eltwise_relu, data_desc, 0, 0);\n";
       writer << "relu_forward::primitive_desc relu_prim_desc(relu_fwd_desc, cpu_engine);\n";
       writer << "relu_forward relu_fwd(relu_prim_desc, data, result);\n";
       writer << "stream s = stream(stream::kind::eager);\n"
@@ -2603,8 +2605,7 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitRelu)
   {
       writer << "kernel::relu<" << out[0].get_type() << ">(" << args[0].get_name() << ",\n";
       writer << "                 " << out[0].get_name() << ",\n";
-      writer << "                 " << args[0].get_size() << "\n";
-      writer << "                 );\n";
+      writer << "                 " << args[0].get_size() << ")\n";
   }
 }
 
@@ -2614,7 +2615,7 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitReluBackprop)
 
     const auto &arg0_shape = args[0].get_shape();
     const auto &arg1_shape = args[1].get_shape();
-    const size_t arg_rank = arg_shape.size();
+    const size_t arg_rank = arg0_shape.size();
     const auto &result_shape = out[0].get_shape();
 
     if (arg_rank == 4 && args[0].get_element_type() == element::f32)
@@ -2649,11 +2650,11 @@ void runtime::cpu::CPU_Emitter::EMITTER_DECL(EmitReluBackprop)
         emit_memory_desc("result_desc", join(result_shape), elem_type, "nchw");
         emit_memory("data", "data_desc", args[0].get_name());
         emit_memory("result", "result_desc", out[0].get_name());
-        emit_memory_dims("dim", join(arg_shape));
+        emit_memory_dims("dim", join(arg0_shape));
 
         writer << "relu_backward::desc relu_bwd_desc(algorithm::eltwise_relu, delta_desc, data_desc);\n";
         writer << "relu_forward::desc relu_fwd_desc(prop_kind::forward_training, "
-            "algorithm::eltwise_relu, data_desc);\n";
+            "algorithm::eltwise_relu, data_desc, 0, 0);\n";
         writer << "relu_forward::primitive_desc relu_fwd_prim_desc(relu_fwd_desc, cpu_engine);\n";
         writer << "relu_backward::primitive_desc relu_bwd_prim_desc(relu_bwd_desc, cpu_engine, "
             "relu_fwd_prim_desc);\n";
