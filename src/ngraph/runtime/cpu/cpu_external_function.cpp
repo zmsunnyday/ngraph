@@ -413,6 +413,46 @@ using namespace ngraph::runtime;
         writer << "\n";
     }
 
+    if (m_dump_tensors)
+    {
+        const string types[] = {"float",
+                                "double",
+                                "int8_t",
+                                "int16_t",
+                                "int32_t",
+                                "int64_t",
+                                "uint8_t",
+                                "uint16_t",
+                                "uint32_t",
+                                "uint64_t"};
+
+        writer << "#include <fstream>\n";
+        string dump_temps_dir = "dump_temporaries";
+        file_util::make_directory(dump_temps_dir);
+        for (const string& type : types)
+        {
+            writer << "static void dump_tensor_" << type << "(const std::string& name, const "
+                   << type << "* data, size_t count)\n";
+            writer << "{\n";
+            writer.indent++;
+            writer << "std::string result_file = \"" << dump_temps_dir
+                   << "/\" + name + \".txt\";\n";
+            writer << "std::ofstream f(result_file);\n";
+            writer << "if (f)\n";
+            writer << "{\n";
+            writer.indent++;
+            writer << "f << data[0];\n";
+            writer << "for (size_t i = 1; i < count; i++)\n";
+            writer << "{\n";
+            writer << "    f << \", \" << data[i];\n";
+            writer << "}\n";
+            writer.indent--;
+            writer << "}\n";
+            writer.indent--;
+            writer << "}\n\n";
+        }
+    }
+
     writer << "// Declare all constants\n";
     for (shared_ptr<Function> current_function : pass_manager.get_state().get_functions())
     {
@@ -956,7 +996,10 @@ void runtime::cpu::CPU_ExternalFunction::emit_debug_function_exit(
     {
         for (const descriptor::Tensor* tensor : node->liveness_free_list)
         {
-            writer << "// dumping tensor " << tensor->get_name() << "\n";
+            string tmp_name = m_variable_name_map[tensor->get_name()];
+            size_t element_count = tensor->size() / tensor->get_element_type().size();
+            writer << "dump_tensor_" << tensor->get_element_type().c_type_string() << "(\""
+                   << tensor->get_name() << "\", " << tmp_name << ", " << element_count << ");\n";
         }
     }
 }
