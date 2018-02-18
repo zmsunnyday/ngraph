@@ -143,7 +143,7 @@ static string emit_string_array(const vector<string>& s, size_t max_line_length)
         stringstream value;
         value << s[i];
         string value_string = value.str();
-        if (static_cast<size_t>(line.tellp()) + value_string.size() + 1 <= max_line_length)
+        if (static_cast<size_t>(line.tellp()) + value_string.size() + 2 <= max_line_length)
         {
             if (i > 0)
             {
@@ -348,6 +348,7 @@ using namespace ngraph::runtime;
     {
         writer << "// Declare debug timers\n";
         vector<string> names;
+        size_t index = 0;
         for (shared_ptr<Function> current_function : pass_manager.get_state().get_functions())
         {
             for (shared_ptr<Node> node : current_function->get_ordered_ops())
@@ -355,59 +356,43 @@ using namespace ngraph::runtime;
                 if (!node->is_parameter() && !node->is_constant())
                 {
                     names.push_back(node->get_name());
+                    m_name_index_map.insert({node->get_name(), index++});
                 }
             }
         }
-        for (const string& s : names)
-        {
-            writer << "ngraph::stopwatch timer_" << s << ";\n";
-        }
+        writer << "ngraph::stopwatch timers[" << names.size() << "];\n";
         writer << "extern \"C\" size_t get_debug_timer_count() { return " << names.size()
                << "; }\n";
         writer << "extern \"C\" const char* get_debug_timer_name(size_t index)\n";
         writer << "{\n";
         writer.indent++;
-        writer << "const char* rc;\n";
-        writer << "switch(index)\n";
+        writer << "static const char* timer_names[" << names.size() << "] =\n";
         writer << "{\n";
-        for (size_t i = 0; i < names.size(); i++)
+        writer.indent++;
+        vector<string> quoted_names;
+        for (const string& name : names)
         {
-            writer << "case " << i << ": rc = \"" << names[i] << "\"; break;\n";
+            quoted_names.push_back("\"" + name + "\"");
         }
-        writer << "default: rc = \"\";\n";
-        writer << "}\n";
-        writer << "return rc;\n";
+        writer << emit_string_array(quoted_names, 100 - (4 * 2));
+        writer << "\n};\n";
+        writer.indent--;
+        writer << "return timer_names[index];\n";
         writer.indent--;
         writer << "}\n";
+
         writer << "extern \"C\" const size_t get_debug_timer_microseconds(size_t index)\n";
         writer << "{\n";
         writer.indent++;
-        writer << "size_t rc;\n";
-        writer << "switch(index)\n";
-        writer << "{\n";
-        for (size_t i = 0; i < names.size(); i++)
-        {
-            writer << "case " << i << ": rc = timer_" << names[i]
-                   << ".get_total_microseconds(); break;\n";
-        }
-        writer << "default: rc = 0;\n";
-        writer << "}\n";
-        writer << "return rc;\n";
+        writer << "return (index < " << names.size()
+               << " ? timers[index].get_total_microseconds() : 0);\n";
         writer.indent--;
         writer << "}\n";
+
         writer << "extern \"C\" const size_t get_debug_timer_call_count(size_t index)\n";
         writer << "{\n";
         writer.indent++;
-        writer << "size_t rc;\n";
-        writer << "switch(index)\n";
-        writer << "{\n";
-        for (size_t i = 0; i < names.size(); i++)
-        {
-            writer << "case " << i << ": rc = timer_" << names[i] << ".get_call_count(); break;\n";
-        }
-        writer << "default: rc = 0;\n";
-        writer << "}\n";
-        writer << "return rc;\n";
+        writer << "return (index < " << names.size() << " ? timers[index].get_call_count() : 0);\n";
         writer.indent--;
         writer << "}\n";
         writer << "\n";
@@ -426,30 +411,12 @@ using namespace ngraph::runtime;
                                 "uint32_t",
                                 "uint64_t"};
 
-        writer << "#include <fstream>\n";
         string dump_temps_dir = "dump_temporaries";
         file_util::make_directory(dump_temps_dir);
         for (const string& type : types)
         {
-            writer << "static void dump_tensor_" << type << "(const std::string& name, const "
-                   << type << "* data, size_t count)\n";
-            writer << "{\n";
-            writer.indent++;
-            writer << "std::string result_file = \"" << dump_temps_dir
-                   << "/\" + name + \".txt\";\n";
-            writer << "std::ofstream f(result_file);\n";
-            writer << "if (f)\n";
-            writer << "{\n";
-            writer.indent++;
-            writer << "f << data[0];\n";
-            writer << "for (size_t i = 1; i < count; i++)\n";
-            writer << "{\n";
-            writer << "    f << \", \" << data[i];\n";
-            writer << "}\n";
-            writer.indent--;
-            writer << "}\n";
-            writer.indent--;
-            writer << "}\n\n";
+            writer << "extern void dump_tensor_" << type << "(const char* name, const " << type
+                   << "* data, size_t count);\n";
         }
     }
 
@@ -978,7 +945,7 @@ void runtime::cpu::CPU_ExternalFunction::emit_debug_function_entry(
 {
     if (m_emit_timing)
     {
-        writer << "timer_" << node->get_name() << ".start();\n";
+        writer << "timers[" << m_name_index_map[node->get_name()] << "].start();\n";
     }
 }
 
@@ -990,7 +957,7 @@ void runtime::cpu::CPU_ExternalFunction::emit_debug_function_exit(
 {
     if (m_emit_timing)
     {
-        writer << "timer_" << node->get_name() << ".stop();\n";
+        writer << "timers[" << m_name_index_map[node->get_name()] << "].stop();\n";
     }
     if (m_dump_tensors)
     {

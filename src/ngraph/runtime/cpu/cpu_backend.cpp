@@ -14,8 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/runtime/cpu/cpu_backend.hpp"
+#include <fstream>
+#include <string>
+
+#include "ngraph/file_util.hpp"
 #include "ngraph/log.hpp"
+#include "ngraph/runtime/cpu/cpu_backend.hpp"
 #include "ngraph/runtime/cpu/cpu_tensor_view.hpp"
 #include "ngraph/runtime/external_function.hpp"
 
@@ -34,4 +38,72 @@ std::shared_ptr<ngraph::runtime::TensorView>
 {
     auto rc = make_shared<runtime::cpu::CPUTensorView>(element_type, shape);
     return dynamic_pointer_cast<runtime::TensorView>(rc);
+}
+
+// The following functions are here for use by the emitted code
+// These functions are used nowhere else, only in the emitted code
+// Their simple function signatures are designed to comppile quickly in the emitted code
+template <typename T>
+static void dump_tensor(const string& name, const T* data, size_t count)
+{
+    string result_file = file_util::path_join("dump_temporaries", name + ".txt");
+    ofstream f(result_file);
+    if (f)
+    {
+        f << data[0];
+        for (size_t i = 1; i < count; i++)
+        {
+            f << ", " << data[i];
+        }
+    }
+}
+
+void dump_tensor_float(const char* name, const float* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_double(const char* name, const double* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_int8_t(const char* name, const int8_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_int16_t(const char* name, const int16_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_int32_t(const char* name, const int32_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_int64_t(const char* name, const int64_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_uint8_t(const char* name, const uint8_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_uint16_t(const char* name, const uint16_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_uint32_t(const char* name, const uint32_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
+}
+
+void dump_tensor_uint64_t(const char* name, const uint64_t* data, size_t count)
+{
+    dump_tensor(name, data, count);
 }

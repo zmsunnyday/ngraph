@@ -118,6 +118,7 @@ namespace ngraph
                 bool m_use_tbb;
                 bool m_dump_tensors;
                 std::unordered_map<std::string, std::string> m_variable_name_map;
+                std::map<std::string, size_t> m_name_index_map;
 
                 LayoutDescriptorPtrs parameter_layout_descriptors;
                 LayoutDescriptorPtrs result_layout_descriptors;
