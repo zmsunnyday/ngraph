@@ -16,4 +16,5 @@
 
 #include <string>
 
-const std::string rewrite_header(const std::string& s, const std::string& path);
+std::string normalize_path(const std::string& path);
+std::string rewrite_header(const std::string& s, std::string path);

@@ -170,7 +170,7 @@ HeaderInfo Compiler::collect_headers(const string& source)
 
     // CodeGen options
     auto& codegen_options = m_compiler->getInvocation().getCodeGenOpts();
-    codegen_options.OptimizationLevel = 3;
+    codegen_options.OptimizationLevel = 0;
     codegen_options.RelocationModel = "static";
     // codegen_options.CodeModel = "medium";
     codegen_options.ThreadModel = "posix";
@@ -179,21 +179,6 @@ HeaderInfo Compiler::collect_headers(const string& source)
     codegen_options.VectorizeLoop = 1;
     codegen_options.VectorizeSLP = 1;
     codegen_options.CXAAtExit = 1;
-
-    // Enable various target features
-    // Most of these are for Eigen
-    auto& target_options = m_compiler->getInvocation().getTargetOpts();
-
-    target_options.CPU = sys::getHostCPUName();
-    target_options.FeaturesAsWritten.emplace_back("+sse");
-    target_options.FeaturesAsWritten.emplace_back("+sse2");
-    target_options.FeaturesAsWritten.emplace_back("+sse3");
-    target_options.FeaturesAsWritten.emplace_back("+ssse3");
-    target_options.FeaturesAsWritten.emplace_back("+sse4.1");
-    target_options.FeaturesAsWritten.emplace_back("+sse4.2");
-    target_options.FeaturesAsWritten.emplace_back("+avx");
-    target_options.FeaturesAsWritten.emplace_back("+avx2");
-    target_options.FeaturesAsWritten.emplace_back("+fma");
 
     // Map code filename to a memoryBuffer
     StringRef source_ref(source);

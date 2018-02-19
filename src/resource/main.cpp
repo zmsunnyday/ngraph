@@ -52,18 +52,29 @@ int main(int argc, char** argv)
     HeaderInfo header_info = collect_headers();
 
     // test for changes to any headers
-    bool update_needed = main_timestamp > output_timestamp;
-    if (!update_needed)
+    bool update_needed = true;
+    // bool update_needed = main_timestamp > output_timestamp;
+    // if (!update_needed)
+    // {
+    //     for (const string& header_file : header_info.headers)
+    //     {
+    //         time_t file_timestamp = get_timestamp(header_file);
+    //         if (file_timestamp > output_timestamp)
+    //         {
+    //             update_needed = true;
+    //             break;
+    //         }
+    //     }
+    // }
+
+    for (const string& path : header_info.search_paths)
     {
-        for (const string& header_file : header_info.headers)
-        {
-            time_t file_timestamp = get_timestamp(header_file);
-            if (file_timestamp > output_timestamp)
-            {
-                update_needed = true;
-                break;
-            }
-        }
+        cout << "search path: " << path << endl;
+    }
+
+    for (const string& header : header_info.headers)
+    {
+        cout << "header: " << header << endl;
     }
 
     if (update_needed)
@@ -71,70 +82,91 @@ int main(int argc, char** argv)
         ofstream out(output_path);
         out << "#pragma clang diagnostic ignored \"-Weverything\"\n";
         out << "#include <vector>\n";
+        out << "#include <string>\n";
         out << "namespace ngraph\n";
         out << "{\n";
-        out << "    static const uint8_t header_resources[] =\n";
+        out << "    static const std::vector<std::string> search_paths =\n";
         out << "    {\n";
-        vector<pair<size_t, size_t>> offset_size_list;
-        size_t offset = 0;
+        for (const std::string& path : header_info.search_paths)
+        {
+            out << "        \"" << path << "\",\n";
+        }
+        out << "    };\n";
+        // vector<pair<size_t, size_t>> offset_size_list;
+        // size_t offset = 0;
         size_t total_size = 0;
         size_t total_count = 0;
-        stopwatch timer;
-        timer.start();
+        // stopwatch timer;
+        // timer.start();
 
-        for (const string& header_file : header_info.headers)
+        out << "    static const std::vector<std::pair<std::string, std::string>> headers =\n";
+        out << "    {\n";
+        for (const string& header_path : header_info.headers)
         {
-            string header_data = read_file_to_string(header_file);
-            string base_path;
-            for (const string& p : header_info.search_paths)
-            {
-                if (starts_with(header_file, p))
-                {
-                    base_path = p;
-                    break;
-                }
-            }
-            header_data = rewrite_header(header_data, base_path);
+            string header_data = read_file_to_string(header_path);
+            header_data = rewrite_header(header_data, header_path);
             // header_data = uncomment(header_data);
             total_size += header_data.size();
             total_count++;
 
-            // data layout is triplet of strings containing:
-            // 1) search path
-            // 2) header path within search path
-            // 3) header data
-            // all strings are null terminated and the length includes the null
-            // The + 1 below is to account for the null terminator
-            dump(out, base_path.c_str(), base_path.size() + 1);
-            offset_size_list.push_back({offset, base_path.size() + 1});
-            offset += base_path.size() + 1;
-
-            dump(out, header_file.c_str(), header_file.size() + 1);
-            offset_size_list.push_back({offset, header_file.size() + 1});
-            offset += header_file.size() + 1;
-
-            dump(out, header_data.c_str(), header_data.size() + 1);
-            offset_size_list.push_back({offset, header_data.size() + 1});
-            offset += header_data.size() + 1;
-        }
-        timer.stop();
-        cout << "collection time " << timer.get_milliseconds() << "ms\n";
-        out << "    };\n";
-        out << "    struct HeaderInfo\n";
-        out << "    {\n";
-        out << "        const char* search_path;\n";
-        out << "        const char* header_path;\n";
-        out << "        const char* header_data;\n";
-        out << "    };\n";
-        out << "    std::vector<HeaderInfo> header_info\n";
-        out << "    {\n";
-        for (size_t i = 0; i < offset_size_list.size();)
-        {
-            out << "        {(char*)(&header_resources[" << offset_size_list[i++].first;
-            out << "]), (char*)(&header_resources[" << offset_size_list[i++].first;
-            out << "]), (char*)(&header_resources[" << offset_size_list[i++].first << "])},\n";
+            out << "        {";
+            out << "\"" << header_path << "\",\nR\"$@$(" << header_data << ")$@$\"},\n";
         }
         out << "    };\n";
+
+        // for (const string& header_file : header_info.headers)
+        // {
+        //     string header_data = read_file_to_string(header_file);
+        //     string base_path;
+        //     for (const string& p : header_info.search_paths)
+        //     {
+        //         if (starts_with(header_file, p))
+        //         {
+        //             base_path = p;
+        //             break;
+        //         }
+        //     }
+        //     header_data = rewrite_header(header_data, base_path);
+        //     // header_data = uncomment(header_data);
+        //     total_size += header_data.size();
+        //     total_count++;
+
+        //     // data layout is triplet of strings containing:
+        //     // 1) search path
+        //     // 2) header path within search path
+        //     // 3) header data
+        //     // all strings are null terminated and the length includes the null
+        //     // The + 1 below is to account for the null terminator
+        //     dump(out, base_path.c_str(), base_path.size() + 1);
+        //     offset_size_list.push_back({offset, base_path.size() + 1});
+        //     offset += base_path.size() + 1;
+
+        //     dump(out, header_file.c_str(), header_file.size() + 1);
+        //     offset_size_list.push_back({offset, header_file.size() + 1});
+        //     offset += header_file.size() + 1;
+
+        //     dump(out, header_data.c_str(), header_data.size() + 1);
+        //     offset_size_list.push_back({offset, header_data.size() + 1});
+        //     offset += header_data.size() + 1;
+        // }
+        // timer.stop();
+        // cout << "collection time " << timer.get_milliseconds() << "ms\n";
+        // out << "    };\n";
+        // out << "    struct HeaderInfo\n";
+        // out << "    {\n";
+        // out << "        const char* search_path;\n";
+        // out << "        const char* header_path;\n";
+        // out << "        const char* header_data;\n";
+        // out << "    };\n";
+        // out << "    std::vector<HeaderInfo> header_info\n";
+        // out << "    {\n";
+        // for (size_t i = 0; i < offset_size_list.size();)
+        // {
+        //     out << "        {(char*)(&header_resources[" << offset_size_list[i++].first;
+        //     out << "]), (char*)(&header_resources[" << offset_size_list[i++].first;
+        //     out << "]), (char*)(&header_resources[" << offset_size_list[i++].first << "])},\n";
+        // }
+        // out << "    };\n";
         out << "}\n";
         cout.imbue(locale(""));
         cout << "Total size " << total_size << " in " << total_count << " files\n";
