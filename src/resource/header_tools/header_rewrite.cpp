@@ -53,10 +53,12 @@ string rewrite_header(const string& s, string path)
 {
     path = normalize_path(path);
     cout << "path1: " << path << endl;
-    auto offset = path.find_last_of("/");
-    if (offset != string::npos)
     {
-        path = path.substr(0, offset);
+        auto offset = path.find_last_of("/");
+        if (offset != string::npos)
+        {
+            path = path.substr(0, offset);
+        }
     }
     cout << "path2: " << path << endl;
     stringstream ss(s);

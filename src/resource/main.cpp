@@ -110,7 +110,7 @@ int main(int argc, char** argv)
             total_count++;
 
             out << "        {";
-            out << "\"" << header_path << "\",\nR\"$@$(" << header_data << ")$@$\"},\n";
+            out << "\"" << header_path << "\",\nR\"pReFiX(" << header_data << ")pReFiX\"},\n";
         }
         out << "    };\n";
 
