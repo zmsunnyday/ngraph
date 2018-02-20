@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         out << "#include <string>\n";
         out << "namespace ngraph\n";
         out << "{\n";
-        out << "    static const std::vector<std::string> search_paths =\n";
+        out << "    const std::vector<std::string> builtin_search_paths =\n";
         out << "    {\n";
         for (const std::string& path : header_info.search_paths)
         {
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
         // stopwatch timer;
         // timer.start();
 
-        out << "    static const std::vector<std::pair<std::string, std::string>> headers =\n";
+        out << "    const std::vector<std::pair<std::string, std::string>> builtin_headers =\n";
         out << "    {\n";
         for (const string& header_path : header_info.headers)
         {
