@@ -73,9 +73,9 @@ using namespace std;
 using namespace ngraph;
 
 static codegen::StaticCompiler s_static_compiler;
-static std::mutex m_mutex;
+static mutex m_mutex;
 
-codegen::Module::Module(std::unique_ptr<llvm::Module> module)
+codegen::Module::Module(unique_ptr<llvm::Module>& module)
     : m_module(move(module))
 {
 }
@@ -84,7 +84,7 @@ codegen::Module::~Module()
 {
 }
 
-std::unique_ptr<llvm::Module> codegen::Module::take_module()
+unique_ptr<llvm::Module> codegen::Module::take_module()
 {
     return move(m_module);
 }
@@ -97,23 +97,23 @@ codegen::Compiler::~Compiler()
 {
 }
 
-void codegen::Compiler::set_precompiled_header_source(const std::string& source)
+void codegen::Compiler::set_precompiled_header_source(const string& source)
 {
     s_static_compiler.set_precompiled_header_source(source);
 }
 
-void codegen::Compiler::add_header_search_path(const std::string& path)
+void codegen::Compiler::add_header_search_path(const string& path)
 {
     s_static_compiler.add_header_search_path(path);
 }
 
-std::unique_ptr<codegen::Module> codegen::Compiler::compile(const std::string& source)
+unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 {
     lock_guard<mutex> lock(m_mutex);
-    return s_static_compiler.compile(m_compiler_action, source);
+    return s_static_compiler.compile(source);
 }
 
-static std::string GetExecutablePath(const char* Argv0)
+static string GetExecutablePath(const char* Argv0)
 {
     // This just needs to be some symbol in the binary; C++ doesn't
     // allow taking the address of ::main however.
@@ -123,8 +123,8 @@ static std::string GetExecutablePath(const char* Argv0)
 
 codegen::StaticCompiler::StaticCompiler()
     : m_precompiled_header_valid(false)
-    , m_debuginfo_enabled((std::getenv("NGRAPH_COMPILER_DEBUGINFO_ENABLE") != nullptr))
-    , m_enable_diag_output((std::getenv("NGRAPH_COMPILER_DIAG_ENABLE") != nullptr))
+    , m_debuginfo_enabled((getenv("NGRAPH_COMPILER_DEBUGINFO_ENABLE") != nullptr))
+    , m_enable_diag_output((getenv("NGRAPH_COMPILER_DIAG_ENABLE") != nullptr))
     , m_source_name("code.cpp")
 {
     initialize();
@@ -157,7 +157,7 @@ void codegen::StaticCompiler::initialize()
     DiagnosticsEngine diag_engine(diag_id, &*diag_options);
 
     // Create and initialize CompilerInstance
-    m_compiler = std::unique_ptr<CompilerInstance>(new CompilerInstance());
+    m_compiler = unique_ptr<CompilerInstance>(new CompilerInstance());
     DiagnosticConsumer* diag_consumer;
     if (m_enable_diag_output)
     {
@@ -255,63 +255,64 @@ void codegen::StaticCompiler::add_header_search_path(const string& path)
     }
 }
 
-std::unique_ptr<codegen::Module>
-    codegen::StaticCompiler::compile(std::unique_ptr<clang::CodeGenAction>& compiler_action,
-                                     const string& source)
+unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& source)
 {
-    PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
-
-    preprocessor_options.RetainRemappedFileBuffers = true;
-
-    if (!m_precompiled_header_valid && m_precomiled_header_source.empty() == false)
-    {
-        generate_pch(m_precomiled_header_source);
-    }
-    if (m_precompiled_header_valid)
-    {
-        // Preprocessor options
-        preprocessor_options.ImplicitPCHInclude = m_pch_path;
-        preprocessor_options.DisablePCHValidation = 0;
-    }
-
-    // Clear warnings and errors
-    m_compiler->getDiagnosticClient().clear();
-
-    // Map code filename to a memoryBuffer
-    StringRef source_ref(source);
-    unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
-    preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
-
-    // Create and execute action
-    compiler_action.reset(new EmitCodeGenOnlyAction());
-    std::unique_ptr<llvm::Module> rc;
-    bool reinitialize = false;
-    if (m_compiler->ExecuteAction(*compiler_action) == true)
-    {
-        rc = compiler_action->takeModule();
-    }
-    else
-    {
-        reinitialize = true;
-    }
-
-    buffer.release();
-
-    preprocessor_options.RemappedFileBuffers.pop_back();
-
     unique_ptr<codegen::Module> result;
-    if (rc)
     {
-        result = move(unique_ptr<codegen::Module>(new codegen::Module(move(rc))));
-    }
-    else
-    {
-        result = move(unique_ptr<codegen::Module>(nullptr));
-    }
+        PreprocessorOptions& preprocessor_options =
+            m_compiler->getInvocation().getPreprocessorOpts();
 
-    if (reinitialize)
-    {
-        codegen::StaticCompiler::initialize();
+        // Clear warnings and errors
+        m_compiler->getDiagnosticClient().clear();
+
+        preprocessor_options.RetainRemappedFileBuffers = true;
+
+        if (!m_precompiled_header_valid && m_precomiled_header_source.empty() == false)
+        {
+            generate_pch(m_precomiled_header_source);
+        }
+        if (m_precompiled_header_valid)
+        {
+            // Preprocessor options
+            preprocessor_options.ImplicitPCHInclude = m_pch_path;
+            preprocessor_options.DisablePCHValidation = 0;
+        }
+
+        // Map code filename to a memoryBuffer
+        StringRef source_ref(source);
+        unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
+        preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
+
+        // Create and execute action
+        unique_ptr<llvm::Module> rc;
+        bool reinitialize = false;
+        m_compiler_action = unique_ptr<clang::CodeGenAction>(new EmitCodeGenOnlyAction());
+        if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+        {
+            rc = m_compiler_action->takeModule();
+        }
+        else
+        {
+            reinitialize = true;
+        }
+
+        buffer.release();
+
+        preprocessor_options.RemappedFileBuffers.pop_back();
+
+        if (rc)
+        {
+            result = move(unique_ptr<codegen::Module>(new codegen::Module(rc)));
+        }
+        else
+        {
+            result = move(unique_ptr<codegen::Module>(nullptr));
+        }
+
+        if (reinitialize)
+        {
+            codegen::StaticCompiler::initialize();
+        }
     }
 
     return result;
@@ -370,7 +371,7 @@ void codegen::StaticCompiler::configure_search_path()
     // and add them to the header search path
 
     file_util::iterate_files("/usr/include/x86_64-linux-gnu/c++/",
-                             [&](const std::string& file, bool is_dir) {
+                             [&](const string& file, bool is_dir) {
                                  if (is_dir)
                                  {
                                      string dir_name = file_util::get_file_name(file);
@@ -381,7 +382,7 @@ void codegen::StaticCompiler::configure_search_path()
                                  }
                              });
 
-    file_util::iterate_files("/usr/include/c++/", [&](const std::string& file, bool is_dir) {
+    file_util::iterate_files("/usr/include/c++/", [&](const string& file, bool is_dir) {
         if (is_dir)
         {
             string dir_name = file_util::get_file_name(file);
@@ -429,7 +430,7 @@ void codegen::StaticCompiler::load_headers_from_resource()
     }
 }
 
-void codegen::StaticCompiler::set_precompiled_header_source(const std::string& source)
+void codegen::StaticCompiler::set_precompiled_header_source(const string& source)
 {
     m_precomiled_header_source = source;
 }

@@ -852,12 +852,12 @@ using namespace ngraph::runtime;
     out << code;
     out.close();
 
-    m_compiler.reset(new codegen::Compiler());
+    codegen::Compiler compiler{};
     m_execution_engine.reset(new codegen::ExecutionEngine());
 
-    m_compiler->set_precompiled_header_source(pch_header_source);
+    compiler.set_precompiled_header_source(pch_header_source);
 
-    auto codegen_module = m_compiler->compile(code);
+    auto codegen_module = compiler.compile(code);
 
     if (codegen_module == nullptr)
     {

@@ -47,7 +47,7 @@ namespace llvm
 class ngraph::codegen::Module
 {
 public:
-    Module(std::unique_ptr<llvm::Module> module);
+    Module(std::unique_ptr<llvm::Module>& module);
     ~Module();
     std::unique_ptr<llvm::Module> take_module();
 
@@ -63,9 +63,6 @@ public:
     void set_precompiled_header_source(const std::string& source);
     void add_header_search_path(const std::string& path);
     std::unique_ptr<ngraph::codegen::Module> compile(const std::string& source);
-private:
-    std::unique_ptr<clang::CodeGenAction>& get_compiler_action() { return m_compiler_action; }
-    std::unique_ptr<clang::CodeGenAction> m_compiler_action;
 };
 
 class ngraph::codegen::StaticCompiler
@@ -79,8 +76,7 @@ public:
     void set_precompiled_header_source(const std::string& source);
     void add_header_search_path(const std::string& path);
 
-    std::unique_ptr<ngraph::codegen::Module>
-        compile(std::unique_ptr<clang::CodeGenAction>& compiler_action, const std::string& source);
+    std::unique_ptr<ngraph::codegen::Module> compile(const std::string& source);
     void generate_pch(const std::string& source);
     void initialize();
 
@@ -93,6 +89,7 @@ private:
     std::vector<std::string> m_extra_search_path_list;
     std::string m_pch_path;
     std::string m_precomiled_header_source;
+    std::unique_ptr<clang::CodeGenAction> m_compiler_action;
 
     bool is_version_number(const std::string& path);
     void configure_search_path();

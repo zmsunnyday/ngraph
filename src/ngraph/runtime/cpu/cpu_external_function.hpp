@@ -112,7 +112,6 @@ namespace ngraph
                 std::string emit_op_as_function(const Node&, const std::string& function_name);
                 std::string strip_comments(const std::string&);
 
-                std::unique_ptr<codegen::Compiler> m_compiler;
                 std::unique_ptr<codegen::ExecutionEngine> m_execution_engine;
                 bool m_emit_timing;
                 bool m_use_tbb;
