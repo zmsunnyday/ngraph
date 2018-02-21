@@ -256,7 +256,7 @@ void codegen::StaticCompiler::add_header_search_path(const string& path)
 }
 
 std::unique_ptr<codegen::Module>
-    codegen::StaticCompiler::compile(std::unique_ptr<clang::CodeGenAction>& m_compiler_action,
+    codegen::StaticCompiler::compile(std::unique_ptr<clang::CodeGenAction>& compiler_action,
                                      const string& source)
 {
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
@@ -283,12 +283,12 @@ std::unique_ptr<codegen::Module>
     preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
 
     // Create and execute action
-    m_compiler_action.reset(new EmitCodeGenOnlyAction());
+    compiler_action.reset(new EmitCodeGenOnlyAction());
     std::unique_ptr<llvm::Module> rc;
     bool reinitialize = false;
-    if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+    if (m_compiler->ExecuteAction(*compiler_action) == true)
     {
-        rc = m_compiler_action->takeModule();
+        rc = compiler_action->takeModule();
     }
     else
     {
