@@ -1,18 +1,16 @@
-/*******************************************************************************
-* Copyright 2017-2018 Intel Corporation
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*******************************************************************************/
+// ----------------------------------------------------------------------------
+// Copyright 2017 Nervana Systems Inc.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// ----------------------------------------------------------------------------
 
 #include <sstream>
 #include <vector>
@@ -22,13 +20,47 @@
 
 using namespace std;
 
+std::string normalize_path(const std::string& path)
+{
+    auto parts = split(path, '/');
+    string rc;
+    for (auto it = parts.rbegin(); it != parts.rend(); ++it)
+    {
+        if (it->empty())
+        {
+        }
+        else if (*it == ".")
+        {
+        }
+        else if (*it == "..")
+        {
+            ++it;
+        }
+        else
+        {
+            rc = "/" + *it + rc;
+        }
+    }
+    return rc;
+}
+
 // This function rewrites all of the
 // #include "../../blah"
 // into something with a dotless relative path. It seems that clang can't handle the .. stuff
 // when the header files are stored in its in-memory filesystem.
 // Eigen has a lot of .. in their header files.
-const string rewrite_header(const string& s, const string& path)
+string rewrite_header(const string& s, string path)
 {
+    path = normalize_path(path);
+    cout << "path1: " << path << endl;
+    {
+        auto offset = path.find_last_of("/");
+        if (offset != string::npos)
+        {
+            path = path.substr(0, offset);
+        }
+    }
+    cout << "path2: " << path << endl;
     stringstream ss(s);
     stringstream out;
     for (string line; ss; getline(ss, line))
@@ -66,6 +98,7 @@ const string rewrite_header(const string& s, const string& path)
                             }
                             else
                             {
+                                cout << "bad include: " << include << endl;
                                 // include starts with '../'
                                 // count number of '../' in string
                                 size_t offset = 0;
@@ -85,6 +118,7 @@ const string rewrite_header(const string& s, const string& path)
                                     added_path += parts[i] + "/";
                                 }
                                 contents = added_path + trimmed;
+                                cout << "fixed include: " << contents << endl;
                             }
                             if (include[0] == '<')
                             {
