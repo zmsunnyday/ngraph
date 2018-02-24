@@ -416,7 +416,7 @@ void codegen::StaticCompiler::load_headers_from_resource()
         string builtin = "/$builtin" + search_path;
         hso.AddPath(builtin, clang::frontend::System, false, false);
         header_search_paths.insert(search_path);
-        NGRAPH_INFO << builtin;
+        cout << builtin << endl;
     }
     for (const std::pair<std::string, std::string>& header : builtin_headers)
     {
@@ -424,7 +424,7 @@ void codegen::StaticCompiler::load_headers_from_resource()
         std::unique_ptr<llvm::MemoryBuffer> mb(
             llvm::MemoryBuffer::getMemBuffer(header.second, builtin));
         preprocessor_options.addRemappedFile(builtin, mb.release());
-        NGRAPH_INFO << builtin;
+        cout << builtin << endl;
     }
 }
 
