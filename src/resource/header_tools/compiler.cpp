@@ -95,21 +95,19 @@ class FindNamedClassConsumer : public clang::ASTConsumer
 {
 public:
     FindNamedClassConsumer(unordered_map<string, string>& files)
-        : Visitor(files)
+        : m_visitor(files)
     {
     }
     virtual void HandleTranslationUnit(clang::ASTContext& Context)
     {
-        cout << "HandleTranslationUnit " << endl;
-
-        // // Traversing the translation unit decl via a RecursiveASTVisitor
-        // // will visit all nodes in the AST.
-        Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+        // Traversing the translation unit decl via a RecursiveASTVisitor
+        // will visit all nodes in the AST.
+        m_visitor.TraverseDecl(Context.getTranslationUnitDecl());
     }
 
 private:
     // A RecursiveASTVisitor implementation.
-    FindNamedClassVisitor Visitor;
+    FindNamedClassVisitor m_visitor;
 };
 
 class FindNamedClassAction : public clang::ASTFrontendAction
@@ -124,25 +122,12 @@ public:
 
     bool BeginSourceFileAction(CompilerInstance& ci) override
     {
-        cout << "BeginSourceFileAction\n";
         std::unique_ptr<Find_Includes> find_includes_callback(new Find_Includes(m_include_files));
 
         Preprocessor& pp = ci.getPreprocessor();
         pp.addPPCallbacks(std::move(find_includes_callback));
 
         return true;
-    }
-
-    void EndSourceFileAction() override
-    {
-        cout << "EndSourceFileAction\n";
-        // CompilerInstance& ci = getCompilerInstance();
-        // Preprocessor& pp = ci.getPreprocessor();
-        // Find_Includes* find_includes_callback = static_cast<Find_Includes>(pp.getPPCallbacks());
-
-        // // do whatever you want with the callback now
-        // if (find_includes_callback->has_include)
-        //     std::cout << "Found at least one include" << std::endl;
     }
 
     unordered_map<string, string> m_include_files;
@@ -158,7 +143,6 @@ HeaderInfo Compiler::collect_headers(const string& source)
     vector<const char*> args;
     string source_name = "code.cpp";
     args.push_back(source_name.c_str());
-    // args.push_back("-H");
 
     // Prepare DiagnosticEngine
     string output;
