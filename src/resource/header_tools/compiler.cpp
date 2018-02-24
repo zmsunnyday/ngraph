@@ -60,7 +60,7 @@ using namespace std;
 class Find_Includes : public PPCallbacks
 {
 public:
-    Find_Includes(unordered_set<string>& include_files)
+    Find_Includes(unordered_map<string, pair<string, string>>& include_files)
         : m_include_files(include_files)
     {
     }
@@ -75,26 +75,27 @@ public:
                             StringRef relative_path,
                             const clang::Module* imported) override
     {
-        m_include_files.insert(file_name.str());
+        pair<string, string> path(search_path.str(), relative_path.str());
+        m_include_files.insert({file_name.str(), path});
     }
-    unordered_set<string>& m_include_files;
+    unordered_map<string, pair<string, string>>& m_include_files;
 };
 
 class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor>
 {
 public:
-    FindNamedClassVisitor(unordered_set<string>& files)
+    FindNamedClassVisitor(unordered_map<string, pair<string, string>>& files)
         : files_encountered(files)
     {
     }
 
-    unordered_set<string>& files_encountered;
+    unordered_map<string, pair<string, string>>& files_encountered;
 };
 
 class FindNamedClassConsumer : public clang::ASTConsumer
 {
 public:
-    FindNamedClassConsumer(unordered_set<string>& files)
+    FindNamedClassConsumer(unordered_map<string, pair<string, string>>& files)
         : Visitor(files)
     {
     }
@@ -120,7 +121,7 @@ public:
     {
         return std::unique_ptr<clang::ASTConsumer>(new FindNamedClassConsumer(files_encountered));
     }
-    unordered_set<string> files_encountered;
+    unordered_map<string, pair<string, string>> files_encountered;
 
     bool BeginSourceFileAction(CompilerInstance& ci) override
     {
@@ -145,7 +146,7 @@ public:
         //     std::cout << "Found at least one include" << std::endl;
     }
 
-    unordered_set<string> m_include_files;
+    unordered_map<string, pair<string, string>> m_include_files;
 };
 
 HeaderInfo Compiler::collect_headers(const string& source)
@@ -236,9 +237,9 @@ HeaderInfo Compiler::collect_headers(const string& source)
     // }
     buffer.release();
 
-    for (const string& include : action->m_include_files)
+    for (const pair<string, pair<string, string>>& include : action->m_include_files)
     {
-        cout << "include: " << include << endl;
+        cout << "include: " << include.first << endl;
     }
 
     preprocessor_options.RemappedFileBuffers.pop_back();
