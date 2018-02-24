@@ -57,6 +57,65 @@ using namespace llvm;
 using namespace llvm::opt;
 using namespace std;
 
+class Find_Includes : public PPCallbacks
+{
+public:
+    bool has_include;
+
+    void InclusionDirective(SourceLocation hash_loc,
+                            const Token& include_token,
+                            StringRef file_name,
+                            bool is_angled,
+                            CharSourceRange filename_range,
+                            const FileEntry* file,
+                            StringRef search_path,
+                            StringRef relative_path,
+                            const clang::Module* imported) override
+    {
+        cout << "InclusionDirective " << file_name.str() << endl;
+        // do something with the include
+        has_include = true;
+    }
+};
+
+class Include_Matching_Action : public ASTFrontendAction
+{
+    bool BeginSourceFileAction(CompilerInstance& ci) override
+    {
+        cout << "BeginSourceFileAction\n";
+        std::unique_ptr<Find_Includes> find_includes_callback(new Find_Includes());
+
+        Preprocessor& pp = ci.getPreprocessor();
+        pp.addPPCallbacks(std::move(find_includes_callback));
+
+        return true;
+    }
+
+    void EndSourceFileAction() override
+    {
+        cout << "EndSourceFileAction\n";
+        // CompilerInstance& ci = getCompilerInstance();
+        // Preprocessor& pp = ci.getPreprocessor();
+        // Find_Includes* find_includes_callback = static_cast<Find_Includes>(pp.getPPCallbacks());
+
+        // // do whatever you want with the callback now
+        // if (find_includes_callback->has_include)
+        //     std::cout << "Found at least one include" << std::endl;
+    }
+
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& CI, StringRef InFile) override
+    {
+        cout << "CreateASTConsumer\n";
+        return nullptr;
+    }
+
+    // bool usesPreprocessorOnly() const override
+    // {
+    //     cout << "usesPreprocessorOnly\n";
+    //     return true;
+    // }
+};
+
 class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor>
 {
 public:
@@ -113,12 +172,35 @@ private:
 class FindNamedClassAction : public clang::ASTFrontendAction
 {
 public:
-    virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler,
-                                                                  llvm::StringRef InFile)
+    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler,
+                                                          llvm::StringRef InFile) override
     {
         return std::unique_ptr<clang::ASTConsumer>(new FindNamedClassConsumer(files_encountered));
     }
     unordered_set<string> files_encountered;
+
+    bool BeginSourceFileAction(CompilerInstance& ci) override
+    {
+        cout << "BeginSourceFileAction\n";
+        std::unique_ptr<Find_Includes> find_includes_callback(new Find_Includes());
+
+        Preprocessor& pp = ci.getPreprocessor();
+        pp.addPPCallbacks(std::move(find_includes_callback));
+
+        return true;
+    }
+
+    void EndSourceFileAction() override
+    {
+        cout << "EndSourceFileAction\n";
+        // CompilerInstance& ci = getCompilerInstance();
+        // Preprocessor& pp = ci.getPreprocessor();
+        // Find_Includes* find_includes_callback = static_cast<Find_Includes>(pp.getPPCallbacks());
+
+        // // do whatever you want with the callback now
+        // if (find_includes_callback->has_include)
+        //     std::cout << "Found at least one include" << std::endl;
+    }
 };
 
 HeaderInfo Compiler::collect_headers(const string& source)
@@ -186,22 +268,35 @@ HeaderInfo Compiler::collect_headers(const string& source)
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
     preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
 
+    // m_compiler->createPreprocessor(TU_Module);
+    // if (m_compiler->hasPreprocessor())
+    // {
+    //     cout << "has preprocessor\n";
+    // }
+    // else
+    // {
+    //     cout << "no preprocessor\n";
+    // }
+
     // Create and execute action
     std::unique_ptr<clang::FrontendAction> m_compiler_action;
     FindNamedClassAction* action = new FindNamedClassAction();
     m_compiler_action.reset(action);
-    if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+    // Include_Matching_Action action;
+    if (m_compiler->ExecuteAction(*action) == true)
     {
     }
-
+    // if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+    // {
+    // }
     buffer.release();
 
     preprocessor_options.RemappedFileBuffers.pop_back();
 
     HeaderInfo rc;
-    rc.headers.insert(
-        rc.headers.begin(), action->files_encountered.begin(), action->files_encountered.end());
-    rc.search_paths = m_search_path_list;
+    // rc.headers.insert(
+    //     rc.headers.begin(), action->files_encountered.begin(), action->files_encountered.end());
+    // rc.search_paths = m_search_path_list;
 
     return rc;
 }
