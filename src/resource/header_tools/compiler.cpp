@@ -206,17 +206,15 @@ HeaderInfo Compiler::collect_headers(const string& source)
     }
     buffer.release();
 
-    for (const pair<string, string>& include : action->m_include_files)
-    {
-        cout << "include: " << include.first << ", " << include.second << endl;
-    }
-
     preprocessor_options.RemappedFileBuffers.pop_back();
 
     HeaderInfo rc;
-    // rc.headers.insert(
-    //     rc.headers.begin(), action->files_encountered.begin(), action->files_encountered.end());
-    // rc.search_paths = m_search_path_list;
+    for (const pair<string, string>& include : action->m_include_files)
+    {
+        cout << "include: " << include.first << ", " << include.second << endl;
+        rc.headers.push_back(file_util::path_join(include.second, include.first));
+    }
+    rc.search_paths = m_search_path_list;
 
     return rc;
 }
