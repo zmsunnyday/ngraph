@@ -80,68 +80,12 @@ public:
     unordered_set<string>& m_include_files;
 };
 
-class Include_Matching_Action : public ASTFrontendAction
-{
-public:
-    bool BeginSourceFileAction(CompilerInstance& ci) override
-    {
-        cout << "BeginSourceFileAction\n";
-        std::unique_ptr<Find_Includes> find_includes_callback(new Find_Includes(m_include_files));
-
-        Preprocessor& pp = ci.getPreprocessor();
-        pp.addPPCallbacks(std::move(find_includes_callback));
-
-        return true;
-    }
-
-    void EndSourceFileAction() override
-    {
-        cout << "EndSourceFileAction\n";
-        // CompilerInstance& ci = getCompilerInstance();
-        // Preprocessor& pp = ci.getPreprocessor();
-        // Find_Includes* find_includes_callback = static_cast<Find_Includes>(pp.getPPCallbacks());
-
-        // // do whatever you want with the callback now
-        // if (find_includes_callback->has_include)
-        //     std::cout << "Found at least one include" << std::endl;
-    }
-
-    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& CI, StringRef InFile) override
-    {
-        cout << "CreateASTConsumer\n";
-        return nullptr;
-    }
-
-    unordered_set<string> m_include_files;
-};
-
 class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor>
 {
 public:
     FindNamedClassVisitor(unordered_set<string>& files)
         : files_encountered(files)
     {
-    }
-    bool VisitDecl(Decl* decl)
-    {
-        // For debugging, dumping the AST nodes will show which nodes are already
-        // being visited.
-        // decl->dump();
-
-        // The return value indicates whether we want the visitation to proceed.
-        // Return false to stop the traversal of the AST.
-
-        if (decl->getLocation().isFileID())
-        {
-            string filename =
-                decl->getASTContext().getSourceManager().getFilename(decl->getLocation());
-            if (filename != "code.cpp" && filename != "")
-            {
-                files_encountered.insert(filename);
-            }
-        }
-
-        return true;
     }
 
     unordered_set<string>& files_encountered;
