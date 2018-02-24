@@ -60,7 +60,7 @@ using namespace std;
 class Find_Includes : public PPCallbacks
 {
 public:
-    Find_Includes(unordered_map<string, pair<string, string>>& include_files)
+    Find_Includes(unordered_map<string, string>& include_files)
         : m_include_files(include_files)
     {
     }
@@ -75,27 +75,26 @@ public:
                             StringRef relative_path,
                             const clang::Module* imported) override
     {
-        pair<string, string> path(search_path.str(), relative_path.str());
-        m_include_files.insert({file_name.str(), path});
+        m_include_files.insert({relative_path.str(), search_path.str()});
     }
-    unordered_map<string, pair<string, string>>& m_include_files;
+    unordered_map<string, string>& m_include_files;
 };
 
 class FindNamedClassVisitor : public RecursiveASTVisitor<FindNamedClassVisitor>
 {
 public:
-    FindNamedClassVisitor(unordered_map<string, pair<string, string>>& files)
+    FindNamedClassVisitor(unordered_map<string, string>& files)
         : files_encountered(files)
     {
     }
 
-    unordered_map<string, pair<string, string>>& files_encountered;
+    unordered_map<string, string>& files_encountered;
 };
 
 class FindNamedClassConsumer : public clang::ASTConsumer
 {
 public:
-    FindNamedClassConsumer(unordered_map<string, pair<string, string>>& files)
+    FindNamedClassConsumer(unordered_map<string, string>& files)
         : Visitor(files)
     {
     }
@@ -121,7 +120,7 @@ public:
     {
         return std::unique_ptr<clang::ASTConsumer>(new FindNamedClassConsumer(files_encountered));
     }
-    unordered_map<string, pair<string, string>> files_encountered;
+    unordered_map<string, string> files_encountered;
 
     bool BeginSourceFileAction(CompilerInstance& ci) override
     {
@@ -146,7 +145,7 @@ public:
         //     std::cout << "Found at least one include" << std::endl;
     }
 
-    unordered_map<string, pair<string, string>> m_include_files;
+    unordered_map<string, string> m_include_files;
 };
 
 HeaderInfo Compiler::collect_headers(const string& source)
@@ -214,32 +213,18 @@ HeaderInfo Compiler::collect_headers(const string& source)
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
     preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
 
-    // m_compiler->createPreprocessor(TU_Module);
-    // if (m_compiler->hasPreprocessor())
-    // {
-    //     cout << "has preprocessor\n";
-    // }
-    // else
-    // {
-    //     cout << "no preprocessor\n";
-    // }
-
     // Create and execute action
     std::unique_ptr<clang::FrontendAction> m_compiler_action;
     FindNamedClassAction* action = new FindNamedClassAction();
     m_compiler_action.reset(action);
-    // Include_Matching_Action action;
     if (m_compiler->ExecuteAction(*action) == true)
     {
     }
-    // if (m_compiler->ExecuteAction(*m_compiler_action) == true)
-    // {
-    // }
     buffer.release();
 
-    for (const pair<string, pair<string, string>>& include : action->m_include_files)
+    for (const pair<string, string>& include : action->m_include_files)
     {
-        cout << "include: " << include.first << endl;
+        cout << "include: " << include.first << ", " << include.second << endl;
     }
 
     preprocessor_options.RemappedFileBuffers.pop_back();
