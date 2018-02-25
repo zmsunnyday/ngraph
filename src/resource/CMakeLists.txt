@@ -35,7 +35,7 @@ if (NGRAPH_CPU_ENABLE)
     add_executable(resource_generator ${SRC})
 
     add_dependencies(resource_generator ext_llvm ext_eigen ext_mkldnn)
-    target_link_libraries(resource_generator ${LLVM_LINK_LIBS} Threads::Threads dl)
+    target_link_libraries(resource_generator ${LLVM_LINK_LIBS} Threads::Threads)
     set_source_files_properties(find_headers_used.cpp PROPERTIES COMPILE_FLAGS "-fno-rtti")
 
     set(HEADER_SEARCH_DEFINES
