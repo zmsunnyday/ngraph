@@ -20,10 +20,23 @@ if (NGRAPH_CPU_ENABLE)
         util.cpp
         uncomment.cpp
         header_rewrite.cpp
+        find_headers.cpp
+        find_headers_used.cpp
+        file_util.cpp
     )
 
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
+
+    link_directories(${LLVM_LIB_DIR})
+    include_directories(SYSTEM ${LLVM_INCLUDE_DIR})
+
     add_executable(resource_generator ${SRC})
+
     add_dependencies(resource_generator ext_llvm ext_eigen ext_mkldnn)
+    target_link_libraries(resource_generator ${LLVM_LINK_LIBS} Threads::Threads dl)
+    set_source_files_properties(find_headers_used.cpp PROPERTIES COMPILE_FLAGS "-fno-rtti")
 
     set(HEADER_SEARCH_DEFINES
         "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\""
@@ -37,7 +50,6 @@ if (NGRAPH_CPU_ENABLE)
         set(HEADER_SEARCH_DEFINES ${HEADER_SEARCH_DEFINES} "NGRAPH_TBB_ENABLE")
     endif()
 
-    message("HEADER_SEARCH_DEFINES ${HEADER_SEARCH_DEFINES}")
-
-    set_source_files_properties(main.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    set_source_files_properties(find_headers.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    set_source_files_properties(find_headers_used.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
 endif()
