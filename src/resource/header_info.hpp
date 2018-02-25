@@ -22,11 +22,17 @@ class HeaderInfo
 {
 public:
     HeaderInfo(const std::string& spath, const std::string& rpath)
-        : relative_path(rpath)
-        , search_path(spath)
+        : m_relative_path(rpath)
+        , m_search_path(spath)
+        , m_absolute_path(spath + "/" + rpath)
     {
     }
 
-    std::string relative_path;
-    std::string search_path;
+    std::string relative_path() const { return m_relative_path; }
+    std::string search_path() const { return m_search_path; }
+    std::string absolute_path() const { return m_absolute_path; }
+private:
+    std::string m_relative_path;
+    std::string m_search_path;
+    std::string m_absolute_path;
 };

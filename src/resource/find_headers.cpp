@@ -61,6 +61,7 @@ string find_path(const string& path)
 
 vector<HeaderInfo> FindHeaders::collect_headers()
 {
+    cout << "collect_headers\n";
     vector<ResourceInfo> include_paths;
     static vector<string> valid_ext = {".h", ".hpp", ".tcc", ""};
 
@@ -95,7 +96,6 @@ vector<HeaderInfo> FindHeaders::collect_headers()
     vector<HeaderInfo> rc;
     for (ResourceInfo& path : include_paths)
     {
-        // cout << "path " << path.source_path << " -> " << path.target_path << endl;
         vector<string> path_list;
         path_list.push_back(path.search_path);
         for (const string& p : path.subdirs)
@@ -111,7 +111,8 @@ vector<HeaderInfo> FindHeaders::collect_headers()
                                   string ext = get_file_ext(file);
                                   if (contains(valid_ext, ext))
                                   {
-                                      //   cout << "add " << path.search_path << ", " << file << endl;
+                                      string f = file.substr(path.search_path.size() + 1);
+                                      rc.push_back({path.search_path, f});
                                       path.files.push_back(file);
                                   }
                               }
