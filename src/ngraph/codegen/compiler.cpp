@@ -72,8 +72,8 @@ using namespace llvm;
 using namespace std;
 using namespace ngraph;
 
-static codegen::StaticCompiler s_static_compiler;
-static mutex m_mutex;
+// static codegen::StaticCompiler s_static_compiler;
+// static mutex m_mutex;
 
 codegen::Module::Module(unique_ptr<llvm::Module>& module)
     : m_module(move(module))
@@ -99,55 +99,35 @@ codegen::Compiler::~Compiler()
 
 void codegen::Compiler::set_precompiled_header_source(const string& source)
 {
-    s_static_compiler.set_precompiled_header_source(source);
+    // s_static_compiler.set_precompiled_header_source(source);
 }
 
 void codegen::Compiler::add_header_search_path(const string& path)
 {
-    s_static_compiler.add_header_search_path(path);
+    // s_static_compiler.add_header_search_path(path);
 }
 
 unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 {
-    lock_guard<mutex> lock(m_mutex);
-    return s_static_compiler.compile(source);
-}
-
-static string GetExecutablePath(const char* Argv0)
-{
-    // This just needs to be some symbol in the binary; C++ doesn't
-    // allow taking the address of ::main however.
-    void* MainAddr = reinterpret_cast<void*>(GetExecutablePath);
-    return llvm::sys::fs::getMainExecutable(Argv0, MainAddr);
-}
-
-codegen::StaticCompiler::StaticCompiler()
-    : m_precompiled_header_valid(false)
-    , m_debuginfo_enabled((getenv("NGRAPH_COMPILER_DEBUGINFO_ENABLE") != nullptr))
-    , m_enable_diag_output((getenv("NGRAPH_COMPILER_DIAG_ENABLE") != nullptr))
-    , m_source_name("code.cpp")
-{
-    initialize();
-}
-
-void codegen::StaticCompiler::initialize()
-{
-    m_extra_search_path_list.clear();
-
+    NGRAPH_INFO;
+    string source_name = "code.cpp";
     InitializeNativeTarget();
     LLVMInitializeNativeAsmPrinter();
     LLVMInitializeNativeAsmParser();
 
+    NGRAPH_INFO;
     // Prepare compilation arguments
     vector<const char*> args;
-    args.push_back(m_source_name.c_str());
+    args.push_back(source_name.c_str());
 
+    NGRAPH_INFO;
     // Inlining thresholds are forced to a very high value
     // to ensure all Eigen code gets properly inlined
     // This is for both Eigen strong and weak inlines
     args.push_back("-mllvm");
     args.push_back("-inline-threshold=1000000");
 
+    NGRAPH_INFO;
     // Prepare DiagnosticEngine
     IntrusiveRefCntPtr<DiagnosticOptions> diag_options = new DiagnosticOptions();
     diag_options->ErrorLimit = 20;
@@ -156,8 +136,9 @@ void codegen::StaticCompiler::initialize()
     IntrusiveRefCntPtr<DiagnosticIDs> diag_id(new DiagnosticIDs());
     DiagnosticsEngine diag_engine(diag_id, &*diag_options);
 
+    NGRAPH_INFO;
     // Create and initialize CompilerInstance
-    m_compiler = unique_ptr<CompilerInstance>(new CompilerInstance());
+    m_compiler_instance = unique_ptr<CompilerInstance>(new CompilerInstance());
     DiagnosticConsumer* diag_consumer;
     if (m_enable_diag_output)
     {
@@ -167,18 +148,21 @@ void codegen::StaticCompiler::initialize()
     {
         diag_consumer = new IgnoringDiagConsumer();
     }
-    m_compiler->createDiagnostics(diag_consumer);
+    m_compiler_instance->createDiagnostics(diag_consumer);
 
+    NGRAPH_INFO;
     // Initialize CompilerInvocation
     CompilerInvocation::CreateFromArgs(
-        m_compiler->getInvocation(), &args[0], &args[0] + args.size(), diag_engine);
+        m_compiler_instance->getInvocation(), &args[0], &args[0] + args.size(), diag_engine);
 
+    NGRAPH_INFO;
     configure_search_path();
 
+    NGRAPH_INFO;
     // Language options
     // These are the C++ features needed to compile ngraph headers
     // and any dependencies like Eigen
-    auto LO = m_compiler->getInvocation().getLangOpts();
+    auto LO = m_compiler_instance->getInvocation().getLangOpts();
     LO->CPlusPlus = 1;
     LO->CPlusPlus11 = 1;
     LO->Bool = 1;
@@ -190,8 +174,9 @@ void codegen::StaticCompiler::initialize()
     LO->OpenMP = 1;
     LO->OpenMPUseTLS = 1;
 
+    NGRAPH_INFO;
     // CodeGen options
-    auto& CGO = m_compiler->getInvocation().getCodeGenOpts();
+    auto& CGO = m_compiler_instance->getInvocation().getCodeGenOpts();
     CGO.OptimizationLevel = 3;
     CGO.RelocationModel = "static";
     // CGO.CodeModel = "medium";
@@ -202,71 +187,29 @@ void codegen::StaticCompiler::initialize()
     CGO.VectorizeSLP = 1;
     CGO.CXAAtExit = 1;
 
+    NGRAPH_INFO;
     if (m_debuginfo_enabled)
     {
         CGO.setDebugInfo(codegenoptions::FullDebugInfo);
     }
 
+    NGRAPH_INFO;
     // Enable various target features
-    auto& TO = m_compiler->getInvocation().getTargetOpts();
+    auto& TO = m_compiler_instance->getInvocation().getTargetOpts();
     TO.CPU = sys::getHostCPUName();
-}
 
-codegen::StaticCompiler::~StaticCompiler()
-{
-    // This is causing a segfault after program terminates
-    // will address later
-    // if (m_compiler)
-    // {
-    //     PreprocessorOptions& preprocessor_options =
-    //         m_compiler->getInvocation().getPreprocessorOpts();
-    //     for (auto& x : preprocessor_options.RemappedFileBuffers)
-    //     {
-    //         delete x.second;
-    //     }
-    //     m_compiler = nullptr;
-    // }
-}
-
-bool codegen::StaticCompiler::is_version_number(const string& path)
-{
-    bool rc = true;
-    vector<string> tokens = split(path, '.');
-    for (string s : tokens)
-    {
-        for (char c : s)
-        {
-            if (!isdigit(c))
-            {
-                rc = false;
-            }
-        }
-    }
-    return rc;
-}
-
-void codegen::StaticCompiler::add_header_search_path(const string& path)
-{
-    if (!contains(m_extra_search_path_list, path))
-    {
-        m_extra_search_path_list.push_back(path);
-        HeaderSearchOptions& hso = m_compiler->getInvocation().getHeaderSearchOpts();
-        hso.AddPath(path, clang::frontend::System, false, false);
-    }
-}
-
-unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& source)
-{
+    NGRAPH_INFO;
     unique_ptr<codegen::Module> result;
     {
         PreprocessorOptions& preprocessor_options =
-            m_compiler->getInvocation().getPreprocessorOpts();
+            m_compiler_instance->getInvocation().getPreprocessorOpts();
 
         // Clear warnings and errors
-        m_compiler->getDiagnosticClient().clear();
+        m_compiler_instance->getDiagnosticClient().clear();
 
         preprocessor_options.RetainRemappedFileBuffers = true;
 
+        NGRAPH_INFO;
         if (!m_precompiled_header_valid && m_precomiled_header_source.empty() == false)
         {
             generate_pch(m_precomiled_header_source);
@@ -278,18 +221,20 @@ unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& sourc
             preprocessor_options.DisablePCHValidation = 0;
         }
 
+        NGRAPH_INFO;
         // Map code filename to a memoryBuffer
         StringRef source_ref(source);
         unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
-        preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
+        preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
 
+        NGRAPH_INFO;
         // Create and execute action
         unique_ptr<llvm::Module> rc;
         bool reinitialize = false;
-        m_compiler_action = unique_ptr<clang::CodeGenAction>(new EmitCodeGenOnlyAction());
-        if (m_compiler->ExecuteAction(*m_compiler_action) == true)
+        auto action = new EmitCodeGenOnlyAction();
+        if (m_compiler_instance->ExecuteAction(*action) == true)
         {
-            rc = m_compiler_action->takeModule();
+            rc = action->takeModule();
         }
         else
         {
@@ -298,8 +243,10 @@ unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& sourc
 
         buffer.release();
 
+        NGRAPH_INFO;
         preprocessor_options.RemappedFileBuffers.pop_back();
 
+        NGRAPH_INFO;
         if (rc)
         {
             result = move(unique_ptr<codegen::Module>(new codegen::Module(rc)));
@@ -308,21 +255,81 @@ unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& sourc
         {
             result = move(unique_ptr<codegen::Module>(nullptr));
         }
-
-        if (reinitialize)
-        {
-            codegen::StaticCompiler::initialize();
-        }
+        NGRAPH_INFO;
     }
 
+    NGRAPH_INFO;
     return result;
 }
 
-void codegen::StaticCompiler::generate_pch(const string& source)
+// codegen::StaticCompiler::StaticCompiler()
+//     : m_precompiled_header_valid(false)
+//     , m_debuginfo_enabled((getenv("NGRAPH_COMPILER_DEBUGINFO_ENABLE") != nullptr))
+//     , m_enable_diag_output((getenv("NGRAPH_COMPILER_DIAG_ENABLE") != nullptr))
+//     , m_source_name("code.cpp")
+// {
+//     initialize();
+// }
+
+// void codegen::StaticCompiler::initialize()
+// {
+//     m_extra_search_path_list.clear();
+
+// }
+
+// codegen::StaticCompiler::~StaticCompiler()
+// {
+//     // This is causing a segfault after program terminates
+//     // will address later
+//     // if (m_compiler)
+//     // {
+//     //     PreprocessorOptions& preprocessor_options =
+//     //         m_compiler->getInvocation().getPreprocessorOpts();
+//     //     for (auto& x : preprocessor_options.RemappedFileBuffers)
+//     //     {
+//     //         delete x.second;
+//     //     }
+//     //     m_compiler = nullptr;
+//     // }
+// }
+
+// bool codegen::StaticCompiler::is_version_number(const string& path)
+// {
+//     bool rc = true;
+//     vector<string> tokens = split(path, '.');
+//     for (string s : tokens)
+//     {
+//         for (char c : s)
+//         {
+//             if (!isdigit(c))
+//             {
+//                 rc = false;
+//             }
+//         }
+//     }
+//     return rc;
+// }
+
+// void codegen::StaticCompiler::add_header_search_path(const string& path)
+// {
+//     if (!contains(m_extra_search_path_list, path))
+//     {
+//         m_extra_search_path_list.push_back(path);
+//         HeaderSearchOptions& hso = m_compiler->getInvocation().getHeaderSearchOpts();
+//         hso.AddPath(path, clang::frontend::System, false, false);
+//     }
+// }
+
+// unique_ptr<codegen::Module> codegen::StaticCompiler::compile(const string& source)
+// {
+// }
+
+void codegen::Compiler::generate_pch(const string& source)
 {
-    PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
+    PreprocessorOptions& preprocessor_options =
+        m_compiler_instance->getInvocation().getPreprocessorOpts();
     m_pch_path = file_util::tmp_filename();
-    m_compiler->getFrontendOpts().OutputFile = m_pch_path;
+    m_compiler_instance->getFrontendOpts().OutputFile = m_pch_path;
 
     // Map code filename to a memoryBuffer
     StringRef source_ref(source);
@@ -331,7 +338,7 @@ void codegen::StaticCompiler::generate_pch(const string& source)
 
     // Create and execute action
     clang::GeneratePCHAction* compilerAction = new clang::GeneratePCHAction();
-    if (m_compiler->ExecuteAction(*compilerAction) == true)
+    if (m_compiler_instance->ExecuteAction(*compilerAction) == true)
     {
         m_precompiled_header_valid = true;
     }
@@ -342,8 +349,9 @@ void codegen::StaticCompiler::generate_pch(const string& source)
     delete compilerAction;
 }
 
-void codegen::StaticCompiler::configure_search_path()
+void codegen::Compiler::configure_search_path()
 {
+    NGRAPH_INFO;
 #ifdef USE_BUILTIN
     load_headers_from_resource();
 #elif defined(__APPLE__)
@@ -399,22 +407,26 @@ void codegen::StaticCompiler::configure_search_path()
     add_header_search_path(NGRAPH_HEADERS_PATH);
     add_header_search_path(INSTALLED_HEADERS_PATH);
 #endif
+    NGRAPH_INFO;
 
 #ifdef CUDA_HEADER_PATHS
     // Only needed for GPU backend
     add_header_search_path(CUDA_HEADER_PATHS);
 #endif
+    NGRAPH_INFO;
 
 #ifdef NGRAPH_DISTRIBUTED
     add_header_search_path(MPI_HEADER_PATH);
 #endif
+    NGRAPH_INFO;
 }
 
-void codegen::StaticCompiler::load_headers_from_resource()
+void codegen::Compiler::load_headers_from_resource()
 {
     const string builtin_root = "/$builtin";
-    HeaderSearchOptions& hso = m_compiler->getInvocation().getHeaderSearchOpts();
-    PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
+    HeaderSearchOptions& hso = m_compiler_instance->getInvocation().getHeaderSearchOpts();
+    PreprocessorOptions& preprocessor_options =
+        m_compiler_instance->getInvocation().getPreprocessorOpts();
     for (const string& search_path : builtin_search_paths)
     {
         string builtin = builtin_root + search_path;
@@ -430,7 +442,7 @@ void codegen::StaticCompiler::load_headers_from_resource()
     }
 }
 
-void codegen::StaticCompiler::set_precompiled_header_source(const string& source)
-{
-    m_precomiled_header_source = source;
-}
+// void codegen::StaticCompiler::set_precompiled_header_source(const string& source)
+// {
+//     m_precomiled_header_source = source;
+// }
