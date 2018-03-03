@@ -36,4 +36,15 @@ if (NGRAPH_CPU_ENABLE)
 
     set_source_files_properties(abc.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
 
+    set(MNIST_SRC
+        mnist.cpp 
+        mnist_mlp.cpp
+    )
+
+    add_executable(mnist_mlp ${MNIST_SRC})
+    add_dependencies(mnist_mlp ngraph)
+    target_link_libraries(mnist_mlp ngraph)
+    set_source_files_properties(mnist.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    set_source_files_properties(mnist_mlp.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+
 endif()
