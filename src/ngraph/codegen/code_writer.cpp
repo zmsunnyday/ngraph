@@ -28,20 +28,45 @@ codegen::CodeWriter::CodeWriter()
 
 string codegen::CodeWriter::get_code() const
 {
-    return m_ss.str();
+    stringstream ss;
+
+    for (const string& include : m_includes)
+    {
+        ss << include << "\n";
+    }
+    ss << m_ss.str();
+
+    return ss.str();
 }
 
-void codegen::CodeWriter::operator+=(const std::string& s)
+void codegen::CodeWriter::operator+=(const string& s)
 {
     *this << s;
 }
 
-std::string codegen::CodeWriter::generate_temporary_name(std::string prefix)
+string codegen::CodeWriter::generate_temporary_name(string prefix)
 {
-    std::stringstream ss;
+    stringstream ss;
 
     ss << prefix << m_temporary_name_count;
     m_temporary_name_count++;
 
     return ss.str();
+}
+
+void codegen::CodeWriter::block_begin()
+{
+    *this << "{\n";
+    indent++;
+}
+
+void codegen::CodeWriter::block_end()
+{
+    indent--;
+    *this << "}\n";
+}
+
+void codegen::CodeWriter::add_include(const string& s)
+{
+    m_includes.push_back(s);
 }

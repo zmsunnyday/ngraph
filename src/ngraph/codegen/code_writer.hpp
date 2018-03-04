@@ -18,6 +18,7 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "ngraph/log.hpp"
 
@@ -69,21 +70,13 @@ public:
     }
 
     std::string generate_temporary_name(std::string prefix = "tempvar");
-
-    void block_begin()
-    {
-        *this << "{\n";
-        indent++;
-    }
-
-    void block_end()
-    {
-        indent--;
-        *this << "}\n";
-    }
+    void add_include(const std::string& header);
+    void block_begin();
+    void block_end();
 
 private:
     std::stringstream m_ss;
     bool m_pending_indent;
     size_t m_temporary_name_count;
+    std::vector<std::string> m_includes;
 };

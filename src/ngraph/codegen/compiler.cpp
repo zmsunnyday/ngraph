@@ -110,8 +110,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 {
     static stopwatch timer;
     timer.start();
-    stopwatch timer1;
-    timer1.start();
     m_source_name = "code.cpp";
     static bool llvm_initialized = false;
     if (!llvm_initialized)
@@ -158,9 +156,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
         m_compiler_instance->getInvocation(), &args[0], &args[0] + args.size(), diag_engine);
 
     configure_search_path();
-    timer1.stop();
-    NGRAPH_INFO << timer1.get_milliseconds();
-    timer1.start();
 
     // Language options
     // These are the C++ features needed to compile ngraph headers
@@ -207,9 +202,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 
     preprocessor_options.RetainRemappedFileBuffers = true;
 
-    timer1.stop();
-    NGRAPH_INFO << timer1.get_milliseconds();
-    timer1.start();
     auto pch_it = m_pch_cache.find(m_precomiled_header_source);
     if (pch_it != m_pch_cache.end())
     {
@@ -222,9 +214,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
         preprocessor_options.ImplicitPCHInclude = pch_file;
     }
     preprocessor_options.DisablePCHValidation = 1;
-    timer1.stop();
-    NGRAPH_INFO << timer1.get_milliseconds();
-    timer1.start();
 
     // Map code filename to a memoryBuffer
     StringRef source_ref(source);
@@ -235,7 +224,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
     unique_ptr<llvm::Module> rc;
     bool reinitialize = false;
     m_action.reset(new EmitCodeGenOnlyAction());
-    timer1.start();
     if (m_compiler_instance->ExecuteAction(*m_action) == true)
     {
         rc = m_action->takeModule();
@@ -244,9 +232,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
     {
         reinitialize = true;
     }
-    timer1.stop();
-    NGRAPH_INFO << "compile time " << timer1.get_milliseconds();
-    timer1.start();
 
     buffer.release();
 
@@ -260,9 +245,6 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
     {
         result = move(unique_ptr<codegen::Module>(nullptr));
     }
-    timer1.stop();
-    NGRAPH_INFO << timer1.get_milliseconds();
-    timer1.start();
 
     timer.stop();
     NGRAPH_INFO << timer.get_milliseconds() << ", " << timer.get_total_milliseconds();
