@@ -74,6 +74,7 @@ using namespace ngraph;
 
 // static codegen::StaticCompiler s_static_compiler;
 // static mutex m_mutex;
+unordered_map<string, string> codegen::Compiler::m_pch_cache;
 
 codegen::Module::Module(unique_ptr<llvm::Module>& module)
     : m_module(move(module))
@@ -99,24 +100,24 @@ codegen::Compiler::~Compiler()
 
 void codegen::Compiler::set_precompiled_header_source(const string& source)
 {
-    // s_static_compiler.set_precompiled_header_source(source);
+    m_precomiled_header_source = source;
 }
 
 void codegen::Compiler::add_header_search_path(const string& path)
 {
-    // s_static_compiler.add_header_search_path(path);
+    m_extra_header_search_paths.push_back(path);
 }
 
 unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 {
-    string source_name = "code.cpp";
+    m_source_name = "code.cpp";
     InitializeNativeTarget();
     LLVMInitializeNativeAsmPrinter();
     LLVMInitializeNativeAsmParser();
 
     // Prepare compilation arguments
     vector<const char*> args;
-    args.push_back(source_name.c_str());
+    args.push_back(m_source_name.c_str());
 
     // Inlining thresholds are forced to a very high value
     // to ensure all Eigen code gets properly inlined
@@ -197,21 +198,23 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 
         preprocessor_options.RetainRemappedFileBuffers = true;
 
-        if (!m_precompiled_header_valid && m_precomiled_header_source.empty() == false)
+        auto pch_it = m_pch_cache.find(m_precomiled_header_source);
+        if (pch_it != m_pch_cache.end())
         {
-            generate_pch(m_precomiled_header_source);
+            preprocessor_options.ImplicitPCHInclude = pch_it->second;
         }
-        if (m_precompiled_header_valid)
+        else
         {
-            // Preprocessor options
-            preprocessor_options.ImplicitPCHInclude = m_pch_path;
-            preprocessor_options.DisablePCHValidation = 0;
+            string pch_file = generate_pch(m_precomiled_header_source);
+            m_pch_cache.insert({m_precomiled_header_source, pch_file});
+            preprocessor_options.ImplicitPCHInclude = pch_file;
         }
+        preprocessor_options.DisablePCHValidation = 1;
 
         // Map code filename to a memoryBuffer
         StringRef source_ref(source);
         unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
-        preprocessor_options.RemappedFileBuffers.push_back({source_name, buffer.get()});
+        preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
 
         // Create and execute action
         unique_ptr<llvm::Module> rc;
@@ -305,12 +308,12 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 // {
 // }
 
-void codegen::Compiler::generate_pch(const string& source)
+std::string codegen::Compiler::generate_pch(const string& source)
 {
     PreprocessorOptions& preprocessor_options =
         m_compiler_instance->getInvocation().getPreprocessorOpts();
-    m_pch_path = file_util::tmp_filename();
-    m_compiler_instance->getFrontendOpts().OutputFile = m_pch_path;
+    string pch_path = file_util::tmp_filename();
+    m_compiler_instance->getFrontendOpts().OutputFile = pch_path;
 
     // Map code filename to a memoryBuffer
     StringRef source_ref(source);
@@ -321,13 +324,19 @@ void codegen::Compiler::generate_pch(const string& source)
     clang::GeneratePCHAction* compilerAction = new clang::GeneratePCHAction();
     if (m_compiler_instance->ExecuteAction(*compilerAction) == true)
     {
-        m_precompiled_header_valid = true;
+        NGRAPH_INFO << "success";
+    }
+    else
+    {
+        NGRAPH_INFO << "failure";
     }
 
     buffer.release();
     preprocessor_options.RemappedFileBuffers.pop_back();
 
     delete compilerAction;
+
+    return pch_path;
 }
 
 void codegen::Compiler::configure_search_path()
