@@ -15,13 +15,25 @@
 *******************************************************************************/
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
+#include <ngraph/ngraph.hpp>
+
+#include "layers.hpp"
 #include "mnist.hpp"
 
-int main(int argc, const char* argv[])
+using ngraph;
+
+class MLP
 {
-    MNistDataLoader test_loader{128, MNistImageLoader::TEST,MNistLabelLoader::TEST};
+};
+
+std::shared_ptr<Function> make_mlp_function(const std::vector<size_t>& sizes)
+
+    int main(int argc, const char* argv[])
+{
+    MNistDataLoader test_loader{128, MNistImageLoader::TEST, MNistLabelLoader::TEST};
     test_loader.open();
 
     return 0;
