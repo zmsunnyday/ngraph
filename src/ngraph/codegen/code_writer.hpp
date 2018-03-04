@@ -35,6 +35,7 @@ class ngraph::codegen::CodeWriter
 public:
     CodeWriter();
     std::string get_code() const;
+    std::string get_headers() const;
 
     void operator+=(const std::string&);
 

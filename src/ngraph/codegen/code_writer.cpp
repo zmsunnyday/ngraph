@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <algorithm>
+
 #include "code_writer.hpp"
 
 using namespace std;
@@ -30,12 +32,21 @@ string codegen::CodeWriter::get_code() const
 {
     stringstream ss;
 
-    for (const string& include : m_includes)
-    {
-        ss << include << "\n";
-    }
+    ss << get_headers();
     ss << m_ss.str();
 
+    return ss.str();
+}
+
+string codegen::CodeWriter::get_headers() const
+{
+    stringstream ss;
+    vector<string> includes = m_includes;
+    sort(includes.begin(), includes.end());
+    for (const string& include : includes)
+    {
+        ss << "#include <" << include << ">\n";
+    }
     return ss.str();
 }
 
