@@ -36,7 +36,7 @@ namespace clang
 {
     class HeaderSearchOptions;
     class CompilerInstance;
-    class CodeGenAction;
+    class EmitCodeGenOnlyAction;
 }
 
 namespace llvm
@@ -66,6 +66,7 @@ public:
 
 private:
     std::unique_ptr<clang::CompilerInstance> m_compiler_instance;
+    std::unique_ptr<clang::EmitCodeGenOnlyAction> m_action;
     bool m_precompiled_header_valid;
     bool m_debuginfo_enabled;
     bool m_enable_diag_output;
@@ -73,7 +74,6 @@ private:
     std::vector<std::string> m_extra_search_path_list;
     std::string m_pch_path;
     std::string m_precomiled_header_source;
-    std::unique_ptr<clang::CodeGenAction> m_compiler_action;
 
     // bool is_version_number(const std::string& path);
     void configure_search_path();
