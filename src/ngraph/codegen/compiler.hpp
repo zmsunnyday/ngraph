@@ -73,7 +73,6 @@ private:
     std::string m_source_name;
     std::vector<std::string> m_extra_search_path_list;
     std::string m_precomiled_header_source;
-    static std::unordered_map<std::string, std::string> m_pch_cache;
     std::vector<std::string> m_extra_header_search_paths;
 
     // bool is_version_number(const std::string& path);
@@ -81,34 +80,3 @@ private:
     void load_headers_from_resource();
     std::string generate_pch(const std::string& source);
 };
-
-// class ngraph::codegen::StaticCompiler
-// {
-// public:
-//     StaticCompiler();
-//     ~StaticCompiler();
-
-//     void set_debuginfo_enabled(bool state) { m_debuginfo_enabled = state; }
-//     bool is_debuginfo_enabled() { return m_debuginfo_enabled; }
-//     void set_precompiled_header_source(const std::string& source);
-//     void add_header_search_path(const std::string& path);
-
-//     std::unique_ptr<ngraph::codegen::Module> compile(const std::string& source);
-//     void generate_pch(const std::string& source);
-//     void initialize();
-
-// private:
-//     std::unique_ptr<clang::CompilerInstance> m_compiler;
-//     bool m_precompiled_header_valid;
-//     bool m_debuginfo_enabled;
-//     bool m_enable_diag_output;
-//     std::string m_source_name;
-//     std::vector<std::string> m_extra_search_path_list;
-//     std::string m_pch_path;
-//     std::string m_precomiled_header_source;
-//     std::unique_ptr<clang::CodeGenAction> m_compiler_action;
-
-//     bool is_version_number(const std::string& path);
-//     void configure_search_path();
-//     void load_headers_from_resource();
-// };

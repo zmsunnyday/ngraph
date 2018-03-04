@@ -72,7 +72,19 @@ using namespace llvm;
 using namespace std;
 using namespace ngraph;
 
-unordered_map<string, string> codegen::Compiler::m_pch_cache;
+unordered_map<string, string> s_pch_cache;
+
+class StaticDtor
+{
+public:
+    ~StaticDtor()
+    {
+        for (const pair<string, string>& pch_info : s_pch_cache)
+        {
+            file_util::remove_file(pch_info.second);
+        }
+    }
+} s_static_dtor;
 
 codegen::Module::Module(unique_ptr<llvm::Module>& module)
     : m_module(move(module))
@@ -202,15 +214,15 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 
     preprocessor_options.RetainRemappedFileBuffers = true;
 
-    auto pch_it = m_pch_cache.find(m_precomiled_header_source);
-    if (pch_it != m_pch_cache.end())
+    auto pch_it = s_pch_cache.find(m_precomiled_header_source);
+    if (pch_it != s_pch_cache.end())
     {
         preprocessor_options.ImplicitPCHInclude = pch_it->second;
     }
     else
     {
         string pch_file = generate_pch(m_precomiled_header_source);
-        m_pch_cache.insert({m_precomiled_header_source, pch_file});
+        s_pch_cache.insert({m_precomiled_header_source, pch_file});
         preprocessor_options.ImplicitPCHInclude = pch_file;
     }
     preprocessor_options.DisablePCHValidation = 1;
