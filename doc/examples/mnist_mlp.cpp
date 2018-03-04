@@ -23,18 +23,17 @@
 #include "layers.hpp"
 #include "mnist.hpp"
 
-using ngraph;
+using namespace ngraph;
 
-class MLP
+int main(int argc, const char* argv[])
 {
-};
-
-std::shared_ptr<Function> make_mlp_function(const std::vector<size_t>& sizes)
-
-    int main(int argc, const char* argv[])
-{
-    MNistDataLoader test_loader{128, MNistImageLoader::TEST, MNistLabelLoader::TEST};
+    size_t batch_size = 128;
+    MNistDataLoader test_loader{batch_size, MNistImageLoader::TEST, MNistLabelLoader::TEST};
+    size_t input_size = test_loader.get_columns() * test_loader.get_rows();
     test_loader.open();
+
+    auto x_input = std::make_shared<InputLayer>("X", element::f32, Shape{batch_size, input_size});
+    auto mlp_0 = std::make_shared<MLPLayer>("MLP_0", x_input, 10);
 
     return 0;
 }
