@@ -108,13 +108,13 @@ static bool s_use_ref_kernels = (std::getenv("NGRAPH_CPU_USE_REF_KERNELS") != nu
 
 static string eigen_vector_format(const runtime::cpu::TensorViewWrapper& tvi)
 {
-    return "fmt::V{" + to_string(tvi.get_size()) + "}";
+    return "ngraph::runtime::cpu::eigen::fmt::V{" + to_string(tvi.get_size()) + "}";
 }
 
 static string eigen_matrix_format(const ngraph::Shape& shape, const ngraph::Strides& strides)
 {
     stringstream ss;
-    ss << "fmt::M{{" << join(shape) << "}, {" << join(strides) << "}}";
+    ss << "ngraph::runtime::cpu::eigen::fmt::M{{" << join(shape) << "}, {" << join(strides) << "}}";
     return ss.str();
 }
 
@@ -3177,8 +3177,8 @@ string runtime::cpu::CPU_Emitter::emit_vector(const runtime::cpu::TensorViewWrap
     stringstream ss;
 
     const element::Type& et = tvi.get_element_type();
-    ss << "EigenVector<" << et.c_type_string() << ">" << format_name(name) << "(" << tvi.get_name()
-       << ", " << eigen_vector_format(tvi) << ")";
+    ss << "ngraph::runtime::cpu::eigen::EigenVector<" << et.c_type_string() << ">"
+       << format_name(name) << "(" << tvi.get_name() << ", " << eigen_vector_format(tvi) << ")";
     return ss.str();
 }
 
@@ -3188,8 +3188,8 @@ string runtime::cpu::CPU_Emitter::emit_array1d(const runtime::cpu::TensorViewWra
     stringstream ss;
 
     const element::Type& et = tvi.get_element_type();
-    ss << "EigenArray1d<" << et.c_type_string() << ">" << format_name(name) << "(" << tvi.get_name()
-       << ", " << eigen_vector_format(tvi) << ")";
+    ss << "ngraph::runtime::cpu::eigen::EigenArray1d<" << et.c_type_string() << ">"
+       << format_name(name) << "(" << tvi.get_name() << ", " << eigen_vector_format(tvi) << ")";
     return ss.str();
 }
 
@@ -3199,7 +3199,8 @@ string runtime::cpu::CPU_Emitter::emit_matrix(const runtime::cpu::TensorViewWrap
     stringstream ss;
 
     const element::Type& et = tvi.get_element_type();
-    ss << "EigenMatrix<" << et.c_type_string() << ">" << format_name(name) << "(" << tvi.get_name()
-       << ", " << eigen_matrix_format(tvi.get_shape(), tvi.get_strides()) << ")";
+    ss << "ngraph::runtime::cpu::eigen::EigenMatrix<" << et.c_type_string() << ">"
+       << format_name(name) << "(" << tvi.get_name() << ", "
+       << eigen_matrix_format(tvi.get_shape(), tvi.get_strides()) << ")";
     return ss.str();
 }
