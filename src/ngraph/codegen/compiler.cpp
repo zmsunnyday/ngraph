@@ -266,6 +266,7 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 
 std::string codegen::Compiler::generate_pch(const string& source)
 {
+    NGRAPH_INFO << source;
     PreprocessorOptions& preprocessor_options =
         m_compiler_instance->getInvocation().getPreprocessorOpts();
     string pch_path = file_util::tmp_filename();

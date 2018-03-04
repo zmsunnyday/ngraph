@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include <algorithm>
+#include <vector>
 
 #include "code_writer.hpp"
 
@@ -41,7 +42,7 @@ string codegen::CodeWriter::get_code() const
 string codegen::CodeWriter::get_headers() const
 {
     stringstream ss;
-    vector<string> includes = m_includes;
+    vector<string> includes{m_includes.begin(), m_includes.end()};
     sort(includes.begin(), includes.end());
     for (const string& include : includes)
     {
@@ -79,5 +80,5 @@ void codegen::CodeWriter::block_end()
 
 void codegen::CodeWriter::add_include(const string& s)
 {
-    m_includes.push_back(s);
+    m_includes.insert(s);
 }

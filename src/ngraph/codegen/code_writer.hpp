@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <set>
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include "ngraph/log.hpp"
 
@@ -79,5 +79,5 @@ private:
     std::stringstream m_ss;
     bool m_pending_indent;
     size_t m_temporary_name_count;
-    std::vector<std::string> m_includes;
+    std::set<std::string> m_includes;
 };

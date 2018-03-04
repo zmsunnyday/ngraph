@@ -347,6 +347,7 @@ namespace ngraph
                     writer << first.get_name() << "[0]\n    * " << emit_vector(second) << ";\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if ((arg0_shape.size() == 1) && (arg1_shape.size() == 1) &&
                          dot->get_reduction_axes_count() == 1)
@@ -358,6 +359,7 @@ namespace ngraph
                            << ");\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if ((arg0_shape.size() == 2) && (arg1_shape.size() == 1) &&
                          dot->get_reduction_axes_count() == 1)
@@ -369,6 +371,7 @@ namespace ngraph
                            << ";\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if ((arg0_shape.size() == 2) && (arg1_shape.size() == 2) &&
                          dot->get_reduction_axes_count() == 1)
@@ -400,6 +403,7 @@ namespace ngraph
                                << ";\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                 }
                 else
@@ -423,6 +427,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "   " << emit_array1d(args[0]) << " *\n"
                        << "   " << emit_array1d(args[1]) << ";\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -457,6 +462,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n";
                 writer << "Eigen::abs(" << emit_array1d(args[0]) << ");\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 // Some C++ implementations don't like it when we call std::abs on unsigned types, so we will
                 // avoid doing so here.
@@ -496,6 +502,7 @@ namespace ngraph
                     }
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (result_shape.size() == 2)
                 {
@@ -520,6 +527,7 @@ namespace ngraph
 
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else
                 {
@@ -609,6 +617,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << " /\n"
                        << "    " << emit_array1d(args[1]) << ";\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -630,6 +639,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " ==\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -651,6 +661,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " >\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -672,6 +683,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " >=\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -693,6 +705,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " <\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -714,6 +727,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " <=\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -734,6 +748,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    Eigen::log(" << emit_array1d(args[0]) << ");\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -755,6 +770,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "        " << emit_array1d(args[0]) << ".max(\n"
                        << "        " << emit_array1d(args[1]) << ");\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -777,6 +793,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".min(\n"
                        << "    " << emit_array1d(args[1]) << ");\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -798,6 +815,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    -" << emit_array1d(args[0]) << ";\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -819,6 +837,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    (" << emit_array1d(args[0]) << " !=\n"
                        << "    " << emit_array1d(args[1]) << ").template cast<char>();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -841,6 +860,7 @@ namespace ngraph
                        << "   " << emit_array1d(args[0]) << "\n"
                        << "    .select(" << emit_array1d(args[1]) << ",\n"
                        << "       " << emit_array1d(args[2]) << ");\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -862,6 +882,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << " -\n"
                        << "    " << emit_array1d(args[1]) << ";\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -902,6 +923,7 @@ namespace ngraph
                            << "    " << emit_array1d(args[0]) << "(0, 0);\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_shape.size() == 1 && result_shape.size() == 2)
                 {
@@ -913,6 +935,7 @@ namespace ngraph
                                << "    " << emit_vector(args[0]) << ";\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                     else if (broadcast->get_broadcast_axes() == AxisSet{0})
                     {
@@ -933,6 +956,7 @@ namespace ngraph
                                << ");\n";
                         writer << "out = arg0.replicate<" << out[0].get_shape().at(0)
                                << ", 1>();\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 
                         writer.indent--;
                         writer << "}\n";
@@ -979,6 +1003,7 @@ namespace ngraph
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << "\n"
                        << "    .template cast<" << result_element_type.c_type_string() << ">();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1057,6 +1082,7 @@ namespace ngraph
                                << "        " << emit_matrix(args[0]) << ".transpose();\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                 }
                 // Other cases
@@ -1212,6 +1238,7 @@ namespace ngraph
                                << "    " << emit_array1d(args[0]) << ".redux(f);\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                 }
                 else if (reductee_shape.size() == 2 && reduction_axes == AxisSet{1})
@@ -1224,6 +1251,7 @@ namespace ngraph
                                << "    " << emit_array1d(args[1]) << "(0, 0);\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                     else
                     {
@@ -1249,6 +1277,7 @@ namespace ngraph
                                << "        " << emit_matrix(args[0]) << ".rowwise().redux(f);\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                 }
                 else if (reductee_shape.size() == 2 && reduction_axes == AxisSet{0})
@@ -1261,6 +1290,7 @@ namespace ngraph
                                << "    " << emit_array1d(args[1]) << "(0, 0);\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                     else
                     {
@@ -1282,6 +1312,7 @@ namespace ngraph
                                << "    " << emit_matrix(args[0]) << ".colwise().redux(f);\n";
                         writer.indent--;
                         writer << "}\n";
+                        writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                     }
                 }
                 else
@@ -1353,6 +1384,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".sign();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1408,6 +1440,7 @@ namespace ngraph
                            << to_string(upper_bounds[0] - lower_bounds[0]) << ");\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!strided && arg_rank == 2)
                 {
@@ -1421,6 +1454,7 @@ namespace ngraph
                            << "        " << to_string(upper_bounds[1] - lower_bounds[1]) << ");\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 // Other cases (reordering of axes for tensors with rank>2) are not handled yet.
                 else
@@ -1482,6 +1516,7 @@ namespace ngraph
                            << "    " << emit_array1d(args[0]) << ".sum();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{1})
                 {
@@ -1491,6 +1526,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".rowwise().sum();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{0})
                 {
@@ -1500,6 +1536,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".colwise().sum();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else
                 {
@@ -1532,6 +1569,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".exp();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1552,6 +1590,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".sin();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1572,6 +1611,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".sinh();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1592,6 +1632,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".cos();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1612,6 +1653,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".cosh();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1632,6 +1674,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".tan();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1673,6 +1716,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".asin();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1693,6 +1737,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".acos();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1713,6 +1758,7 @@ namespace ngraph
 #if PREFER_EIGEN == 1
                 writer << emit_array1d(out[0]) << " =\n"
                        << "    " << emit_array1d(args[0]) << ".atan();\n";
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1736,6 +1782,7 @@ namespace ngraph
                 writer << emit_array1d(args[0]) << ".pow(\n ";
                 writer << emit_array1d(args[1]) << ");\n";
                 writer.indent--;
+                writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
 #else
                 writer << "#pragma omp parallel for\n";
                 writer << "for (size_t i = 0; i < " << out[0].get_size() << "; i++)\n";
@@ -1792,6 +1839,7 @@ namespace ngraph
                            << "    " << emit_vector(args[1]) << ";\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!strided && arg0_rank == 2)
                 {
@@ -1807,6 +1855,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[1]) << ";\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 // Other cases (reordering of axes for tensors with rank>2) are not handled yet.
                 else
@@ -1881,6 +1930,7 @@ namespace ngraph
 
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_rank == 1)
                 {
@@ -1925,6 +1975,7 @@ namespace ngraph
 
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 // Other cases are not handled yet.
                 else
@@ -2795,6 +2846,7 @@ namespace ngraph
                            << "    " << emit_array1d(args[0]) << ".prod();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{1})
                 {
@@ -2804,6 +2856,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".rowwise().prod();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (arg_rank == 2 && reduction_axes == AxisSet{0})
                 {
@@ -2813,6 +2866,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".colwise().prod();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else
                 {
@@ -2875,6 +2929,7 @@ namespace ngraph
                            << "    " << emit_array1d(args[0]) << ".maxCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!zero_sized && arg_rank == 2 && reduction_axes == AxisSet{1})
                 {
@@ -2884,6 +2939,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".rowwise().maxCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!zero_sized && arg_rank == 2 && reduction_axes == AxisSet{0})
                 {
@@ -2893,6 +2949,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".colwise().maxCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else
                 {
@@ -2955,6 +3012,7 @@ namespace ngraph
                            << "    " << emit_array1d(args[0]) << ".minCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!zero_sized && arg_rank == 2 && reduction_axes == AxisSet{1})
                 {
@@ -2964,6 +3022,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".rowwise().minCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else if (!zero_sized && arg_rank == 2 && reduction_axes == AxisSet{0})
                 {
@@ -2973,6 +3032,7 @@ namespace ngraph
                            << "    " << emit_matrix(args[0]) << ".colwise().minCoeff();\n";
                     writer.indent--;
                     writer << "}\n";
+                    writer.add_include("ngraph/runtime/cpu/cpu_eigen_utils.hpp");
                 }
                 else
                 {
