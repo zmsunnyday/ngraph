@@ -108,10 +108,19 @@ void codegen::Compiler::add_header_search_path(const string& path)
 
 unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
 {
+    static stopwatch timer;
+    timer.start();
+    stopwatch timer1;
+    timer1.start();
     m_source_name = "code.cpp";
-    InitializeNativeTarget();
-    LLVMInitializeNativeAsmPrinter();
-    LLVMInitializeNativeAsmParser();
+    static bool llvm_initialized = false;
+    if (!llvm_initialized)
+    {
+        llvm_initialized = true;
+        InitializeNativeTarget();
+        LLVMInitializeNativeAsmPrinter();
+        LLVMInitializeNativeAsmParser();
+    }
 
     // Prepare compilation arguments
     vector<const char*> args;
@@ -149,97 +158,114 @@ unique_ptr<codegen::Module> codegen::Compiler::compile(const string& source)
         m_compiler_instance->getInvocation(), &args[0], &args[0] + args.size(), diag_engine);
 
     configure_search_path();
+    timer1.stop();
+    NGRAPH_INFO << timer1.get_milliseconds();
+    timer1.start();
 
     // Language options
     // These are the C++ features needed to compile ngraph headers
     // and any dependencies like Eigen
-    auto LO = m_compiler_instance->getInvocation().getLangOpts();
-    LO->CPlusPlus = 1;
-    LO->CPlusPlus11 = 1;
-    LO->Bool = 1;
-    LO->Exceptions = 1;
-    LO->CXXExceptions = 1;
-    LO->WChar = 1;
-    LO->RTTI = 1;
+    auto language_options = m_compiler_instance->getInvocation().getLangOpts();
+    language_options->CPlusPlus = 1;
+    language_options->CPlusPlus11 = 1;
+    language_options->Bool = 1;
+    language_options->Exceptions = 1;
+    language_options->CXXExceptions = 1;
+    language_options->WChar = 1;
+    language_options->RTTI = 1;
     // Enable OpenMP for Eigen
-    LO->OpenMP = 1;
-    LO->OpenMPUseTLS = 1;
+    language_options->OpenMP = 1;
+    language_options->OpenMPUseTLS = 1;
 
     // CodeGen options
-    auto& CGO = m_compiler_instance->getInvocation().getCodeGenOpts();
-    CGO.OptimizationLevel = 3;
-    CGO.RelocationModel = "static";
-    // CGO.CodeModel = "medium";
-    CGO.ThreadModel = "posix";
-    CGO.FloatABI = "hard";
-    CGO.OmitLeafFramePointer = 1;
-    CGO.VectorizeLoop = 1;
-    CGO.VectorizeSLP = 1;
-    CGO.CXAAtExit = 1;
+    auto& codegen_options = m_compiler_instance->getInvocation().getCodeGenOpts();
+    codegen_options.OptimizationLevel = 3;
+    codegen_options.RelocationModel = "static";
+    // codegen_options.CodeModel = "medium";
+    codegen_options.ThreadModel = "posix";
+    codegen_options.FloatABI = "hard";
+    codegen_options.OmitLeafFramePointer = 1;
+    codegen_options.VectorizeLoop = 1;
+    codegen_options.VectorizeSLP = 1;
+    codegen_options.CXAAtExit = 1;
 
     if (m_debuginfo_enabled)
     {
-        CGO.setDebugInfo(codegenoptions::FullDebugInfo);
+        codegen_options.setDebugInfo(codegenoptions::FullDebugInfo);
     }
 
     // Enable various target features
-    auto& TO = m_compiler_instance->getInvocation().getTargetOpts();
-    TO.CPU = sys::getHostCPUName();
+    auto& target_options = m_compiler_instance->getInvocation().getTargetOpts();
+    target_options.CPU = sys::getHostCPUName();
 
     unique_ptr<codegen::Module> result;
+    PreprocessorOptions& preprocessor_options =
+        m_compiler_instance->getInvocation().getPreprocessorOpts();
+
+    // Clear warnings and errors
+    m_compiler_instance->getDiagnosticClient().clear();
+
+    preprocessor_options.RetainRemappedFileBuffers = true;
+
+    timer1.stop();
+    NGRAPH_INFO << timer1.get_milliseconds();
+    timer1.start();
+    auto pch_it = m_pch_cache.find(m_precomiled_header_source);
+    if (pch_it != m_pch_cache.end())
     {
-        PreprocessorOptions& preprocessor_options =
-            m_compiler_instance->getInvocation().getPreprocessorOpts();
-
-        // Clear warnings and errors
-        m_compiler_instance->getDiagnosticClient().clear();
-
-        preprocessor_options.RetainRemappedFileBuffers = true;
-
-        auto pch_it = m_pch_cache.find(m_precomiled_header_source);
-        if (pch_it != m_pch_cache.end())
-        {
-            preprocessor_options.ImplicitPCHInclude = pch_it->second;
-        }
-        else
-        {
-            string pch_file = generate_pch(m_precomiled_header_source);
-            m_pch_cache.insert({m_precomiled_header_source, pch_file});
-            preprocessor_options.ImplicitPCHInclude = pch_file;
-        }
-        preprocessor_options.DisablePCHValidation = 1;
-
-        // Map code filename to a memoryBuffer
-        StringRef source_ref(source);
-        unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
-        preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
-
-        // Create and execute action
-        unique_ptr<llvm::Module> rc;
-        bool reinitialize = false;
-        m_action.reset(new EmitCodeGenOnlyAction());
-        if (m_compiler_instance->ExecuteAction(*m_action) == true)
-        {
-            rc = m_action->takeModule();
-        }
-        else
-        {
-            reinitialize = true;
-        }
-
-        buffer.release();
-
-        preprocessor_options.RemappedFileBuffers.pop_back();
-
-        if (rc)
-        {
-            result = move(unique_ptr<codegen::Module>(new codegen::Module(rc)));
-        }
-        else
-        {
-            result = move(unique_ptr<codegen::Module>(nullptr));
-        }
+        preprocessor_options.ImplicitPCHInclude = pch_it->second;
     }
+    else
+    {
+        string pch_file = generate_pch(m_precomiled_header_source);
+        m_pch_cache.insert({m_precomiled_header_source, pch_file});
+        preprocessor_options.ImplicitPCHInclude = pch_file;
+    }
+    preprocessor_options.DisablePCHValidation = 1;
+    timer1.stop();
+    NGRAPH_INFO << timer1.get_milliseconds();
+    timer1.start();
+
+    // Map code filename to a memoryBuffer
+    StringRef source_ref(source);
+    unique_ptr<MemoryBuffer> buffer = MemoryBuffer::getMemBufferCopy(source_ref);
+    preprocessor_options.RemappedFileBuffers.push_back({m_source_name, buffer.get()});
+
+    // Create and execute action
+    unique_ptr<llvm::Module> rc;
+    bool reinitialize = false;
+    m_action.reset(new EmitCodeGenOnlyAction());
+    timer1.start();
+    if (m_compiler_instance->ExecuteAction(*m_action) == true)
+    {
+        rc = m_action->takeModule();
+    }
+    else
+    {
+        reinitialize = true;
+    }
+    timer1.stop();
+    NGRAPH_INFO << "compile time " << timer1.get_milliseconds();
+    timer1.start();
+
+    buffer.release();
+
+    preprocessor_options.RemappedFileBuffers.pop_back();
+
+    if (rc)
+    {
+        result = move(unique_ptr<codegen::Module>(new codegen::Module(rc)));
+    }
+    else
+    {
+        result = move(unique_ptr<codegen::Module>(nullptr));
+    }
+    timer1.stop();
+    NGRAPH_INFO << timer1.get_milliseconds();
+    timer1.start();
+
+    timer.stop();
+    NGRAPH_INFO << timer.get_milliseconds() << ", " << timer.get_total_milliseconds();
 
     return result;
 }
@@ -260,9 +286,9 @@ std::string codegen::Compiler::generate_pch(const string& source)
     clang::GeneratePCHAction* compilerAction = new clang::GeneratePCHAction();
     if (m_compiler_instance->ExecuteAction(*compilerAction) == true)
     {
-        NGRAPH_INFO << "success"
-                    << "\n"
-                    << source;
+        // NGRAPH_INFO << "success"
+        //             << "\n"
+        //             << source;
     }
 
     buffer.release();
@@ -351,6 +377,10 @@ void codegen::Compiler::load_headers_from_resource()
     {
         string builtin = builtin_root + search_path;
         hso.AddPath(builtin, clang::frontend::System, false, false);
+    }
+    for (const string& search_path : m_extra_header_search_paths)
+    {
+        hso.AddPath(search_path, clang::frontend::System, false, false);
     }
     for (const pair<string, string>& header_info : builtin_headers)
     {
