@@ -49,6 +49,7 @@ int main(int argc, const char* argv[])
     // The data input
     auto X = std::make_shared<op::Parameter>(element::f32, Shape{batch_size, input_size});
     auto Y = std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
+    auto learning_rate = std::make_shared<op::Parameter>(element::f32, Shape{});
 
     // Layer 0
     auto W0 = std::make_shared<op::Parameter>(element::f32, Shape{input_size, hidden_size});
@@ -85,6 +86,7 @@ int main(int argc, const char* argv[])
     auto cross_entropy = std::make_shared<op::Sum>(prod, AxisSet{0, 1});
 
     // Backprop
+    
     
 
     return 0;
