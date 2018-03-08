@@ -27,12 +27,16 @@ using namespace ngraph;
 
 std::ostream& operator<<(std::ostream& s, const Shape& shape)
 {
-    s << '(';
-    for (auto l : shape)
+    s << "Shape{";
+    for (size_t i = 0; i < shape.size(); ++i)
     {
-        s << l << ", ";
+        s << shape.at(i);
+        if (i + 1 < shape.size())
+        {
+            s << ", ";
+        }
     }
-    s << ")";
+    s << "}";
     return s;
 }
 
@@ -71,7 +75,6 @@ int main(int argc, const char* argv[])
 
     // Softmax
     auto sm = std::make_shared<op::Softmax>(l1, AxisSet{1});
-    std::cout << sm->get_output_shape(0) << std::endl;
 
     // Cost computation
     auto labels = std::make_shared<op::OneHot>(Y, Shape{batch_size, output_size}, 1);
@@ -83,11 +86,32 @@ int main(int argc, const char* argv[])
     auto sm_log = std::make_shared<op::Log>(sm_clip);
     std::cout << labels->get_output_shape(0) << std::endl;
     auto prod = std::make_shared<op::Multiply>(sm_clip, labels);
-    auto cross_entropy = std::make_shared<op::Sum>(prod, AxisSet{0, 1});
+    auto loss = std::make_shared<op::Sum>(prod, AxisSet{0, 1});
 
     // Backprop
-    
-    
+    // Each of W0, b0, W1, and b1
+    auto delta =
+        std::make_shared<op::Multiply>(std::make_shared<op::Negative>(learning_rate), loss);
+
+    auto W0_delta = loss->backprop_node(W0, delta);
+    auto b0_delta = loss->backprop_node(b0, delta);
+    auto W1_delta = loss->backprop_node(W1, delta);
+    auto b1_delta = loss->backprop_node(b1, delta);
+
+    // Updates
+    auto W0_next = std::make_shared<op::Add>(W0, W0_delta);
+    auto b0_next = std::make_shared<op::Add>(b0, b0_delta);
+    auto W1_next = std::make_shared<op::Add>(W1, W1_delta);
+    auto b1_next = std::make_shared<op::Add>(b1, b1_delta);
+
+    // Plain inference
+    // X, W0, b0, W1, b1 -> sm
+
+    // Inference test function
+    // X, Y, W0, b0, W1, b1 -> sm, loss
+
+    // Train
+    // X, Y, W0, b0, W1, b1 -> loss, W0_next, b0_next, W1_next, b1_next
 
     return 0;
 }
