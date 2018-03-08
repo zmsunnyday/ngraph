@@ -374,7 +374,7 @@ namespace ngraph
 
                 // create batchnorm descriptor
                 writer << "batch_normalization_forward::desc bn_fprop_desc = "
-                          "batch_normalization_forward::desc(forward_training,"
+                          "batch_normalization_forward::desc(forward_inference,"
                        << "input_data_desc, epsilon, use_scale_shift);\n";
                 // bn fprop primitive descriptor
                 writer
@@ -384,8 +384,8 @@ namespace ngraph
                 // create a batchnorm fprop primitive
                 writer << "batch_normalization_forward bn_fprop = "
                           "batch_normalization_forward(bn_fprop_prim_desc, "
-                          "primitive::at(input_data),"
-                       << "primitive::at(weights), result, mean, variance); \n";
+                          "primitive::at(input_data),primitive::at(mean), primitive::at(variance), "
+                       << "primitive::at(weights), result); \n";
 
                 // create stream and execute
                 writer << "stream s = stream(stream::kind::eager);\n"
