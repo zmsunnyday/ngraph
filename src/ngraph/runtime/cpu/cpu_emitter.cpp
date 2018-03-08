@@ -375,7 +375,7 @@ namespace ngraph
                 // create batchnorm descriptor
                 writer << "batch_normalization_forward::desc bn_fprop_desc = "
                           "batch_normalization_forward::desc(forward_inference,"
-                       << "input_data_desc, epsilon, use_scale_shift);\n";
+                       << "input_data_desc, epsilon, use_global_stats|use_scale_shift);\n";
                 // bn fprop primitive descriptor
                 writer
                     << "batch_normalization_forward::primitive_desc bn_fprop_prim_desc = "
