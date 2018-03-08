@@ -146,7 +146,7 @@ std::shared_ptr<Node> Node::get_input_op(size_t index)
     {
         if (arg->get_outputs().size() != 1)
         {
-            throw "get_input_op called on an argument w/ multiple outputs";
+            //throw "get_input_op called on an argument w/ multiple outputs";
         }
     }
     return m_inputs.at(index).get_output().get_node();

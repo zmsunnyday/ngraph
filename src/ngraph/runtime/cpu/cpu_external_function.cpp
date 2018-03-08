@@ -653,10 +653,21 @@ using namespace ngraph::runtime;
             for (const descriptor::Input& input : node->get_inputs())
             {
                 const descriptor::Output& output = input.get_output();
-                shared_ptr<descriptor::TensorView> tv = output.get_tensor_view();
-                in.push_back(
-                    TensorViewWrapper(tv, m_variable_name_map[tv->get_tensor().get_name()]));
-                node_input_names.emplace_back(tv->get_tensor().get_name());
+                if (dynamic_cast<ngraph::op::GetOutputElement*>(output.get_node().get()))
+                {
+                    auto goe = dynamic_cast<ngraph::op::GetOutputElement*>(output.get_node().get());
+                    auto tv = goe->get_input_op(0)->get_output_tensor_view(goe->get_n());
+                    in.push_back(
+                        TensorViewWrapper(tv, m_variable_name_map[tv->get_tensor().get_name()]));
+                    node_input_names.emplace_back(tv->get_tensor().get_name());
+                }
+                else
+                {
+                    shared_ptr<descriptor::TensorView> tv = output.get_tensor_view();
+                    in.push_back(
+                        TensorViewWrapper(tv, m_variable_name_map[tv->get_tensor().get_name()]));
+                    node_input_names.emplace_back(tv->get_tensor().get_name());
+                }
             }
             vector<TensorViewWrapper> out;
             for (const descriptor::Output& output : node->get_outputs())

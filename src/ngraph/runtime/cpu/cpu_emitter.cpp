@@ -618,9 +618,9 @@ namespace ngraph
 
                 writer << "{   // " << node->get_name() << "\n";
                 writer.indent++;
-                writer << "memcpy(" << out[0].get_name() << ", "
-                       << args[get_tuple_element->get_n()].get_name() << ", "
-                       << out[0].get_size() * out[0].get_element_type().size() << ");\n";
+                //writer << "memcpy(" << out[0].get_name() << ", "
+                //       << args[get_tuple_element->get_n()].get_name() << ", "
+                //       << out[0].get_size() * out[0].get_element_type().size() << ");\n";
                 writer.indent--;
                 writer << "}\n";
             }
