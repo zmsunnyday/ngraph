@@ -16,9 +16,12 @@
 
 #include <cstdio>
 #include <iostream>
+#include <list>
 #include <memory>
+#include <set>
 #include <string>
 
+#include <ngraph/graph_util.hpp>
 #include <ngraph/ngraph.hpp>
 
 #include "mnist.hpp"
@@ -38,6 +41,14 @@ std::ostream& operator<<(std::ostream& s, const Shape& shape)
     }
     s << "}";
     return s;
+}
+
+std::shared_ptr<runtime::TensorView> make_output_tensor(std::shared_ptr<runtime::Backend> backend,
+                                                        std::shared_ptr<Node> node,
+                                                        size_t output)
+{
+    return backend->make_primary_tensor_view(node->get_output_element_type(output),
+                                             node->get_output_shape(output));
 }
 
 int main(int argc, const char* argv[])
@@ -84,7 +95,6 @@ int main(int argc, const char* argv[])
         sm_clip_value, Shape{batch_size, output_size}, AxisSet{0, 1});
     auto sm_clip = std::make_shared<op::Maximum>(sm, sm_clip_broadcast);
     auto sm_log = std::make_shared<op::Log>(sm_clip);
-    std::cout << labels->get_output_shape(0) << std::endl;
     auto prod = std::make_shared<op::Multiply>(sm_clip, labels);
     auto loss = std::make_shared<op::Sum>(prod, AxisSet{0, 1});
 
@@ -106,12 +116,29 @@ int main(int argc, const char* argv[])
 
     // Plain inference
     // X, W0, b0, W1, b1 -> sm
+    auto inference_function =
+        std::make_shared<Function>(NodeVector{sm}, op::ParameterVector{X, W0, b0, W1, b1});
 
     // Inference test function
     // X, Y, W0, b0, W1, b1 -> sm, loss
+    auto inference_test_function =
+        std::make_shared<Function>(NodeVector{sm, loss}, op::ParameterVector{X, Y, W0, b0, W1, b1});
 
     // Train
-    // X, Y, W0, b0, W1, b1 -> loss, W0_next, b0_next, W1_next, b1_next
+    // X, Y, learning_rate, W0, b0, W1, b1 -> loss, W0_next, b0_next, W1_next, b1_next
+    auto train_function =
+        std::make_shared<Function>(NodeVector{loss, W0_next, b0_next, W1_next, b1_next},
+                                   op::ParameterVector{X, Y, learning_rate, W0, b0, W1, b1});
+
+    // Get the backend
+    auto manager = runtime::Manager::get("CPU");
+    auto backend = manager->allocate_backend();
+
+    auto t_X = make_output_tensor(backend, X, 0);
+    auto t_Y = make_output_tensor(backend, Y, 0);
+
+    test_loader.load();
+    t_X->write(test_loader.get_image_floats(), 0, test_loader.get_image_batch_size() * sizeof(float));
 
     return 0;
 }

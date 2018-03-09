@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <algorithm>
 #include <stdexcept>
 
 #include "mnist.hpp"
@@ -25,14 +26,23 @@ MNistLoader::MNistLoader(const std::string& filename, uint32_t magic)
 }
 
 template <>
-void MNistLoader::read<std::uint32_t>(std::uint32_t* loc)
+void MNistLoader::read<std::uint32_t>(std::uint32_t* loc, size_t n)
 {
     std::uint32_t result;
-    result = static_cast<unsigned int>(fgetc(m_file)) << 24;
-    result |= fgetc(m_file) << 16;
-    result |= fgetc(m_file) << 8;
-    result |= fgetc(m_file);
-    *loc = result;
+    for (size_t i = 0; i < n; ++i)
+    {
+        result = static_cast<unsigned int>(fgetc(m_file)) << 24;
+        result |= fgetc(m_file) << 16;
+        result |= fgetc(m_file) << 8;
+        result |= fgetc(m_file);
+        *(loc + i) = result;
+    }
+}
+
+template <>
+void MNistLoader::read<float>(float* loc, size_t n)
+{
+    read<std::uint32_t>(reinterpret_cast<std::uint32_t*>(&loc), n);
 }
 
 void MNistLoader::read_header()
@@ -123,15 +133,40 @@ void MNistDataLoader::open()
     }
     m_items = m_image_loader.get_items();
 
-    m_image_bytes =
-        std::unique_ptr<std::uint8_t[]>(new uint8_t[m_batch_size * get_rows() * get_columns()]);
+    m_image_sample_size = get_rows() * get_columns();
     m_label_bytes = std::unique_ptr<std::uint8_t[]>(new uint8_t[m_batch_size]);
-    m_image_floats = std::unique_ptr<float[]>(new float[m_batch_size * get_rows() * get_columns()]);
-    m_label_floats = std::unique_ptr<float[]>(new float[m_batch_size * 10]);
+    m_image_floats = std::unique_ptr<float[]>(new float[m_batch_size * m_image_sample_size]);
 }
 
 void MNistDataLoader::close()
 {
     m_image_loader.close();
     m_label_loader.close();
+}
+
+void MNistDataLoader::reset()
+{
+    m_image_loader.reset();
+    m_label_loader.reset();
+    m_pos = 0;
+}
+
+void MNistDataLoader::load()
+{
+    size_t batch_remaining = m_batch_size;
+    float* image_pos = m_image_floats.get();
+    while (batch_remaining > 0)
+    {
+        size_t epoch_remaining = get_items() - m_pos;
+        size_t whack = std::min(epoch_remaining, batch_remaining);
+        if (whack == 0)
+        {
+            reset();
+            continue;
+        }
+        m_image_loader.read<float>(image_pos, whack * m_image_sample_size);
+        image_pos += whack * m_image_sample_size;
+        m_pos += whack;
+        batch_remaining -= whack;
+    }
 }

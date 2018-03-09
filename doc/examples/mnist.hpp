@@ -32,10 +32,10 @@ public:
     void reset();
 
     template <typename T>
-    void read(T* loc);
+    void read(T* loc, size_t n = 1);
 
     template <typename T>
-    size_t read(T* loc, size_t n)
+    size_t file_read(T* loc, size_t n)
     {
         return fread(loc, sizeof(T), n, m_file);
     }
@@ -92,14 +92,20 @@ public:
     std::uint32_t get_columns() { return m_image_loader.get_columns(); }
     size_t get_batch_size() { return m_batch_size; }
     size_t get_items() { return m_items; }
+    void load();
+    void reset();
+
+    const float* get_image_floats() const { return m_image_floats.get(); }
+    size_t get_image_batch_size() const { return m_image_sample_size * m_batch_size; }
 protected:
     size_t m_batch_size;
     MNistImageLoader m_image_loader;
     MNistLabelLoader m_label_loader;
     std::int32_t m_items;
-    size_t m_pos;
+    size_t m_pos{0};
     std::unique_ptr<std::uint8_t[]> m_image_bytes;
     std::unique_ptr<std::uint8_t[]> m_label_bytes;
     std::unique_ptr<float[]> m_image_floats;
     std::unique_ptr<float[]> m_label_floats;
+    size_t m_image_sample_size;
 };
