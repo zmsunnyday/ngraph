@@ -15,9 +15,11 @@
 *******************************************************************************/
 
 #include <cstdio>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <random>
 #include <set>
 #include <string>
 
@@ -49,6 +51,31 @@ std::shared_ptr<runtime::TensorView> make_output_tensor(std::shared_ptr<runtime:
 {
     return backend->make_primary_tensor_view(node->get_output_element_type(output),
                                              node->get_output_shape(output));
+}
+
+template <typename T>
+T read_scalar(std::shared_ptr<runtime::TensorView> t, size_t index = 0)
+{
+    T result;
+    t->read(&result, index * sizeof(T), sizeof(T));
+    return result;
+}
+
+template <typename T>
+void write_scalar(std::shared_ptr<runtime::TensorView> t, T value, size_t index = 0)
+{
+    t->write(&value, index * sizeof(T), sizeof(T));
+}
+
+void randomize(std::function<float()> rand, std::shared_ptr<runtime::TensorView> t)
+{
+    size_t element_count = t->get_element_count();
+    std::vector<float> temp(element_count);
+    for (size_t i = 0; i < element_count; ++i)
+    {
+        temp.push_back(rand());
+    }
+    t->write(&temp[0], 0, element_count * sizeof(float));
 }
 
 int main(int argc, const char* argv[])
@@ -134,11 +161,54 @@ int main(int argc, const char* argv[])
     auto manager = runtime::Manager::get("CPU");
     auto backend = manager->allocate_backend();
 
+    // Allocate and randomly initialize variables
+    auto t_W0 = make_output_tensor(backend, W0, 0);
+    auto t_b0 = make_output_tensor(backend, b0, 0);
+    auto t_W1 = make_output_tensor(backend, W1, 0);
+    auto t_b1 = make_output_tensor(backend, b1, 0);
+
+    std::function<float()> rand(
+        std::bind(std::uniform_real_distribution<float>(-1, 1), std::default_random_engine(0)));
+    randomize(rand, t_W0);
+    randomize(rand, t_b0);
+    randomize(rand, t_W1);
+    randomize(rand, t_b1);
+
+    // Allocate inputs
     auto t_X = make_output_tensor(backend, X, 0);
     auto t_Y = make_output_tensor(backend, Y, 0);
 
-    test_loader.load();
-    t_X->write(test_loader.get_image_floats(), 0, test_loader.get_image_batch_size() * sizeof(float));
+    auto t_learning_rate = make_output_tensor(backend, learning_rate, 0);
+
+    // Allocate updated variables
+    auto t_W0_next = make_output_tensor(backend, W0_next, 0);
+    auto t_b0_next = make_output_tensor(backend, b0_next, 0);
+    auto t_W1_next = make_output_tensor(backend, W1_next, 0);
+    auto t_b1_next = make_output_tensor(backend, b1_next, 0);
+
+    auto t_loss = make_output_tensor(backend, loss, 0);
+
+    auto train_ext = manager->compile(train_function);
+    auto train_cf = backend->make_call_frame(train_ext);
+
+    write_scalar(t_learning_rate, .0f);
+
+    while (test_loader.get_epoch() < 50)
+    {
+        test_loader.load();
+        t_X->write(
+            test_loader.get_image_floats(), 0, test_loader.get_image_batch_size() * sizeof(float));
+        t_Y->write(
+            test_loader.get_label_floats(), 0, test_loader.get_label_batch_size() * sizeof(float));
+        train_cf->call({t_X, t_Y, t_learning_rate, t_W0, t_b0, t_W1, t_b1},
+                       {t_loss, t_W0_next, t_b0_next, t_W1_next, t_b1_next});
+        float this_loss = read_scalar<float>(t_loss);
+        std::swap(t_W0, t_W0_next);
+        std::swap(t_b0, t_b0_next);
+        std::swap(t_W1, t_W1_next);
+        std::swap(t_b1, t_b1_next);
+        std::cout << "Pos: " << test_loader.get_pos() << " " << this_loss << std::endl;
+    }
 
     return 0;
 }

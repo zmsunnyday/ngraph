@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 
 #include "mnist.hpp"
@@ -31,7 +32,8 @@ void MNistLoader::read<std::uint32_t>(std::uint32_t* loc, size_t n)
     std::uint32_t result;
     for (size_t i = 0; i < n; ++i)
     {
-        result = static_cast<unsigned int>(fgetc(m_file)) << 24;
+        int c = fgetc(m_file);
+        result = *reinterpret_cast<unsigned int*>(&c) << 24;
         result |= fgetc(m_file) << 16;
         result |= fgetc(m_file) << 8;
         result |= fgetc(m_file);
@@ -42,7 +44,10 @@ void MNistLoader::read<std::uint32_t>(std::uint32_t* loc, size_t n)
 template <>
 void MNistLoader::read<float>(float* loc, size_t n)
 {
-    read<std::uint32_t>(reinterpret_cast<std::uint32_t*>(&loc), n);
+    for (size_t i = 0; i < n; ++i)
+    {
+        loc[i] = static_cast<float>(fgetc(m_file));
+    }
 }
 
 void MNistLoader::read_header()
@@ -134,8 +139,10 @@ void MNistDataLoader::open()
     m_items = m_image_loader.get_items();
 
     m_image_sample_size = get_rows() * get_columns();
-    m_label_bytes = std::unique_ptr<std::uint8_t[]>(new uint8_t[m_batch_size]);
     m_image_floats = std::unique_ptr<float[]>(new float[m_batch_size * m_image_sample_size]);
+    m_label_floats = std::unique_ptr<float[]>(new float[m_batch_size]);
+    m_pos = 0;
+    m_epoch = 0;
 }
 
 void MNistDataLoader::close()
@@ -144,29 +151,49 @@ void MNistDataLoader::close()
     m_label_loader.close();
 }
 
-void MNistDataLoader::reset()
+void MNistDataLoader::rewind()
 {
     m_image_loader.reset();
     m_label_loader.reset();
     m_pos = 0;
+    ++m_epoch;
 }
 
 void MNistDataLoader::load()
 {
     size_t batch_remaining = m_batch_size;
     float* image_pos = m_image_floats.get();
+    float* label_pos = m_label_floats.get();
     while (batch_remaining > 0)
     {
         size_t epoch_remaining = get_items() - m_pos;
         size_t whack = std::min(epoch_remaining, batch_remaining);
         if (whack == 0)
         {
-            reset();
+            rewind();
             continue;
         }
         m_image_loader.read<float>(image_pos, whack * m_image_sample_size);
+        m_label_loader.read<float>(label_pos, whack);
         image_pos += whack * m_image_sample_size;
+        label_pos += whack;
         m_pos += whack;
         batch_remaining -= whack;
     }
+#if 0
+    size_t pos = 0;
+    size_t lpos = 0;
+    for (size_t i = 0; i < m_batch_size; ++i)
+    {
+        for (size_t j = 0; j < get_rows(); ++j)
+        {
+            for (size_t k = 0; k < get_columns(); ++k){
+                std::cout << (m_image_floats.get()[pos++] > 10 ? '+' : ' ');
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "---" << m_label_floats.get()[lpos++] << std::endl;
+    }
+    std::cout << "===" << std::endl;
+#endif
 }
