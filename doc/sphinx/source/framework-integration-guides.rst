@@ -14,8 +14,8 @@ Framework Integration Guides
 Neon |trade|
 ============
 
-Integrate nGraph library with ``neon`` |trade| frontend
---------------------------------------------------------
+Integrate nGraph library with ``neon`` frontend
+------------------------------------------------
 
 .. important:: These instructions pick up from where the :doc:`installation`
    installation instructions left off, so they presume that your system already

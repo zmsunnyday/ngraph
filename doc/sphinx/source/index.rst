@@ -54,7 +54,6 @@ Sections
    :caption: Table of Contents
 
    installation.rst
-   testing-libngraph.rst
    framework-integration-guides.rst
    graph-basics.rst
    howto/index.rst

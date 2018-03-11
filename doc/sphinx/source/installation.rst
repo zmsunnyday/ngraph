@@ -71,7 +71,7 @@ information about how to change or customize this location.
 
       $ mkdir build   
 
-#. ``$ cd`` to the build directory and generate the GNUMakefiles in the 
+#. Do a ``$ cd`` to the build directory and generate the GNUMakefiles in the 
    customary manner from within your ``build`` directory (remember to append the 
    command with the prebuilt option, if needed):
 
@@ -123,9 +123,50 @@ according to those conventions. These scripts require the command
    $ ln -s /usr/local/opt/llvm@3.9/bin/clang-format $HOME/bin/clang-format-3.9
    $ echo 'export PATH=$HOME/bin:$PATH' >> $HOME/.bash_profile
 
+
+.. testing-libngraph:
+
+Test the install
+#################
+
+The |InG| library code base uses the `GTest framework`_ for unit tests. CMake 
+automatically downloads a copy of the required GTest files when configuring the 
+build directory.
+
+To perform the unit tests:
+
+#. Create and configure the build directory as described in our 
+   :doc:`installation` guide.
+
+#. Enter the build directory and run ``make check``:
+   
+   .. code-block:: console
+
+      $ cd build/
+      $ make check
+
+
+Compiling a framework with ``libngraph``
+========================================
+
+After building and installing the nGraph library to your system, the next 
+logical step is to compile a framework that you can use to run a 
+training/inference model with one of the backends that are now enabled.
+
+For this early |release| release, we're providing :doc:`framework-integration-guides`, 
+for:
+
+* :doc:`MXNet<framework-integration-guides>` framework,  
+* :doc:`TensorFlow<framework-integration-guides>` framework, and
+* :doc:`Neon<framework-integration-guides>`.
+
+Integration guides for other frameworks are tentatively forthcoming.
+
+
+.. _GTest framework: https://github.com/google/googletest.git
 .. _doxygen: https://www.stack.nl/~dimitri/doxygen/
 .. _Sphinx:  http://www.sphinx-doc.org/en/stable/
 .. _breathe: https://breathe.readthedocs.io/en/latest/
-.. _llvm.org: https://www.llvm.org 
+.. _llvm.org: https://www.llvm.org
 .. _NervanaSystems: https://github.com/NervanaSystems/ngraph-cpp/blob/master/README.md
 .. _website docs: http://ngraph.nervanasys.com/index.html/index.html
