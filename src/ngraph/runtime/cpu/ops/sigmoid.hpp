@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2017-2018 Intel Corporation
+* Copyright 2018 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,27 +16,22 @@
 
 #pragma once
 
-#include <exception>
-#include <functional>
-#include <sstream>
-
-#include "ngraph/pass/pass.hpp"
-#include "ngraph/placement.hpp"
+#include "ngraph/ops/util/requires_tensor_view_args.hpp"
 
 namespace ngraph
 {
-    namespace pass
+    namespace op
     {
-        class AssignPlacement : public CallGraphPass
+        class Sigmoid : public util::RequiresTensorViewArgs
         {
         public:
-            // TODO: make policy a class
-            AssignPlacement(std::function<Placement(std::shared_ptr<Node>)> placement_policy);
-            virtual bool run_on_call_graph(const std::list<std::shared_ptr<Node>>& nodes) override;
+            Sigmoid(std::shared_ptr<Node> input);
+            Shape get_input_shape() const { return m_shape_input; }
+            virtual std::shared_ptr<Node>
+                copy_with_new_args(const NodeVector& new_args) const override;
 
         private:
-            bool run_on_node(std::shared_ptr<Node> node);
-            std::function<Placement(std::shared_ptr<Node>)> m_placement_policy;
+            Shape m_shape_input;
         };
     }
 }

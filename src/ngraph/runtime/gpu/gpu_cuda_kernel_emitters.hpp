@@ -18,6 +18,8 @@
 
 #include "ngraph/codegen/code_writer.hpp"
 #include "ngraph/coordinate.hpp"
+#include "ngraph/runtime/gpu/gpu_cuda_function_pool.hpp"
+#include "ngraph/runtime/gpu/gpu_cuda_kernel_builder.hpp"
 #include "ngraph/strides.hpp"
 
 namespace ngraph
@@ -26,9 +28,53 @@ namespace ngraph
     {
         namespace gpu
         {
-            void emit_abs(void* in, void* out, size_t count);
+            template <typename T>
+            struct CudaOpMap;
+
             void emit_broadcast(
                 void* in, void* out, size_t repeat_size, size_t repeat_times, size_t count);
+
+            template <typename T, typename... Inputs>
+            void emit_elementwise_op(std::string name,
+                                     size_t count,
+                                     CUdeviceptr out,
+                                     Inputs&&... inputs)
+            {
+                // Create an instance of nvrtcProgram with the code string.
+                if (CudaFunctionPool::instance().get(name) == nullptr)
+                {
+                    codegen::CodeWriter writer;
+                    if (CudaOpMap<T>::math_kernel)
+                    {
+                        CudaKernelBuilder::get_device_helper(writer,
+                                                             CudaOpMap<T>::op,
+                                                             CudaOpMap<T>::type,
+                                                             CudaOpMap<T>::math_kernel,
+                                                             sizeof...(inputs));
+                    }
+
+                    CudaKernelBuilder::get_elementwise_op(
+                        writer, name, CudaOpMap<T>::type, CudaOpMap<T>::op, sizeof...(inputs));
+
+                    std::string kernel = writer.get_code();
+                    CudaFunctionPool::instance().set(name, kernel);
+                }
+
+                //convert runtime ptr to driver api ptr
+                void* args_list[] = {&inputs..., &out, &count};
+                CUDA_SAFE_CALL(cuLaunchKernel(*CudaFunctionPool::instance().get(name).get(),
+                                              count,
+                                              1,
+                                              1, // grid dim
+                                              1,
+                                              1,
+                                              1, // block dim
+                                              0,
+                                              NULL, // shared mem and stream
+                                              args_list,
+                                              0));  // arguments
+                CUDA_SAFE_CALL(cuCtxSynchronize()); // Retrieve and print output.
+            }
         }
     }
 }

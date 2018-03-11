@@ -16,27 +16,23 @@
 
 #pragma once
 
-#include <exception>
-#include <functional>
-#include <sstream>
-
 #include "ngraph/pass/pass.hpp"
-#include "ngraph/placement.hpp"
 
 namespace ngraph
 {
     namespace pass
     {
-        class AssignPlacement : public CallGraphPass
-        {
-        public:
-            // TODO: make policy a class
-            AssignPlacement(std::function<Placement(std::shared_ptr<Node>)> placement_policy);
-            virtual bool run_on_call_graph(const std::list<std::shared_ptr<Node>>& nodes) override;
-
-        private:
-            bool run_on_node(std::shared_ptr<Node> node);
-            std::function<Placement(std::shared_ptr<Node>)> m_placement_policy;
-        };
+        class ResultCopyElimination;
     }
 }
+
+class ngraph::pass::ResultCopyElimination : public ngraph::pass::FunctionPass
+{
+public:
+    ResultCopyElimination()
+        : FunctionPass()
+    {
+    }
+
+    virtual bool run_on_function(std::shared_ptr<ngraph::Function> f) override;
+};
