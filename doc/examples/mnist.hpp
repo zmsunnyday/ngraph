@@ -34,6 +34,8 @@ public:
     template <typename T>
     void read(T* loc, size_t n = 1);
 
+    void read_scaled(float* loc, size_t n);
+
     template <typename T>
     size_t file_read(T* loc, size_t n)
     {

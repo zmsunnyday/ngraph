@@ -50,6 +50,18 @@ void MNistLoader::read<float>(float* loc, size_t n)
     }
 }
 
+namespace
+{
+    float inv_2_8 = 1.0f / 256.0f;
+}
+void MNistLoader::read_scaled(float* loc, size_t n)
+{
+    for (size_t i = 0; i < n; ++i)
+    {
+        loc[i] = static_cast<float>(fgetc(m_file)) * inv_2_8;
+    }
+}
+
 void MNistLoader::read_header()
 {
     std::uint32_t m;
@@ -173,7 +185,7 @@ void MNistDataLoader::load()
             rewind();
             continue;
         }
-        m_image_loader.read<float>(image_pos, whack * m_image_sample_size);
+        m_image_loader.read_scaled(image_pos, whack * m_image_sample_size);
         m_label_loader.read<float>(label_pos, whack);
         image_pos += whack * m_image_sample_size;
         label_pos += whack;
