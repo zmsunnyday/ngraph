@@ -4,13 +4,147 @@
 Framework Integration Guides
 #############################
 
-.. contents::
+* :ref:`neon_intg`
+* :ref:`mxnet_intg`
+* :ref:`tensorflow_intg`
+
+
+.. _neon_intg:  
+
+Neon |trade|
+============
+
+Integrate nGraph library with ``neon`` |trade| frontend
+--------------------------------------------------------
+
+.. important:: These instructions pick up from where the :doc:`installation`
+   installation instructions left off, so they presume that your system already
+   has the library installed at ``$HOME/ngraph_dist`` as the default location.
+   If the |nGl| code has not yet been installed to your system, please go back
+   and return here to finish compiling MXNet with ``libngraph``.
+
+To start working with the ``neon`` frontend, which allows for op-enabled translation
+of files serialized by an entity such as ONNX, you can follow this guide: 
+
+#. Install the dependencies:
+
+   .. code-block:: console
+
+      $ sudo apt-get install python3-pip 
+
+#. Checkout the branch named `python_binding`: 
+
+   .. code-block:: console
+
+      $ cd /opt/libraries/ngraph-cpp
+      $ git checkout python_binding
+        Switched to branch 'python_binding'
+        Your branch is up-to-date with 'origin/python_binding'.       
+
+#. Now recursively update the submodule 
+
+   .. code-block:: console
+
+      $ git submodule update --init --recursive
+
+#. Clone the following 
+
+   .. code-block:: console
+
+      $ git clone git@github.com:NervanaSystems/ngraph-onnx.git
+      $ cd ngraph-onnx
+
+#. Run 
+
+   .. code-block:: console
+
+      $ python setup.py 
+
+
+
+From here, it's as simple as running 
+
+   .. code-block:: console 
+
+      $ cd python
+      $ ./build3.sh
+
+   The bdist wheel will be placed in ``ngraph-cpp/python/build/dist``.  It is named ``[something-linux_x86_64.whl]``
+
+
+#. Activate 
+
+
+To run unit tests, first install additional required packages.
+
+   .. code-block:: console 
+
+      $ pip3 install -r test_requirements.txt
+
+
+#. Activate your virtual environment and install the bdist wheel
+
+   .. code-block:: console 
+
+      $ pip3 install -U <full path to the bdist wheel>
+
+
+#. Then run a test.
+
+   .. code-block:: console 
+
+      $ pytest test/test_ops.py
+
+
+Running tests with tox
+----------------------
+
+`Tox`_ is a Python virtualenv management and test command-line `tool`_. In our 
+project it automates:
+
+   * running unit tests using [pytest](https://docs.pytest.org/)
+   * checking that code style is compliant with [PEP8](https://www.python.org/dev/peps/pep-0008/) using [Flake8](http://flake8.pycqa.org/)
+   * static type checking using [MyPy](http://mypy.readthedocs.io)
+   * testing across Python 2 and 3
+
+To add tox support,
+
+.. code-block:: console 
+
+   $ pip3 install tox
+   $ export NGRAPH_CPP_BUILD_PATH=$HOME/ngraph_dist
+   $ tox
+
+Run tests using only Python 3 or 2 using the `-e` (environment) switch:
+
+.. code-block:: console
+   
+   $ tox -e py36
+   $ tox -e py27
+
+Check styles in a particular code directory by specifying the path:
+
+.. code-block:: bash 
+   
+   $ tox ngraph_api/
+
+
+In case of problems, try to recreate the virtual environments by deleting the `.tox` directory:
+
+.. code-block:: bash 
+
+   $ rm -rf .tox
+   $ tox
+
 
 
 .. _mxnet_intg:
 
+MXNet\*
+=======
+
 Compile MXNet\* with ``libngraph``
-==================================
+----------------------------------
 
 .. important:: These instructions pick up from where the :doc:`installation`
    installation instructions left off, so they presume that your system already
@@ -94,8 +228,11 @@ Compile MXNet\* with ``libngraph``
 
 .. _tensorflow_intg:
 
-Build TensorFlow\* with an XLA plugin to ``libngraph``
-======================================================
+TensorFlow\* 
+============
+
+Build Tensorflow\* with an XLA plugin to ``libngraph``
+-------------------------------------------------------
 
 .. important:: These instructions pick up where the :doc:`installation` 
    installation instructions left off, so they presume that your system already
@@ -219,3 +356,5 @@ your cloned version of `ngraph-tensorflow`_:
 .. _1.3 installation guide: https://www.tensorflow.org/versions/r1.3/install/install_sources#prepare_environment_for_linux
 .. _ngraph-tensorflow: https://github.com/NervanaSystems/ngraph-tensorflow
 .. _/examples/mnist: https://github.com/NervanaSystems/ngraph-tensorflow/tree/develop/tensorflow/compiler/plugin/ngraph/examples/mnist
+.. _Tox: https://tox.readthedocs.io/
+.. _tool: https://virtualenv.pypa.io/
