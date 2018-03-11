@@ -171,6 +171,12 @@ void MNistDataLoader::rewind()
     ++m_epoch;
 }
 
+void MNistDataLoader::reset()
+{
+    rewind();
+    m_epoch = 0;
+}
+
 void MNistDataLoader::load()
 {
     size_t batch_remaining = m_batch_size;

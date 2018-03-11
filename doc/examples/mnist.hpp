@@ -98,6 +98,7 @@ public:
     size_t get_pos() { return m_pos; }
     void load();
     void rewind();
+    void reset();
 
     const float* get_image_floats() const { return m_image_floats.get(); }
     const float* get_label_floats() const { return m_label_floats.get(); }
