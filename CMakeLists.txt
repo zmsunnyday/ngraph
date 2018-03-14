@@ -118,6 +118,11 @@ if (NOT DEFINED NGRAPH_TBB_ENABLE)
     set(NGRAPH_TBB_ENABLE ${NGRAPH_CPU_ENABLE})
 endif()
 
+if(NGRAPH_ADDRESS_SANITIZER)
+    message(STATUS "Enable Address Sanitizer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
+
 #-----------------------------------------------------------------------------------------------
 # GPU support
 #-----------------------------------------------------------------------------------------------

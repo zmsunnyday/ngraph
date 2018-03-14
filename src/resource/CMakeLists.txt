@@ -22,6 +22,9 @@ if (NGRAPH_CPU_ENABLE)
         header_rewrite.cpp
     )
 
+set(CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
     add_executable(resource_generator ${SRC})
     add_dependencies(resource_generator ext_llvm ext_eigen ext_mkldnn)
 
