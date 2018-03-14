@@ -8,6 +8,7 @@ How to
    :caption: How to 
 
    execute.rst
+   mnist_mlp.rst
     
 
 The "How to" articles in this section explain how to do specific tasks with the 
@@ -39,8 +40,10 @@ edge and network devices.  Furthermore, we want them to be able to make use of
 the best kind of computational resources for the kind of data they are processing,
 after it has been gathered.
 
-To get started, we've provided a basic example for how to execute a computation 
-that can run on an nGraph backend; this is analogous to a framework bridge.  
+To get started, we've provided a basic example for how to execute a
+computation that can run on an nGraph backend; this is analogous to a
+framework bridge.  We also provide a larger example for training and
+evaluating a simple MNIST MLP model.
 
 This section is under development; it will eventually be populated with more 
 articles geared toward data scientists, algorithm designers, framework developers, 

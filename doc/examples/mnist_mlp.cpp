@@ -265,9 +265,6 @@ int main(int argc, const char* argv[])
 
     // The data input
     auto X = std::make_shared<op::Parameter>(element::f32, Shape{batch_size, input_size});
-    auto Y = std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
-    auto learning_rate = std::make_shared<op::Parameter>(element::f32, Shape{});
-    auto N = std::make_shared<op::Parameter>(element::f32, Shape{});
 
     // Layer 0
     auto W0 = std::make_shared<op::Parameter>(element::f32, Shape{input_size, l0_size});
@@ -289,6 +286,7 @@ int main(int argc, const char* argv[])
     auto sm = std::make_shared<op::Softmax>(l1, AxisSet{1});
 
     // Cost computation
+    auto Y = std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
     auto labels = std::make_shared<op::OneHot>(Y, Shape{batch_size, output_size}, 1);
     auto sm_clip_value =
         std::make_shared<op::Constant>(element::f32, Shape{}, std::vector<float>{log_min});
@@ -297,10 +295,12 @@ int main(int argc, const char* argv[])
     auto sm_clip = std::make_shared<op::Maximum>(sm, sm_clip_broadcast);
     auto sm_log = std::make_shared<op::Log>(sm_clip);
     auto prod = std::make_shared<op::Multiply>(sm_log, labels);
+    auto N = std::make_shared<op::Parameter>(element::f32, Shape{});
     auto loss = std::make_shared<op::Divide>(std::make_shared<op::Sum>(prod, AxisSet{0, 1}), N);
 
     // Backprop
     // Each of W0, b0, W1, and b1
+    auto learning_rate = std::make_shared<op::Parameter>(element::f32, Shape{});
     auto delta =
         std::make_shared<op::Multiply>(std::make_shared<op::Negative>(learning_rate), loss);
 
