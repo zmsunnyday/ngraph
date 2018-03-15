@@ -50,6 +50,8 @@ cap with a ``softmax``.
 Loss
 ----
 
+We use cross-entropy to compute the loss.
+
 .. _update:
 
 Update
