@@ -41,7 +41,7 @@ namespace ngraph
         INTERPRETER,
         CPU,
         GPU,
-        ARGON,
+        ARGON
     };
 
     std::string placement_to_string(Placement placement);
@@ -50,4 +50,6 @@ namespace ngraph
     std::pair<std::vector<std::shared_ptr<Function>>,
               std::unordered_map<std::shared_ptr<op::Parameter>, std::shared_ptr<op::Result>>>
         split_function_by_placement(const std::shared_ptr<Function>& f);
+
+    std::ostream& operator<<(std::ostream&, Placement);
 }

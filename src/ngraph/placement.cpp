@@ -221,3 +221,9 @@ pair<vector<shared_ptr<Function>>, unordered_map<shared_ptr<op::Parameter>, shar
 
     return make_pair(sub_functions, map_parameter_to_result);
 }
+
+std::ostream& ngraph::operator<<(std::ostream& out, Placement p)
+{
+    out << "Placement[" << placement_to_string(p) << "]";
+    return out;
+}
