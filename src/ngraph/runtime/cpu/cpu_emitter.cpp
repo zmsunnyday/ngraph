@@ -2197,6 +2197,11 @@ namespace ngraph
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0);
                     auto weights_format =
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1);
+                    // HACK to help MKLDNN pick the right implementation
+                    if (weights_format == mkldnn::memory::format::nchw)
+                    {
+                        weights_format = mkldnn::memory::format::oihw;
+                    }
                     auto output_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
@@ -2341,8 +2346,15 @@ namespace ngraph
                     }
 
                     auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto weights_desc = mkldnn_emitter->build_memory_descriptor(
-                        args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
+                    // HACK to help MKLDNN pick the right implementation
+                    auto weights_format =
+                        runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0);
+                    if (weights_format == mkldnn::memory::format::nchw)
+                    {
+                        weights_format = mkldnn::memory::format::oihw;
+                    }
+                    auto weights_desc =
+                        mkldnn_emitter->build_memory_descriptor(args[0], weights_format);
                     auto delta_desc = mkldnn_emitter->build_memory_descriptor(
                         args[1], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1));
                     auto result_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2766,15 +2778,31 @@ namespace ngraph
                 auto arg0_shape = args[0].get_shape();
                 auto result_shape = out[0].get_shape();
 
-                writer << "kernel::pad<" << out[0].get_type() << ">(" << args[0].get_name()
-                       << ",\n";
-                writer << "            " << args[1].get_name() << ",\n";
-                writer << "            " << out[0].get_name() << ",\n";
-                writer << "            {" << join(arg0_shape) << "},\n";
-                writer << "            {" << join(result_shape) << "},\n";
-                writer << "            {" << join(pad->get_padding_below()) << "},\n";
-                writer << "            {" << join(pad->get_padding_above()) << "},\n";
-                writer << "            {" << join(pad->get_padding_interior()) << "});\n";
+                if (arg0_shape.size() == 4 && args[0].get_element_type() == element::f32 &&
+                    pad->get_padding_interior() == Shape(arg0_shape.size()))
+                {
+                    writer << "cpu::kernel::pad_4d_float32(" << args[0].get_name() << ",\n"
+                           << "                            " << out[0].get_name() << ",\n"
+                           << "                            *(" << args[1].get_name() << "),\n"
+                           << "                            {" << join(arg0_shape) << "},\n"
+                           << "                            {" << join(result_shape) << "},\n"
+                           << "                            {" << join(pad->get_padding_below())
+                           << "},\n"
+                           << "                            {" << join(pad->get_padding_above())
+                           << "});\n";
+                }
+                else
+                {
+                    writer << "kernel::pad<" << out[0].get_type() << ">(" << args[0].get_name()
+                           << ",\n";
+                    writer << "            " << args[1].get_name() << ",\n";
+                    writer << "            " << out[0].get_name() << ",\n";
+                    writer << "            {" << join(arg0_shape) << "},\n";
+                    writer << "            {" << join(result_shape) << "},\n";
+                    writer << "            {" << join(pad->get_padding_below()) << "},\n";
+                    writer << "            {" << join(pad->get_padding_above()) << "},\n";
+                    writer << "            {" << join(pad->get_padding_interior()) << "});\n";
+                }
             }
 
             template <>

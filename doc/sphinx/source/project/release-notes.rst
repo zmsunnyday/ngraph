@@ -3,7 +3,7 @@
 Release Notes
 #############
 
-This is version |version| of Intel® nGraph™.
+This is the |version| of release.  
 
 Overview
 ========
