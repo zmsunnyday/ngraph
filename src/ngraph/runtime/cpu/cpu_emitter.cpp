@@ -158,22 +158,21 @@ namespace ngraph
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1);
                     auto result_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input0_data_desc =
-                        mkldnn_emitter->build_memory_descriptor(args[0], input0_format);
+                        mkldnn_emitter.build_memory_descriptor(args[0], input0_format);
                     auto input1_data_desc =
-                        mkldnn_emitter->build_memory_descriptor(args[1], input1_format);
+                        mkldnn_emitter.build_memory_descriptor(args[1], input1_format);
                     auto result_desc =
-                        mkldnn_emitter->build_memory_descriptor(out[0], result_format);
+                        mkldnn_emitter.build_memory_descriptor(out[0], result_format);
                     inputs_pd.push_back(mkldnn::memory::primitive_desc(
                         input0_data_desc, runtime::cpu::mkldnn_utils::global_cpu_engine));
                     inputs_pd.push_back(mkldnn::memory::primitive_desc(
                         input1_data_desc, runtime::cpu::mkldnn_utils::global_cpu_engine));
 
                     size_t add_index = 0;
-                    add_index = mkldnn_emitter->build_elementwise_add(
+                    add_index = mkldnn_emitter.build_elementwise_add(
                         input0_data_desc, input1_data_desc, result_desc, scale_vector, inputs_pd);
-                    auto& deps = mkldnn_emitter->get_primitive_deps(add_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(add_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -390,25 +389,24 @@ namespace ngraph
                 auto variance_format =
                     runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 2);
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto weights_shape = Shape{2, args[0].get_size()};
-                auto input_desc = mkldnn_emitter->build_memory_descriptor(args[2], input_format);
-                auto weights_desc = mkldnn_emitter->build_memory_descriptor(
+                auto input_desc = mkldnn_emitter.build_memory_descriptor(args[2], input_format);
+                auto weights_desc = mkldnn_emitter.build_memory_descriptor(
                     weights_shape, args[0].get_element_type(), mkldnn::memory::format::nc);
-                auto results_desc = mkldnn_emitter->build_memory_descriptor(out[0], result_format);
-                auto mean_desc = mkldnn_emitter->build_memory_descriptor(out[1], mean_format);
+                auto results_desc = mkldnn_emitter.build_memory_descriptor(out[0], result_format);
+                auto mean_desc = mkldnn_emitter.build_memory_descriptor(out[1], mean_format);
                 auto variance_desc =
-                    mkldnn_emitter->build_memory_descriptor(out[2], variance_format);
+                    mkldnn_emitter.build_memory_descriptor(out[2], variance_format);
 
                 auto batchnorm_index =
-                    mkldnn_emitter->build_batchnorm_forward(input_desc,
-                                                            weights_desc,
-                                                            results_desc,
-                                                            mean_desc,
-                                                            variance_desc,
-                                                            batchnorm->get_eps_value());
+                    mkldnn_emitter.build_batchnorm_forward(input_desc,
+                                                           weights_desc,
+                                                           results_desc,
+                                                           mean_desc,
+                                                           variance_desc,
+                                                           batchnorm->get_eps_value());
 
-                auto& deps = mkldnn_emitter->get_primitive_deps(batchnorm_index);
+                auto& deps = mkldnn_emitter.get_primitive_deps(batchnorm_index);
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0]) << ", "
                        << args[2].get_name() << ");\n";
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -452,30 +450,29 @@ namespace ngraph
                 auto delta_format = runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 5);
                 auto dinput_format = runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto weights_shape = Shape{2, args[0].get_size()};
-                auto weights_desc = mkldnn_emitter->build_memory_descriptor(
+                auto weights_desc = mkldnn_emitter.build_memory_descriptor(
                     weights_shape, args[0].get_element_type(), mkldnn::memory::format::nc);
-                auto input_desc = mkldnn_emitter->build_memory_descriptor(args[2], input_format);
-                auto mean_desc = mkldnn_emitter->build_memory_descriptor(args[3], mean_format);
+                auto input_desc = mkldnn_emitter.build_memory_descriptor(args[2], input_format);
+                auto mean_desc = mkldnn_emitter.build_memory_descriptor(args[3], mean_format);
                 auto variance_desc =
-                    mkldnn_emitter->build_memory_descriptor(args[4], variance_format);
-                auto delta_desc = mkldnn_emitter->build_memory_descriptor(args[5], delta_format);
-                auto dinput_desc = mkldnn_emitter->build_memory_descriptor(out[0], dinput_format);
-                auto dweights_desc = mkldnn_emitter->build_memory_descriptor(
+                    mkldnn_emitter.build_memory_descriptor(args[4], variance_format);
+                auto delta_desc = mkldnn_emitter.build_memory_descriptor(args[5], delta_format);
+                auto dinput_desc = mkldnn_emitter.build_memory_descriptor(out[0], dinput_format);
+                auto dweights_desc = mkldnn_emitter.build_memory_descriptor(
                     weights_shape, args[0].get_element_type(), mkldnn::memory::format::nc);
 
                 auto batchnorm_index =
-                    mkldnn_emitter->build_batchnorm_backward(weights_desc,
-                                                             input_desc,
-                                                             mean_desc,
-                                                             variance_desc,
-                                                             delta_desc,
-                                                             dinput_desc,
-                                                             dweights_desc,
-                                                             batchnorm->get_eps_value());
+                    mkldnn_emitter.build_batchnorm_backward(weights_desc,
+                                                            input_desc,
+                                                            mean_desc,
+                                                            variance_desc,
+                                                            delta_desc,
+                                                            dinput_desc,
+                                                            dweights_desc,
+                                                            batchnorm->get_eps_value());
 
-                auto& deps = mkldnn_emitter->get_primitive_deps(batchnorm_index);
+                auto& deps = mkldnn_emitter.get_primitive_deps(batchnorm_index);
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                        << ", bn_weights.data());\n";
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1]) << ", "
@@ -1169,18 +1166,6 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Constant)
             {
-                // If an output is a constant then copy it
-                size_t output_index = 0;
-                for (shared_ptr<Node> result : external_function->get_function()->get_results())
-                {
-                    if (result.get() == node)
-                    {
-                        const descriptor::Tensor& tensor = node->get_output_tensor(0);
-                        writer << "memcpy(outputs[" << output_index << "], " << tensor.get_name()
-                               << ", " << tensor.size() << ");\n";
-                    }
-                    output_index++;
-                }
             }
 
             template <>
@@ -2200,16 +2185,15 @@ namespace ngraph
                     auto output_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_data_desc =
-                        mkldnn_emitter->build_memory_descriptor(args[0], input_format);
+                        mkldnn_emitter.build_memory_descriptor(args[0], input_format);
                     auto weights_desc =
-                        mkldnn_emitter->build_memory_descriptor(args[1], weights_format);
+                        mkldnn_emitter.build_memory_descriptor(args[1], weights_format);
                     auto result_desc =
-                        mkldnn_emitter->build_memory_descriptor(out[0], output_format);
+                        mkldnn_emitter.build_memory_descriptor(out[0], output_format);
                     size_t conv_index = 0;
 
-                    conv_index = mkldnn_emitter->build_convolution_forward(
+                    conv_index = mkldnn_emitter.build_convolution_forward(
                         input_data_desc,
                         weights_desc,
                         result_desc,
@@ -2218,7 +2202,7 @@ namespace ngraph
                         convolution->get_padding_below(),
                         convolution->get_padding_above());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(conv_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(conv_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2270,16 +2254,15 @@ namespace ngraph
                         window_dilation_strides_adjusted.push_back(s - 1);
                     }
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto input_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto input_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto delta_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto delta_desc = mkldnn_emitter.build_memory_descriptor(
                         args[1], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
                     size_t conv_bwd_weights_index =
-                        mkldnn_emitter->build_convolution_backward_weights(
+                        mkldnn_emitter.build_convolution_backward_weights(
                             input_desc,
                             delta_desc,
                             result_desc,
@@ -2288,7 +2271,7 @@ namespace ngraph
                             convolution->get_padding_below_forward(),
                             convolution->get_padding_above_forward());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(conv_bwd_weights_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(conv_bwd_weights_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2340,15 +2323,14 @@ namespace ngraph
                         window_dilation_strides_adjusted.push_back(s - 1);
                     }
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto weights_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto weights_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto delta_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto delta_desc = mkldnn_emitter.build_memory_descriptor(
                         args[1], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t conv_bwd_data_index = mkldnn_emitter->build_convolution_backward_data(
+                    size_t conv_bwd_data_index = mkldnn_emitter.build_convolution_backward_data(
                         weights_desc,
                         delta_desc,
                         result_desc,
@@ -2357,7 +2339,7 @@ namespace ngraph
                         convolution->get_padding_below_forward(),
                         convolution->get_padding_above_forward());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(conv_bwd_data_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(conv_bwd_data_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2411,13 +2393,12 @@ namespace ngraph
                     auto bias_format = mkldnn_utils::get_input_mkldnn_format(node, 2);
                     auto result_format = mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto data_desc = mkldnn_emitter->build_memory_descriptor(data, data_format);
+                    auto data_desc = mkldnn_emitter.build_memory_descriptor(data, data_format);
                     auto weights_desc =
-                        mkldnn_emitter->build_memory_descriptor(weights, weights_format);
-                    auto bias_desc = mkldnn_emitter->build_memory_descriptor(bias, bias_format);
+                        mkldnn_emitter.build_memory_descriptor(weights, weights_format);
+                    auto bias_desc = mkldnn_emitter.build_memory_descriptor(bias, bias_format);
                     auto result_desc =
-                        mkldnn_emitter->build_memory_descriptor(result, result_format);
+                        mkldnn_emitter.build_memory_descriptor(result, result_format);
 
                     // For dilation, MKLDNN wants to know how many elements to insert between, not how far
                     // apart to space the elements like nGraph. So we have to subtract 1 from each pos.
@@ -2428,7 +2409,7 @@ namespace ngraph
                         window_dilation_strides_adjusted.push_back(s - 1);
                     }
 
-                    size_t conv_index = mkldnn_emitter->build_convolution_forward(
+                    size_t conv_index = mkldnn_emitter.build_convolution_forward(
                         data_desc,
                         weights_desc,
                         bias_desc,
@@ -2438,7 +2419,7 @@ namespace ngraph
                         convolution->get_padding_below(),
                         convolution->get_padding_above());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(conv_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(conv_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << data.get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2482,15 +2463,14 @@ namespace ngraph
                     auto weights_delta_format = mkldnn_utils::get_output_mkldnn_format(node, 0);
                     auto bias_delta_format = mkldnn_utils::get_output_mkldnn_format(node, 1);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto data_desc = mkldnn_emitter->build_memory_descriptor(data, data_format);
-                    auto delta_desc = mkldnn_emitter->build_memory_descriptor(delta, delta_format);
-                    auto weights_delta_desc = mkldnn_emitter->build_memory_descriptor(
-                        weights_delta, weights_delta_format);
+                    auto data_desc = mkldnn_emitter.build_memory_descriptor(data, data_format);
+                    auto delta_desc = mkldnn_emitter.build_memory_descriptor(delta, delta_format);
+                    auto weights_delta_desc =
+                        mkldnn_emitter.build_memory_descriptor(weights_delta, weights_delta_format);
                     auto bias_delta_desc =
-                        mkldnn_emitter->build_memory_descriptor(bias_delta, bias_delta_format);
+                        mkldnn_emitter.build_memory_descriptor(bias_delta, bias_delta_format);
 
-                    size_t conv_index = mkldnn_emitter->build_convolution_backward_weights_bias(
+                    size_t conv_index = mkldnn_emitter.build_convolution_backward_weights_bias(
                         data_desc,
                         delta_desc,
                         weights_delta_desc,
@@ -2500,7 +2480,7 @@ namespace ngraph
                         convolution->get_padding_below_forward(),
                         convolution->get_padding_above_forward());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(conv_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(conv_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << data.get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2544,13 +2524,12 @@ namespace ngraph
                 if (arg_rank == 4 && max_pool->get_window_shape().size() == 2 &&
                     args[0].get_element_type() == element::f32)
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto input_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto input_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t max_pool_index = mkldnn_emitter->build_pooling_forward(
+                    size_t max_pool_index = mkldnn_emitter.build_pooling_forward(
                         mkldnn::algorithm::pooling_max,
                         input_desc,
                         result_desc,
@@ -2559,7 +2538,7 @@ namespace ngraph
                         max_pool->get_padding_below(),
                         max_pool->get_padding_above());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(max_pool_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(max_pool_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2712,13 +2691,12 @@ namespace ngraph
                 // TODO(jmenon): Remove element type restriction
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto input_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto input_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t avg_pool_index = mkldnn_emitter->build_pooling_forward(
+                    size_t avg_pool_index = mkldnn_emitter.build_pooling_forward(
                         (avg_pool->get_include_padding_in_avg_computation()
                              ? mkldnn::algorithm::pooling_avg_include_padding
                              : mkldnn::algorithm::pooling_avg_exclude_padding),
@@ -2729,7 +2707,7 @@ namespace ngraph
                         avg_pool->get_padding_below(),
                         avg_pool->get_padding_above());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(avg_pool_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(avg_pool_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2803,13 +2781,12 @@ namespace ngraph
 
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto diff_dst_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto diff_dst_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto diff_src_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto diff_src_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t avg_pool_index = mkldnn_emitter->build_pooling_backward(
+                    size_t avg_pool_index = mkldnn_emitter.build_pooling_backward(
                         (apb->get_include_padding_in_avg_computation()
                              ? mkldnn::algorithm::pooling_avg_include_padding
                              : mkldnn::algorithm::pooling_avg_exclude_padding),
@@ -2820,7 +2797,7 @@ namespace ngraph
                         apb->get_padding_below(),
                         apb->get_padding_above());
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(avg_pool_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(avg_pool_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -2859,15 +2836,14 @@ namespace ngraph
 
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto fprop_src_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto fprop_src_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto diff_dst_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto diff_dst_desc = mkldnn_emitter.build_memory_descriptor(
                         args[1], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1));
-                    auto diff_src_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto diff_src_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t max_pool_index = mkldnn_emitter->build_max_pooling_backward(
+                    size_t max_pool_index = mkldnn_emitter.build_max_pooling_backward(
                         mkldnn::algorithm::pooling_max,
                         fprop_src_desc,
                         diff_dst_desc,
@@ -2877,7 +2853,7 @@ namespace ngraph
                         mpb->get_padding_below(),
                         mpb->get_padding_above());
 
-                    auto& fdeps = mkldnn_emitter->get_primitive_deps(max_pool_index - 1);
+                    auto& fdeps = mkldnn_emitter.get_primitive_deps(max_pool_index - 1);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(fdeps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(fdeps[1])
@@ -2887,7 +2863,7 @@ namespace ngraph
                     writer << "cpu::mkldnn_utils::mkldnn_invoke_primitive(ctx, "
                            << to_string(max_pool_index - 1) << ");\n";
 
-                    auto& bdeps = mkldnn_emitter->get_primitive_deps(max_pool_index);
+                    auto& bdeps = mkldnn_emitter.get_primitive_deps(max_pool_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(bdeps[0])
                            << ", " << args[1].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(bdeps[1])
@@ -3173,13 +3149,12 @@ namespace ngraph
                     output_format = mkldnn::memory::format::oihw;
                 }
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                auto input_desc = mkldnn_emitter->build_memory_descriptor(args[0], input_format);
-                auto result_desc = mkldnn_emitter->build_memory_descriptor(out[0], output_format);
+                auto input_desc = mkldnn_emitter.build_memory_descriptor(args[0], input_format);
+                auto result_desc = mkldnn_emitter.build_memory_descriptor(out[0], output_format);
 
-                size_t reorder_index = mkldnn_emitter->build_reorder(input_desc, result_desc);
+                size_t reorder_index = mkldnn_emitter.build_reorder(input_desc, result_desc);
 
-                auto& deps = mkldnn_emitter->get_primitive_deps(reorder_index);
+                auto& deps = mkldnn_emitter.get_primitive_deps(reorder_index);
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0]) << ", "
                        << args[0].get_name() << ");\n";
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1]) << ", "
@@ -3194,18 +3169,17 @@ namespace ngraph
             {
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto input_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto input_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto delta_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto delta_desc = mkldnn_emitter.build_memory_descriptor(
                         args[1], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
                     size_t relu_index =
-                        mkldnn_emitter->build_relu_backward(input_desc, delta_desc, result_desc);
+                        mkldnn_emitter.build_relu_backward(input_desc, delta_desc, result_desc);
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(relu_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(relu_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -3232,15 +3206,14 @@ namespace ngraph
             {
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
-                    auto input_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto input_desc = mkldnn_emitter.build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
-                    auto result_desc = mkldnn_emitter->build_memory_descriptor(
+                    auto result_desc = mkldnn_emitter.build_memory_descriptor(
                         out[0], runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0));
 
-                    size_t relu_index = mkldnn_emitter->build_relu_forward(input_desc, result_desc);
+                    size_t relu_index = mkldnn_emitter.build_relu_forward(input_desc, result_desc);
 
-                    auto& deps = mkldnn_emitter->get_primitive_deps(relu_index);
+                    auto& deps = mkldnn_emitter.get_primitive_deps(relu_index);
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0])
                            << ", " << args[0].get_name() << ");\n";
                     writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1])
@@ -3268,7 +3241,6 @@ namespace ngraph
                 int input_1d_size = static_cast<int>(shape_size(input_shape));
                 int result_1d_size = static_cast<int>(shape_size(result_shape));
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto input_desc = mkldnn::memory::desc(
                     {input_1d_size},
                     mkldnn_utils::get_mkldnn_data_type(args[0].get_element_type()),
@@ -3279,9 +3251,9 @@ namespace ngraph
                     mkldnn::memory::format::x);
 
                 size_t sigmoid_index =
-                    mkldnn_emitter->build_sigmoid_forward(input_desc, result_desc);
+                    mkldnn_emitter.build_sigmoid_forward(input_desc, result_desc);
 
-                auto& deps = mkldnn_emitter->get_primitive_deps(sigmoid_index);
+                auto& deps = mkldnn_emitter.get_primitive_deps(sigmoid_index);
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0]) << ", "
                        << args[0].get_name() << ");\n";
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1]) << ", "
@@ -3301,7 +3273,6 @@ namespace ngraph
                 int delta_1d_size = static_cast<int>(shape_size(delta_shape));
                 int result_1d_size = static_cast<int>(shape_size(result_shape));
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto input_desc = mkldnn::memory::desc(
                     {input_1d_size},
                     mkldnn_utils::get_mkldnn_data_type(args[0].get_element_type()),
@@ -3316,9 +3287,9 @@ namespace ngraph
                     mkldnn::memory::format::x);
 
                 size_t sigmoid_index =
-                    mkldnn_emitter->build_sigmoid_backward(input_desc, delta_desc, result_desc);
+                    mkldnn_emitter.build_sigmoid_backward(input_desc, delta_desc, result_desc);
 
-                auto& deps = mkldnn_emitter->get_primitive_deps(sigmoid_index);
+                auto& deps = mkldnn_emitter.get_primitive_deps(sigmoid_index);
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[0]) << ", "
                        << args[0].get_name() << ");\n";
                 writer << "cpu::mkldnn_utils::set_memory_ptr(ctx, " << to_string(deps[1]) << ", "
