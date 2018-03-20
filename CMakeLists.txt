@@ -137,6 +137,15 @@ if (NOT DEFINED NGRAPH_TBB_ENABLE)
 endif()
 
 #-----------------------------------------------------------------------------------------------
+# OpenMP
+#-----------------------------------------------------------------------------------------------
+
+# All of the code in a single program, including dynamically loaded code, needs to agree on
+# which OpenMP library they'll use.
+SET(NGRAPH_OPENMP_LINKER_FLAGS "-fopenmp" CACHE STRING
+  "Linker flag(s) for targets that were compiled with OpenMP enabled.")
+
+#-----------------------------------------------------------------------------------------------
 # GPU support
 #-----------------------------------------------------------------------------------------------
 # Setup CUDA and cuDNN if NGRAPH_GPU_ENABLE=TRUE
