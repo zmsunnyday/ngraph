@@ -14,29 +14,4 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/op/abs.hpp"
-#include "ngraph/op/multiply.hpp"
-#include "ngraph/op/sign.hpp"
-
-ngraph::op::Abs::Abs(const std::shared_ptr<Node>& arg)
-    : UnaryElementwiseArithmetic("Abs", arg)
-{
-}
-
-ngraph::op::Abs::Abs(const Abs& other, const NodeVector& new_args)
-    : UnaryElementwiseArithmetic(other, new_args)
-{
-    if (new_args.size() != 1)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-}
-
-void ngraph::op::Abs::generate_adjoints(autodiff::Adjoints& adjoints,
-                                        const std::shared_ptr<Node>& delta)
-{
-    auto x = get_inputs().at(0).get_output().get_node();
-
-    adjoints.add_delta(x, delta * std::make_shared<op::Sign>(x));
-}
-
+#include "ngraph/op/atan.hpp"
