@@ -45,6 +45,7 @@ namespace ngraph
                 : UnaryElementwiseArithmetic("Tan", arg)
             {
             }
+            Tan(const Tan&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

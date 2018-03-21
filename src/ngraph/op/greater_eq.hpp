@@ -34,6 +34,7 @@ namespace ngraph
                 : BinaryElementwiseComparison("GreaterEq", arg0, arg1)
             {
             }
+            GreaterEq(const GreaterEq&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

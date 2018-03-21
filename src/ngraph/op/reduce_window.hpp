@@ -65,6 +65,7 @@ namespace ngraph
                          const std::shared_ptr<Function>& reduction_function,
                          const Shape& window_shape,
                          const Strides& window_movement_strides);
+            ReduceWindow(const ReduceWindow&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

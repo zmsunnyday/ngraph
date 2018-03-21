@@ -49,6 +49,7 @@ namespace ngraph
             /// \param arg The input tuple.
             /// \param n The index of the tuple element to get.
             GetOutputElement(const std::shared_ptr<Node>& arg, size_t n);
+            GetOutputElement(const GetOutputElement&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

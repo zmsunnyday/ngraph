@@ -48,6 +48,7 @@ namespace ngraph
             /// \param arg0 The node producing the first argument.
             /// \param arg1 The node producing the second argument.
             Dot(const std::shared_ptr<Node>& arg0, const std::shared_ptr<Node>& arg1);
+            Dot(const Dot&, const NodeVector& new_args);
 
             size_t get_reduction_axes_count() const { return m_reduction_axes_count; }
             virtual std::shared_ptr<Node>

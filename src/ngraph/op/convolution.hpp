@@ -123,6 +123,7 @@ namespace ngraph
             ///
             Convolution(const std::shared_ptr<Node>& data_batch,
                         const std::shared_ptr<Node>& filters);
+            Convolution(const Convolution&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override;

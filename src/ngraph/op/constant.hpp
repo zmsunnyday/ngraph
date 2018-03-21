@@ -103,6 +103,7 @@ namespace ngraph
                 auto vt = std::make_shared<TensorViewType>(type, shape);
                 set_value_type_checked(vt);
             }
+            Constant(const Constant&, const NodeVector& new_args);
 
             virtual ~Constant();
 

@@ -36,6 +36,7 @@ namespace ngraph
             Broadcast(const std::shared_ptr<Node>& arg,
                       const Shape& shape,
                       const AxisSet& broadcast_axes);
+            Broadcast(const Broadcast&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

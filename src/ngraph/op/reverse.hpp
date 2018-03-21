@@ -51,6 +51,7 @@ namespace ngraph
             /// \param arg The input tensor view, some of whose axes are to be reversed.
             /// \param reversed_axes The axes to reverse.
             Reverse(const std::shared_ptr<Node>& arg, const AxisSet& reversed_axes);
+            Reverse(const Reverse&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

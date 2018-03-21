@@ -34,6 +34,7 @@ namespace ngraph
                       std::shared_ptr<Node> gamma,
                       std::shared_ptr<Node> beta,
                       std::shared_ptr<Node> input);
+            BatchNorm(const BatchNorm&, const NodeVector& new_args);
 
             const Shape& get_inputs_shape() const { return m_bn_input_shape; }
             const Shape& get_variance_shape() const { return m_bn_variance_shape; }
@@ -63,6 +64,7 @@ namespace ngraph
                               std::shared_ptr<Node> mean,
                               std::shared_ptr<Node> variance,
                               std::shared_ptr<Node> delta);
+            BatchNormBackprop(const BatchNormBackprop&, const NodeVector& new_args);
 
             double get_eps_value() const { return epsilon; }
             virtual std::shared_ptr<Node>

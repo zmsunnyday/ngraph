@@ -70,6 +70,7 @@ namespace ngraph
             Reshape(const std::shared_ptr<Node>& arg,
                     const AxisVector& input_order,
                     const Shape& output_shape);
+            Reshape(const Reshape&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

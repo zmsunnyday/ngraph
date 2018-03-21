@@ -31,6 +31,7 @@ namespace ngraph
             ///
             /// \param arg Node that produces the input tensor.
             Result(const std::shared_ptr<Node>& arg);
+            Result(const Result&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override;

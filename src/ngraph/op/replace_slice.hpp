@@ -75,6 +75,7 @@ namespace ngraph
                          const std::shared_ptr<Node>& arg1,
                          const Coordinate& lower_bounds,
                          const Coordinate& upper_bounds);
+            ReplaceSlice(const ReplaceSlice&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

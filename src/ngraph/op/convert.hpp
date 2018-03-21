@@ -32,6 +32,7 @@ namespace ngraph
             /// \param arg          Node that produces the input tensor.
             /// \param element_type Element type for the output tensor.
             Convert(const std::shared_ptr<Node>& arg, const ngraph::element::Type& element_type);
+            Convert(const Convert&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

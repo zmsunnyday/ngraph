@@ -34,6 +34,7 @@ namespace ngraph
                 : BinaryElementwiseComparison("LessEq", arg0, arg1)
             {
             }
+            LessEq(const LessEq&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

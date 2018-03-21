@@ -37,6 +37,7 @@ namespace ngraph
             ///
             /// \param arg Node that produces the input tensor.
             Relu(std::shared_ptr<ngraph::Node> arg);
+            Relu(const Relu&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override
@@ -61,6 +62,7 @@ namespace ngraph
             ///
             /// \param arg Node that produces the relu forward input tensor.
             ReluBackprop(std::shared_ptr<ngraph::Node> arg, std::shared_ptr<ngraph::Node> delta);
+            ReluBackprop(const ReluBackprop&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override

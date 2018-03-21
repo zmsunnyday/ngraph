@@ -71,6 +71,7 @@ namespace ngraph
             /// \param arg The node producing the input data batch tensor.
             /// \param window_shape The window shape.
             MaxPool(const std::shared_ptr<Node>& arg, const Shape& window_shape);
+            MaxPool(const MaxPool&, const NodeVector& new_args);
 
             virtual std::shared_ptr<Node>
                 copy_with_new_args(const NodeVector& new_args) const override
