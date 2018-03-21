@@ -36,20 +36,8 @@ namespace ngraph
             ///
             /// Output `[d1, ...]`
             ///
-            Abs(const std::shared_ptr<Node>& arg)
-                : UnaryElementwiseArithmetic("Abs", arg)
-            {
-            }
-
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Abs>(new_args.at(0));
-            }
+            Abs(const std::shared_ptr<Node>& arg);
+            Abs(const Abs&, const NodeVector& new_args);
 
         protected:
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,

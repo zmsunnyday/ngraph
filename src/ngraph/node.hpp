@@ -79,6 +79,10 @@ namespace ngraph
 
     protected:
         Node(const std::string& node_type, const NodeVector& arguments);
+
+        // This is the replacement for copy_with_new_args
+        Node(const Node&, const NodeVector& new_args);
+
         virtual ~Node()
         {
             for (auto arg : m_arguments)
@@ -187,7 +191,7 @@ namespace ngraph
 
         std::shared_ptr<Node> get_input_op(size_t index);
 
-        virtual std::shared_ptr<Node> copy_with_new_args(const NodeVector& new_args) const = 0;
+        // virtual std::shared_ptr<Node> copy_with_new_args(const NodeVector& new_args) const = 0;
 
         virtual std::vector<std::shared_ptr<Function>> get_functions() const;
 

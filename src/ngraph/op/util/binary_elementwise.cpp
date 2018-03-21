@@ -37,3 +37,9 @@ op::util::BinaryElementwise::BinaryElementwise(const std::string& node_type,
 
     set_value_type_checked(make_shared<TensorViewType>(result_element_type, input_0.get_shape()));
 }
+
+op::util::BinaryElementwise::BinaryElementwise(const RequiresTensorViewArgs& other,
+                                                   const NodeVector& new_args)
+    : Op(other, new_args)
+{
+}

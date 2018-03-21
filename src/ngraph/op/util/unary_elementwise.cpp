@@ -30,3 +30,9 @@ op::util::UnaryElementwise::UnaryElementwise(const std::string& node_type,
 
     set_value_type_checked(result_element_type, input.get_shape());
 }
+
+op::util::UnaryElementwise::UnaryElementwise(const RequiresTensorViewArgs& other,
+                                                   const NodeVector& new_args)
+    : Op(other, new_args)
+{
+}

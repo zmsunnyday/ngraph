@@ -35,3 +35,9 @@ op::util::BinaryElementwiseArithmetic::BinaryElementwiseArithmetic(
         throw ngraph_error("Operands for arithmetic operators must have numeric element type");
     }
 }
+
+op::util::BinaryElementwiseArithmetic::BinaryElementwiseArithmetic(const RequiresTensorViewArgs& other,
+                                                   const NodeVector& new_args)
+    : Op(other, new_args)
+{
+}

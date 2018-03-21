@@ -29,3 +29,9 @@ op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(const string&
         throw ngraph_error("Arguments must have the same tensor view element type");
     }
 }
+
+op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(const RequiresTensorViewArgs& other,
+                                                   const NodeVector& new_args)
+    : Op(other, new_args)
+{
+}
