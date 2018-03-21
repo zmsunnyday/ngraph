@@ -58,16 +58,6 @@ namespace ngraph
             }
             Softmax(const Softmax&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Softmax>(new_args.at(0), m_axes);
-            }
-
             const AxisSet& get_axes() const { return m_axes; }
         protected:
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,

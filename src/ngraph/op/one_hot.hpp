@@ -53,16 +53,6 @@ namespace ngraph
             OneHot(const std::shared_ptr<Node>& arg, const Shape& shape, size_t one_hot_axis);
             OneHot(const OneHot&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<OneHot>(new_args.at(0), m_shape, m_one_hot_axis);
-            }
-
             /// \return The index of the one-hot axis.
             size_t get_one_hot_axis() const { return m_one_hot_axis; }
         protected:

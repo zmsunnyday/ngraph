@@ -73,20 +73,6 @@ namespace ngraph
             MaxPool(const std::shared_ptr<Node>& arg, const Shape& window_shape);
             MaxPool(const MaxPool&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<MaxPool>(new_args.at(0),
-                                                 m_window_shape,
-                                                 m_window_movement_strides,
-                                                 m_padding_below,
-                                                 m_padding_above);
-            }
-
             /// \return The window shape.
             const Shape& get_window_shape() const { return m_window_shape; }
             /// \return The window movement strides.

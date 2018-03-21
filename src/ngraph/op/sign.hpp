@@ -48,16 +48,6 @@ namespace ngraph
             {
             }
             Sign(const Sign&, const NodeVector& new_args);
-
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Sign>(new_args.at(0));
-            }
         };
     }
 }

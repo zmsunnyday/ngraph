@@ -16,6 +16,16 @@
 
 #include "ngraph/op/add.hpp"
 
+ngraph::op::Add::Add(const std::shared_ptr<Node>& arg0, const std::shared_ptr<Node>& arg1)
+    : BinaryElementwiseArithmetic("Add", arg0, arg1)
+{
+}
+
+ngraph::op::Add::Add(const Add& other, const NodeVector& new_args)
+    : BinaryElementwiseArithmetic(other, new_args)
+{
+}
+
 void ngraph::op::Add::generate_adjoints(autodiff::Adjoints& adjoints,
                                         const std::shared_ptr<Node>& delta)
 {

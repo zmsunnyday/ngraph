@@ -53,4 +53,8 @@ op::util::ArithmeticReduction::ArithmeticReduction(const RequiresTensorViewArgs&
                                                          const NodeVector& new_args)
     : Op(other, new_args)
 {
+    if (new_args.size() != 1)
+    {
+        throw ngraph_error("Incorrect number of new arguments");
+    }
 }

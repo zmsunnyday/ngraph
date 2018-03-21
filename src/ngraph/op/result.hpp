@@ -33,9 +33,6 @@ namespace ngraph
             Result(const std::shared_ptr<Node>& arg);
             Result(const Result&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
-
             virtual bool is_output() const override { return true; }
             void set_needs_copy(bool val) { m_needs_copy = val; }
             bool needs_copy() const { return m_needs_copy; }

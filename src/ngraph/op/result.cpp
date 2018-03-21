@@ -37,7 +37,8 @@ op::Result::Result(const std::shared_ptr<Node>& arg)
     set_value_type_checked(arg->get_element_type(), arg->get_shape());
 }
 
-std::shared_ptr<Node> op::Result::copy_with_new_args(const NodeVector& new_args) const
+op::Result::Result(const Result& other, const NodeVector& new_args)
+    : RequiresTensorViewArgs(other, new_args)
 {
     if (new_args.size() != 1)
     {
@@ -48,8 +49,4 @@ std::shared_ptr<Node> op::Result::copy_with_new_args(const NodeVector& new_args)
     {
         throw ngraph_error("Expected a single-output argument");
     }
-
-    auto res = std::make_shared<Result>(new_args.at(0));
-    res->set_needs_copy(res->needs_copy());
-    return res;
 }

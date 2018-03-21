@@ -73,8 +73,6 @@ namespace ngraph
                 const Shape& padding_interior);
             Pad(const Pad&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
             /// \return The padding-below sizes.
             const Shape& get_padding_below() const { return m_padding_below; }
             /// \return The padding-above sizes.

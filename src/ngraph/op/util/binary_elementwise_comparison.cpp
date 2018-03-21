@@ -34,4 +34,8 @@ op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(const Require
                                                    const NodeVector& new_args)
     : Op(other, new_args)
 {
+    if (new_args.size() != 2)
+    {
+        throw ngraph_error("Incorrect number of new arguments");
+    }
 }

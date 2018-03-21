@@ -83,17 +83,8 @@ namespace ngraph
         // This is the replacement for copy_with_new_args
         Node(const Node&, const NodeVector& new_args);
 
-        virtual ~Node()
-        {
-            for (auto arg : m_arguments)
-            {
-                arg->m_users.erase(this);
-            }
-            for (auto& input : m_inputs)
-            {
-                input.get_output().remove_input(&input);
-            }
-        }
+        virtual ~Node();
+
         virtual void generate_adjoints(autodiff::Adjoints& adjoints,
                                        const std::shared_ptr<Node>& delta)
         {

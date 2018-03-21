@@ -40,8 +40,6 @@ namespace ngraph
             const Shape& get_variance_shape() const { return m_bn_variance_shape; }
             const Shape& get_mean_shape() const { return m_bn_mean_shape; }
             double get_eps_value() const { return m_epsilon; }
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
 
         protected:
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,
@@ -67,8 +65,6 @@ namespace ngraph
             BatchNormBackprop(const BatchNormBackprop&, const NodeVector& new_args);
 
             double get_eps_value() const { return epsilon; }
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
 
         private:
             double epsilon;

@@ -15,3 +15,13 @@
 *******************************************************************************/
 
 #include "ngraph/op/acos.hpp"
+
+ngraph::op::Abs::Acos(const std::shared_ptr<Node>& arg)
+    : UnaryElementwiseArithmetic("Acos", arg)
+{
+}
+
+ngraph::op::Abs::Abs(const Abs& other, const NodeVector& new_args)
+    : UnaryElementwiseArithmetic(other, new_args)
+{
+}

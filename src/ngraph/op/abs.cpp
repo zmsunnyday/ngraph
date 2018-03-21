@@ -26,10 +26,6 @@ ngraph::op::Abs::Abs(const std::shared_ptr<Node>& arg)
 ngraph::op::Abs::Abs(const Abs& other, const NodeVector& new_args)
     : UnaryElementwiseArithmetic(other, new_args)
 {
-    if (new_args.size() != 1)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
 }
 
 void ngraph::op::Abs::generate_adjoints(autodiff::Adjoints& adjoints,

@@ -51,16 +51,6 @@ namespace ngraph
             Dot(const Dot&, const NodeVector& new_args);
 
             size_t get_reduction_axes_count() const { return m_reduction_axes_count; }
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 2)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Dot>(
-                    new_args.at(0), new_args.at(1), m_reduction_axes_count);
-            }
 
         protected:
             size_t m_reduction_axes_count;

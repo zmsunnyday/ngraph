@@ -70,15 +70,15 @@ op::Pad::Pad(const std::shared_ptr<Node>& arg,
     set_value_type_checked(get_input_element_type(0), result_shape);
 }
 
-std::shared_ptr<Node> op::Pad::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<Pad>(
-        new_args.at(0), new_args.at(1), m_padding_below, m_padding_above, m_padding_interior);
-}
+// std::shared_ptr<Node> op::Pad::copy_with_new_args(const NodeVector& new_args) const
+// {
+//     if (new_args.size() != 2)
+//     {
+//         throw ngraph_error("Incorrect number of new arguments");
+//     }
+//     return std::make_shared<Pad>(
+//         new_args.at(0), new_args.at(1), m_padding_below, m_padding_above, m_padding_interior);
+// }
 
 /* The "y" half of this is going to be a bit tricky... best way to handle it, I think,
    is to ReplaceSlice the non-padded values in the incoming delta tensor with a zero

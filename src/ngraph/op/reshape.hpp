@@ -72,16 +72,6 @@ namespace ngraph
                     const Shape& output_shape);
             Reshape(const Reshape&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 1)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Reshape>(new_args.at(0), m_input_order, m_output_shape);
-            }
-
             /// \return The order in which to iterate over input axes.
             const AxisVector& get_input_order() const { return m_input_order; }
             /// \return The shape of the output tensor.

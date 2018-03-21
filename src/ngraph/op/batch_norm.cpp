@@ -62,14 +62,6 @@ ngraph::op::BatchNorm::BatchNorm(double eps,
     add_output(input->get_element_type(), m_bn_variance_shape);
 }
 
-std::shared_ptr<ngraph::Node>
-    ngraph::op::BatchNorm::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 3)
-        throw ngraph_error("Incorrect number of new arguments");
-    return std::make_shared<BatchNorm>(m_epsilon, new_args.at(0), new_args.at(1), new_args.at(2));
-}
-
 ngraph::op::BatchNormBackprop::BatchNormBackprop(double eps,
                                                  std::shared_ptr<ngraph::Node> gamma,
                                                  std::shared_ptr<ngraph::Node> beta,
@@ -124,22 +116,6 @@ ngraph::op::BatchNormBackprop::BatchNormBackprop(double eps,
     add_output(input->get_element_type(), input->get_shape());
     add_output(gamma->get_element_type(), gamma->get_shape());
     add_output(beta->get_element_type(), beta->get_shape());
-}
-
-std::shared_ptr<ngraph::Node>
-    ngraph::op::BatchNormBackprop::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 6)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<op::BatchNormBackprop>(epsilon,
-                                                   new_args.at(0),
-                                                   new_args.at(1),
-                                                   new_args.at(2),
-                                                   new_args.at(3),
-                                                   new_args.at(4),
-                                                   new_args.at(5));
 }
 
 void ngraph::op::BatchNorm::generate_adjoints(autodiff::Adjoints& adjoints,

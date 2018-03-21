@@ -38,21 +38,8 @@ namespace ngraph
             ///
             /// Output `[d0, ...]`
             ///
-            Add(const std::shared_ptr<Node>& arg0, const std::shared_ptr<Node>& arg1)
-                : BinaryElementwiseArithmetic("Add", arg0, arg1)
-            {
-            }
+            Add(const std::shared_ptr<Node>& arg0, const std::shared_ptr<Node>& arg1);
             Add(const Add&, const NodeVector& new_args);
-
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 2)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Add>(new_args.at(0), new_args.at(1));
-            }
 
         protected:
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,

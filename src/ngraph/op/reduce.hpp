@@ -98,17 +98,6 @@ namespace ngraph
                    const AxisSet& reduction_axes);
             Reduce(const Reduce&, const NodeVector& new_args);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 2)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<Reduce>(
-                    new_args.at(0), new_args.at(1), m_reduction_function, m_reduction_axes);
-            }
-
             /// \return A one-element vector containing the function to use for reduction.
             std::vector<std::shared_ptr<Function>> get_functions() const override
             {
