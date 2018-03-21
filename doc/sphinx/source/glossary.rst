@@ -17,6 +17,12 @@ Glossary
       A component of nGraph that acts as a backend for a framework,
       allowing the framework to define and execute computations.
 
+   export
+   
+      The serialized version of a trained model that can be passed to
+      one of the nGraph backends for computation.      
+
+
    framework
 
       A machine learning environment, such as TensorFlow, MXNet, or
@@ -24,28 +30,35 @@ Glossary
 
    function graph
 
-      For backend users, the function graph represents an ``op``'s 
-      parameters and results; it may contain the functional 
-      operations of one or more subgraphs comprising the graph.
+      The function graph contains an ``op``'s parameters and results. 
+      It represents the functional operations of one or more subgraphs 
+      that comprise the graph. 
 
-   fusing 
+   fusion 
 
-      The combining, merging, collapsing, or refactoring of a graph's 
-      functional operations (``ops``) into one or more of nGraph's 
-      core ops. 
+      Fusion is the fusing, combining, merging, collapsing, or refactoring 
+      of a graph's functional operations (``ops``) into one or more of 
+      nGraph's core ops. 
 
-   node 
 
-      A node is where 
+   identity element
+
+      When any element from the function graph is multiplied by an identity 
+      element, that element is equal to itself.
+
+   model description
+
+      A description of a program's fundamental operations that are 
+      used by a framework to generate inputs for computation. 
 
    op
 
-      An op represents an operation. Ops are stateless and have zero
-      or more inputs and zero or more outputs. Some ops have
-      additional constant attributes. Every output of an op
-      corresponds to a tensor and has an element type and a shape. The
-      element types and shapes of the outputs of an op are determined
-      by the inputs and attributes of the op.
+      An ``op`` represents an operation. Ops are stateless and have zero
+      or more inputs and zero or more outputs. Some ops have additional 
+      constant attributes. Every output of an op corresponds to a tensor 
+      and has an element type and a shape. The element types and shapes 
+      of the outputs of an op are determined by the inputs and attributes 
+      of the op.
 
    parameter
 
@@ -103,13 +116,4 @@ Glossary
       Tensors are maps from *coordinates* to scalar values, all of the
       same type, called the *element type* of the tensor.
 
-   model description
-
-      A description of a program's fundamental operations that are 
-      used by a framework to generate inputs for computation. 
-
-   export
-   
-      The serialized version of a trained model that can be passed to
-      one of the nGraph backends for computation.      
 
