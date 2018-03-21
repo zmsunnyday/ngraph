@@ -118,7 +118,9 @@ Sphinx v. 1.6.5.  This can be installed with :command:`pip3`, either to a virtua
 environment, or to your base system if you plan to contribute much core code or
 documentation. For C++ API docs that contain inheritance diagrams and collaboration
 diagrams which are helpful for framework integratons, or for building bridge code, 
-be sure you have a system capable of running `doxygen`_.   
+be sure you have a system capable of running `doxygen`_. For the inheritance 
+and collaboration diagrams to render, you'll also need to ensure that your system 
+has :program:`graphviz` installed.  
 
 To build documentation locally, run: 
 
