@@ -14,4 +14,4 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/op/remainer.hpp"
+#include "ngraph/op/remainder.hpp"

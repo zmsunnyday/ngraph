@@ -59,23 +59,6 @@ op::ConvolutionBias::ConvolutionBias(const std::shared_ptr<Node>& data_batch,
 {
 }
 
-std::shared_ptr<Node> op::ConvolutionBias::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-
-    return std::shared_ptr<Node>(new ConvolutionBias(new_args.at(0),
-                                                     new_args.at(1),
-                                                     new_args.at(2),
-                                                     get_window_movement_strides(),
-                                                     get_window_dilation_strides(),
-                                                     get_padding_below(),
-                                                     get_padding_above(),
-                                                     get_data_dilation_strides()));
-}
-
 void op::ConvolutionBias::generate_adjoints(autodiff::Adjoints& adjoints,
                                             const std::shared_ptr<Node>& delta)
 {
@@ -173,22 +156,4 @@ op::ConvolutionBiasBackpropFiltersBias::ConvolutionBiasBackpropFiltersBias(
 
     add_output(data_batch_et, filters_shape);
     add_output(data_batch_et, bias_shape);
-}
-
-std::shared_ptr<Node>
-    op::ConvolutionBiasBackpropFiltersBias::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<ConvolutionBiasBackpropFiltersBias>(new_args.at(0),
-                                                                m_filters_shape,
-                                                                m_bias_shape,
-                                                                new_args.at(1),
-                                                                m_window_movement_strides_forward,
-                                                                m_window_dilation_strides_forward,
-                                                                m_padding_below_forward,
-                                                                m_padding_above_forward,
-                                                                m_data_dilation_strides_forward);
 }

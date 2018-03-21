@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include "ngraph/op/abs.hpp"
+#include "ngraph/log.hpp"
 #include "ngraph/op/multiply.hpp"
 #include "ngraph/op/sign.hpp"
 
@@ -26,6 +27,7 @@ ngraph::op::Abs::Abs(const std::shared_ptr<Node>& arg)
 ngraph::op::Abs::Abs(const Abs& other, const NodeVector& new_args)
     : UnaryElementwiseArithmetic(other, new_args)
 {
+    NGRAPH_INFO << "Abs::Abs";
 }
 
 void ngraph::op::Abs::generate_adjoints(autodiff::Adjoints& adjoints,
@@ -35,4 +37,3 @@ void ngraph::op::Abs::generate_adjoints(autodiff::Adjoints& adjoints,
 
     adjoints.add_delta(x, delta * std::make_shared<op::Sign>(x));
 }
-

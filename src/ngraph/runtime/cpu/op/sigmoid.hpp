@@ -27,9 +27,9 @@ namespace ngraph
         {
         public:
             Sigmoid(std::shared_ptr<Node> input);
+            Sigmoid(const Sigmoid&, const NodeVector& new_args);
+
             Shape get_input_shape() const { return m_shape_input; }
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
             virtual void generate_adjoints(autodiff::Adjoints& adjoints,
                                            const std::shared_ptr<Node>& delta) override;
 
@@ -46,16 +46,7 @@ namespace ngraph
             ///
             /// \param arg Node that produces the Sigmoid forward input tensor.
             SigmoidBackprop(std::shared_ptr<ngraph::Node> arg, std::shared_ptr<ngraph::Node> delta);
-
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 2)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-                return std::make_shared<SigmoidBackprop>(new_args.at(0), new_args.at(1));
-            }
+            SigmoidBackprop(const SigmoidBackprop&, const NodeVector& new_args);
         };
     }
 }

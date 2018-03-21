@@ -42,16 +42,7 @@ namespace ngraph
                         const std::shared_ptr<Node>& arg,
                         size_t output_index,
                         const std::shared_ptr<ngraph::runtime::cpu::LayoutDescriptor>& layout);
-
-                    virtual std::shared_ptr<Node>
-                        copy_with_new_args(const NodeVector& new_args) const override
-                    {
-                        if (new_args.size() != 1)
-                        {
-                            throw ngraph_error("Incorrect number of new arguments");
-                        }
-                        return std::make_shared<ConvertLayout>(new_args.at(0), output_layout);
-                    }
+                    ConvertLayout(const ConvertLayout&, const NodeVector& new_args);
 
                 protected:
                     size_t arg_output_index;

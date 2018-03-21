@@ -102,23 +102,6 @@ namespace ngraph
                             const Shape& padding_above,
                             const std::shared_ptr<op::MaxPool>& forward_op = nullptr);
 
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override
-            {
-                if (new_args.size() != 2)
-                {
-                    throw ngraph_error("Incorrect number of new arguments");
-                }
-
-                MaxPoolBackprop* mpbp = new MaxPoolBackprop(new_args.at(0),
-                                                            new_args.at(1),
-                                                            m_window_shape,
-                                                            m_window_movement_strides,
-                                                            m_padding_below,
-                                                            m_padding_above);
-                return std::shared_ptr<op::MaxPoolBackprop>(mpbp);
-            }
-
             const Shape& get_window_shape() const { return m_window_shape; }
             const Strides& get_window_movement_strides() const { return m_window_movement_strides; }
             const Shape& get_padding_below() const { return m_padding_below; }

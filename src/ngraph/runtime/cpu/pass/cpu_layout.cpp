@@ -90,19 +90,19 @@ shared_ptr<Node> runtime::cpu::pass::CPULayout::insert_input_conversions(
     shared_ptr<Node> new_node;
     if (replace_node)
     {
-        new_node = node->copy_with_new_args(new_args);
-        if (node->is_output())
-        {
-            external_function->get_function()->replace_node(node, new_node);
-        }
-        else
-        {
-            ngraph::replace_node(node, new_node);
-        }
-        NGRAPH_DEBUG << "Replaced " << node->get_name() << " with " << new_node->get_name();
-        auto old_op_annotations = static_pointer_cast<ngraph::op::Op>(node)->get_op_annotations();
-        static_pointer_cast<ngraph::op::Op>(new_node)->set_op_annotations(old_op_annotations);
-        node = new_node;
+        // new_node = node->copy_with_new_args(new_args);
+        // if (node->is_output())
+        // {
+        //     external_function->get_function()->replace_node(node, new_node);
+        // }
+        // else
+        // {
+        //     ngraph::replace_node(node, new_node);
+        // }
+        // NGRAPH_DEBUG << "Replaced " << node->get_name() << " with " << new_node->get_name();
+        // auto old_op_annotations = static_pointer_cast<ngraph::op::Op>(node)->get_op_annotations();
+        // static_pointer_cast<ngraph::op::Op>(new_node)->set_op_annotations(old_op_annotations);
+        // node = new_node;
     }
     return node;
 }
@@ -178,19 +178,19 @@ void runtime::cpu::pass::CPULayout::set_default_layouts(
     shared_ptr<Node> new_node;
     if (replace_node)
     {
-        new_node = node->copy_with_new_args(new_args);
-        if (node->is_output())
-        {
-            external_function->get_function()->replace_node(node, new_node);
-        }
-        else
-        {
-            ngraph::replace_node(node, new_node);
-        }
-        NGRAPH_DEBUG << "Replaced " << node->get_name() << " with " << new_node->get_name();
-        auto old_op_annotations = static_pointer_cast<ngraph::op::Op>(node)->get_op_annotations();
-        static_pointer_cast<ngraph::op::Op>(new_node)->set_op_annotations(old_op_annotations);
-        node = new_node;
+        // new_node = node->copy_with_new_args(new_args);
+        // if (node->is_output())
+        // {
+        //     external_function->get_function()->replace_node(node, new_node);
+        // }
+        // else
+        // {
+        //     ngraph::replace_node(node, new_node);
+        // }
+        // NGRAPH_DEBUG << "Replaced " << node->get_name() << " with " << new_node->get_name();
+        // auto old_op_annotations = static_pointer_cast<ngraph::op::Op>(node)->get_op_annotations();
+        // static_pointer_cast<ngraph::op::Op>(new_node)->set_op_annotations(old_op_annotations);
+        // node = new_node;
     }
 
     for (size_t i = 0; i < node->get_output_size(); ++i)

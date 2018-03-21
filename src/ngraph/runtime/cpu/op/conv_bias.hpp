@@ -29,6 +29,7 @@ namespace ngraph
         public:
             ConvolutionBias(const std::shared_ptr<op::Convolution>& conv,
                             const std::shared_ptr<Node>& bias);
+            ConvolutionBias(const ConvolutionBias&, const NodeVector& new_args);
 
             const Strides& get_window_movement_strides() const { return m_window_movement_strides; }
             const Strides& get_window_dilation_strides() const { return m_window_dilation_strides; }
@@ -38,8 +39,6 @@ namespace ngraph
             std::shared_ptr<Node> get_bias() { return get_input_op(2); }
             std::shared_ptr<Node> get_filters() { return get_input_op(1); }
             std::shared_ptr<Node> get_data_batch() { return get_input_op(0); }
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
 
             void generate_adjoints(autodiff::Adjoints& adjoints,
                                    const std::shared_ptr<Node>& delta) override;
@@ -76,9 +75,7 @@ namespace ngraph
                                                const CoordinateDiff& padding_below_forward,
                                                const CoordinateDiff& padding_above_forward,
                                                const Strides& data_dilation_strides_forward);
-
-            virtual std::shared_ptr<Node>
-                copy_with_new_args(const NodeVector& new_args) const override;
+            ConvolutionBiasBackpropFiltersBias(const ConvolutionBiasBackpropFiltersBias&, const NodeVector& new_args);
 
             /// \return The filters tensor shape.
             const Shape& get_filters_shape() const { return m_filters_shape; }

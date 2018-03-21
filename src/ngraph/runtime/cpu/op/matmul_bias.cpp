@@ -18,24 +18,6 @@
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
 
-std::shared_ptr<ngraph::Node>
-    ngraph::op::MatmulBias::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2 && new_args.size() != 3)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-
-    return std::make_shared<MatmulBias>(new_args.at(0),
-                                        new_args.at(1),
-                                        new_args.size() == 3 ? new_args.at(2) : nullptr,
-                                        m_shape_w,
-                                        m_shape_x,
-                                        m_transpose_w,
-                                        m_transpose_x,
-                                        m_broadcast_axes);
-}
-
 ngraph::op::MatmulBias::MatmulBias(std::shared_ptr<ngraph::Node> W,
                                    std::shared_ptr<ngraph::Node> x,
                                    std::shared_ptr<ngraph::Node> b,

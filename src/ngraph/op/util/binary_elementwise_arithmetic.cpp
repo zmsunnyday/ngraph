@@ -36,9 +36,9 @@ op::util::BinaryElementwiseArithmetic::BinaryElementwiseArithmetic(
     }
 }
 
-op::util::BinaryElementwiseArithmetic::BinaryElementwiseArithmetic(const RequiresTensorViewArgs& other,
-                                                   const NodeVector& new_args)
-    : Op(other, new_args)
+op::util::BinaryElementwiseArithmetic::BinaryElementwiseArithmetic(
+    const BinaryElementwiseArithmetic& other, const NodeVector& new_args)
+    : BinaryElementwise(other, new_args)
 {
     if (new_args.size() != 2)
     {

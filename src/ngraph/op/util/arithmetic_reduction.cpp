@@ -49,9 +49,9 @@ op::util::ArithmeticReduction::ArithmeticReduction(const std::string& node_type,
     set_value_type_checked(input.get_element_type(), result_shape);
 }
 
-op::util::ArithmeticReduction::ArithmeticReduction(const RequiresTensorViewArgs& other,
-                                                         const NodeVector& new_args)
-    : Op(other, new_args)
+op::util::ArithmeticReduction::ArithmeticReduction(const ArithmeticReduction& other,
+                                                   const NodeVector& new_args)
+    : RequiresTensorViewArgs(other, new_args)
 {
     if (new_args.size() != 1)
     {

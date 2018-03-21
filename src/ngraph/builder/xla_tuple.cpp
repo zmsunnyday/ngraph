@@ -34,11 +34,6 @@ xla::op::Tuple::Tuple(const NodeVector& nodes)
 {
 }
 
-std::shared_ptr<Node> xla::op::Tuple::copy_with_new_args(const NodeVector& new_args) const
-{
-    return make_shared<Tuple>(new_args);
-}
-
 const NodeVector& xla::op::Tuple::get_elements() const
 {
     return m_elements;

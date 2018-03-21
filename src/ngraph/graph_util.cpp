@@ -240,7 +240,7 @@ std::list<std::shared_ptr<ngraph::Node>>
             {
                 cloned_args.push_back(node_map.get(arg));
             }
-            node_map.add(node, node->copy_with_new_args(cloned_args));
+            // node_map.add(node, node->copy_with_new_args(cloned_args));
         }
     }
 

@@ -30,9 +30,9 @@ op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(const string&
     }
 }
 
-op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(const RequiresTensorViewArgs& other,
-                                                   const NodeVector& new_args)
-    : Op(other, new_args)
+op::util::BinaryElementwiseComparison::BinaryElementwiseComparison(
+    const BinaryElementwiseComparison& other, const NodeVector& new_args)
+    : BinaryElementwise(other, new_args)
 {
     if (new_args.size() != 2)
     {

@@ -49,9 +49,6 @@ namespace ngraph
                 size_t get_tuple_size() const;
                 const NodeVector& get_elements() const;
 
-                virtual std::shared_ptr<Node>
-                    copy_with_new_args(const NodeVector& new_args) const override;
-
             protected:
                 NodeVector m_elements;
             };

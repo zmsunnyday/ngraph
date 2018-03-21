@@ -357,21 +357,6 @@ op::Convolution::Convolution(const std::shared_ptr<Node>& data_batch,
 {
 }
 
-std::shared_ptr<Node> op::Convolution::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<Convolution>(new_args.at(0),
-                                         new_args.at(1),
-                                         m_window_movement_strides,
-                                         m_window_dilation_strides,
-                                         m_padding_below,
-                                         m_padding_above,
-                                         m_data_dilation_strides);
-}
-
 void op::Convolution::generate_adjoints(autodiff::Adjoints& adjoints,
                                         const std::shared_ptr<Node>& delta)
 {
@@ -485,23 +470,6 @@ op::ConvolutionBackpropData::ConvolutionBackpropData(const Shape& data_batch_sha
     set_value_type_checked(filters_et, inferred_convolution_output_shape);
 }
 
-std::shared_ptr<Node>
-    op::ConvolutionBackpropData::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<ConvolutionBackpropData>(m_data_batch_shape,
-                                                     new_args.at(0),
-                                                     new_args.at(1),
-                                                     m_window_movement_strides_forward,
-                                                     m_window_dilation_strides_forward,
-                                                     m_padding_below_forward,
-                                                     m_padding_above_forward,
-                                                     m_data_dilation_strides_forward);
-}
-
 op::ConvolutionBackpropFilters::ConvolutionBackpropFilters(
     const std::shared_ptr<Node>& data_batch,
     const Shape& filters_shape,
@@ -581,21 +549,4 @@ op::ConvolutionBackpropFilters::ConvolutionBackpropFilters(
     }
 
     set_value_type_checked(data_batch_et, inferred_convolution_output_shape);
-}
-
-std::shared_ptr<Node>
-    op::ConvolutionBackpropFilters::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 2)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-    return std::make_shared<ConvolutionBackpropFilters>(new_args.at(0),
-                                                        m_filters_shape,
-                                                        new_args.at(1),
-                                                        m_window_movement_strides_forward,
-                                                        m_window_dilation_strides_forward,
-                                                        m_padding_below_forward,
-                                                        m_padding_above_forward,
-                                                        m_data_dilation_strides_forward);
 }

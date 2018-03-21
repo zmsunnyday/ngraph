@@ -28,10 +28,11 @@ op::util::UnaryElementwiseArithmetic::UnaryElementwiseArithmetic(const std::stri
     }
 }
 
-op::util::UnaryElementwiseArithmetic::UnaryElementwiseArithmetic(const RequiresTensorViewArgs& other,
-                                                   const NodeVector& new_args)
-    : Op(other, new_args)
+op::util::UnaryElementwiseArithmetic::UnaryElementwiseArithmetic(
+    const UnaryElementwiseArithmetic& other, const NodeVector& new_args)
+    : UnaryElementwise(other, new_args)
 {
+    NGRAPH_INFO << "UnaryElementwiseArithmetic::UnaryElementwiseArithmetic";
     if (new_args.size() != 1)
     {
         throw ngraph_error("Incorrect number of new arguments");

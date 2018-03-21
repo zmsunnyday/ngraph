@@ -18,17 +18,6 @@
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
 
-std::shared_ptr<ngraph::Node>
-    ngraph::op::Sigmoid::copy_with_new_args(const NodeVector& new_args) const
-{
-    if (new_args.size() != 1)
-    {
-        throw ngraph_error("Incorrect number of new arguments");
-    }
-
-    return std::make_shared<Sigmoid>(new_args.at(0));
-}
-
 ngraph::op::Sigmoid::Sigmoid(std::shared_ptr<ngraph::Node> input)
     : RequiresTensorViewArgs("Sigmoid", {input})
     , m_shape_input(input->get_shape())

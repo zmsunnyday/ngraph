@@ -49,7 +49,8 @@ namespace ngraph
                 /// \param arg Node that produces the input tensor.
                 UnaryElementwiseArithmetic(const std::string& node_type,
                                            const std::shared_ptr<Node>& arg);
-                BinaryElementwise(const BinaryElementwise&, const NodeVector& new_args);
+                UnaryElementwiseArithmetic(const UnaryElementwiseArithmetic&,
+                                           const NodeVector& new_args);
             };
         }
     }
