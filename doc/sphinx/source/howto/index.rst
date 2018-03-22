@@ -46,8 +46,8 @@ evaluating a simple MNIST MLP model.
 
 For data scientists or algorithm developers who are trying to extract specifics 
 about the state of a model at a certain node, or who want to optimize a model 
-at a more granular level, we provide an example for how to :doc:`import` a 
-model and run inference after it has been exported from a DL framework.    
+at a more granular level, we provide an example for how to :doc:`import` and 
+run inference after it has been exported from a DL framework.    
 
 This section is under development; we'll continually populate it with more 
 articles geared toward data scientists, algorithm designers, framework developers, 
