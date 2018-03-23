@@ -177,11 +177,26 @@ std::list<std::shared_ptr<ngraph::Node>>
     }
 
     list<shared_ptr<ngraph::Node>> result_list;
+    Placement current_placement = Placement::DEFAULT;
     while (independent_nodes.size() > 0)
     {
-        auto independent_node = independent_nodes.front();
+        Node* independent_node = nullptr;
+        for (auto it = independent_nodes.begin(); it != independent_nodes.end(); it++)
+        {
+            if ((*it)->get_placement() == current_placement)
+            {
+                independent_node = *it;
+                independent_nodes.erase(it);
+                break;
+            }
+        }
+        if (!independent_node)
+        {
+            independent_node = independent_nodes.front();
+            independent_nodes.pop_front();
+            current_placement = independent_node->get_placement();
+        }
         result_list.push_back(node_map[independent_node]);
-        independent_nodes.pop_front();
 
         for (auto user : independent_node->users())
         {
