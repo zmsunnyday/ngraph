@@ -12,8 +12,8 @@ Core Ops
 More about Core ``ops`` in nGraph
 -----------------------------------
 
-An ``Op``'s primary role is to function as a :term:`node` in a directed acyclic 
-graph dependency computation graph.  
+An ``Op``'s primary role is to function as a node in a directed acyclic graph 
+dependency computation graph.  
 
 *Core ops* are ops that are available and generally useful to all framework 
 bridges and that can be compiled by all transformers. A framework bridge may 
