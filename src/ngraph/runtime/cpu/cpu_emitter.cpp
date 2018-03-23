@@ -158,7 +158,6 @@ namespace ngraph
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 1);
                     auto result_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input0_data_desc =
                         mkldnn_emitter->build_memory_descriptor(args[0], input0_format);
                     auto input1_data_desc =
@@ -389,7 +388,6 @@ namespace ngraph
                     auto variance_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 2);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto weights_shape = Shape{2, args[0].get_size()};
                     auto input_desc =
                         mkldnn_emitter->build_memory_descriptor(args[2], input_format);
@@ -434,7 +432,6 @@ namespace ngraph
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 4);
                     auto result_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto weights_shape = Shape{2, args[0].get_size()};
                     auto input_desc =
                         mkldnn_emitter->build_memory_descriptor(args[2], input_format);
@@ -498,7 +495,6 @@ namespace ngraph
                 auto delta_format = runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 5);
                 auto dinput_format = runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto weights_shape = Shape{2, args[0].get_size()};
                 auto weights_desc = mkldnn_emitter->build_memory_descriptor(
                     weights_shape, args[0].get_element_type(), mkldnn::memory::format::nc);
@@ -1153,18 +1149,6 @@ namespace ngraph
             template <>
             void CPU_Emitter::EMITTER_DECL(ngraph::op::Constant)
             {
-                // If an output is a constant then copy it
-                size_t output_index = 0;
-                for (shared_ptr<Node> result : external_function->get_function()->get_results())
-                {
-                    if (result.get() == node)
-                    {
-                        const descriptor::Tensor& tensor = node->get_output_tensor(0);
-                        writer << "memcpy(outputs[" << output_index << "], " << tensor.get_name()
-                               << ", " << tensor.size() << ");\n";
-                    }
-                    output_index++;
-                }
             }
 
             template <>
@@ -2073,7 +2057,6 @@ namespace ngraph
                     auto output_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_data_desc =
                         mkldnn_emitter->build_memory_descriptor(args[0], input_format);
                     auto weights_desc =
@@ -2144,7 +2127,6 @@ namespace ngraph
                     auto output_format =
                         runtime::cpu::mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_data_desc =
                         mkldnn_emitter->build_memory_descriptor(args[0], input_format);
                     auto weights_desc =
@@ -2214,7 +2196,6 @@ namespace ngraph
                         window_dilation_strides_adjusted.push_back(s - 1);
                     }
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto delta_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2284,7 +2265,6 @@ namespace ngraph
                         window_dilation_strides_adjusted.push_back(s - 1);
                     }
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     // HACK to help MKLDNN pick the right implementation
                     auto weights_format =
                         runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0);
@@ -2362,7 +2342,6 @@ namespace ngraph
                     auto bias_format = mkldnn_utils::get_input_mkldnn_format(node, 2);
                     auto result_format = mkldnn_utils::get_output_mkldnn_format(node, 0);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto data_desc = mkldnn_emitter->build_memory_descriptor(data, data_format);
                     auto weights_desc =
                         mkldnn_emitter->build_memory_descriptor(weights, weights_format);
@@ -2433,7 +2412,6 @@ namespace ngraph
                     auto weights_delta_format = mkldnn_utils::get_output_mkldnn_format(node, 0);
                     auto bias_delta_format = mkldnn_utils::get_output_mkldnn_format(node, 1);
 
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto data_desc = mkldnn_emitter->build_memory_descriptor(data, data_format);
                     auto delta_desc = mkldnn_emitter->build_memory_descriptor(delta, delta_format);
                     auto weights_delta_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2495,7 +2473,6 @@ namespace ngraph
                 if (arg_rank == 4 && max_pool->get_window_shape().size() == 2 &&
                     args[0].get_element_type() == element::f32)
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto result_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2656,7 +2633,6 @@ namespace ngraph
                 // TODO(jmenon): Remove element type restriction
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto result_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2747,7 +2723,6 @@ namespace ngraph
 
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto diff_dst_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto diff_src_desc = mkldnn_emitter->build_memory_descriptor(
@@ -2803,7 +2778,6 @@ namespace ngraph
 
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto fprop_src_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto diff_dst_desc = mkldnn_emitter->build_memory_descriptor(
@@ -3087,7 +3061,6 @@ namespace ngraph
                     output_format = mkldnn::memory::format::oihw;
                 }
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto input_desc = mkldnn_emitter->build_memory_descriptor(args[0], input_format);
                 auto result_desc = mkldnn_emitter->build_memory_descriptor(out[0], output_format);
 
@@ -3108,7 +3081,6 @@ namespace ngraph
             {
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto delta_desc = mkldnn_emitter->build_memory_descriptor(
@@ -3146,7 +3118,6 @@ namespace ngraph
             {
                 if (runtime::cpu::mkldnn_utils::use_mkldnn_kernel(node))
                 {
-                    auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                     auto input_desc = mkldnn_emitter->build_memory_descriptor(
                         args[0], runtime::cpu::mkldnn_utils::get_input_mkldnn_format(node, 0));
                     auto result_desc = mkldnn_emitter->build_memory_descriptor(
@@ -3182,7 +3153,6 @@ namespace ngraph
                 int input_1d_size = static_cast<int>(shape_size(input_shape));
                 int result_1d_size = static_cast<int>(shape_size(result_shape));
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto input_desc = mkldnn::memory::desc(
                     {input_1d_size},
                     mkldnn_utils::get_mkldnn_data_type(args[0].get_element_type()),
@@ -3215,7 +3185,6 @@ namespace ngraph
                 int delta_1d_size = static_cast<int>(shape_size(delta_shape));
                 int result_1d_size = static_cast<int>(shape_size(result_shape));
 
-                auto& mkldnn_emitter = external_function->get_mkldnn_emitter();
                 auto input_desc = mkldnn::memory::desc(
                     {input_1d_size},
                     mkldnn_utils::get_mkldnn_data_type(args[0].get_element_type()),
