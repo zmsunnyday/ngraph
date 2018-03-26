@@ -3736,6 +3736,34 @@ TEST(${BACKEND_NAME}, replace_slice_matrix)
               read_vector<float>(result));
 }
 
+TEST(${BACKEND_NAME}, replace_slice_matrix_step)
+{
+    SKIP_TEST_FOR("GPU", "${BACKEND_NAME}");
+    Shape shape_a{64, 64};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_b{32, 32};
+    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    Shape shape_r{64, 64};
+    auto r = make_shared<op::ReplaceSlice>(A, B, Coordinate{0, 0}, Coordinate{32, 32});
+    auto f = make_shared<Function>(r, op::ParameterVector{A, B});
+
+    auto manager = runtime::Manager::get("${BACKEND_NAME}");
+    auto external = manager->compile(f);
+    auto backend = manager->allocate_backend();
+    auto cf = backend->make_call_frame(external);
+
+    // // Create some tensors for input/output
+    // auto a = backend->make_primary_tensor_view(element::f32, shape_a);
+    // copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    // auto b = backend->make_primary_tensor_view(element::f32, shape_b);
+    // copy_data(b, vector<float>{102, 103, 106, 107, 110, 111});
+    // auto result = backend->make_primary_tensor_view(element::f32, shape_r);
+
+    // cf->call({result}, {a, b});
+    // EXPECT_EQ((vector<float>{1, 102, 103, 4, 5, 106, 107, 8, 9, 110, 111, 12, 13, 14, 15, 16}),
+    //           read_vector<float>(result));
+}
+
 TEST(${BACKEND_NAME}, replace_slice_vector)
 {
     SKIP_TEST_FOR("GPU", "${BACKEND_NAME}");
