@@ -240,7 +240,7 @@ float test_accuracy(MNistDataLoader& loader,
         loader.load();
         t_X->write(loader.get_image_floats(), 0, loader.get_image_batch_size() * sizeof(float));
         t_Y->write(loader.get_label_floats(), 0, loader.get_label_batch_size() * sizeof(float));
-        cf->call({t_X, t_W0, t_b0, t_W1, t_b1}, {t_sm});
+        cf->call({t_sm}, {t_X, t_W0, t_b0, t_W1, t_b1});
         size_t acc = accuracy_count(t_sm, t_Y);
         acc_count += acc;
         sample_count += batch_size;
@@ -380,8 +380,8 @@ int main(int argc, const char* argv[])
         t_Y->write(train_loader.get_label_floats(),
                    0,
                    train_loader.get_label_batch_size() * sizeof(float));
-        train_cf->call({t_X, t_Y, t_N, t_learning_rate, t_W0, t_b0, t_W1, t_b1},
-                       {t_loss, t_sm, t_W0_next, t_b0_next, t_W1_next, t_b1_next});
+        train_cf->call({t_loss, t_sm, t_W0_next, t_b0_next, t_W1_next, t_b1_next},
+                       {t_X, t_Y, t_N, t_learning_rate, t_W0, t_b0, t_W1, t_b1});
 
         t_W0.swap(t_W0_next);
         t_b0.swap(t_b0_next);
