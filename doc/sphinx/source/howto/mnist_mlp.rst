@@ -50,12 +50,28 @@ cap with a ``softmax``.
 Loss
 ----
 
-We use cross-entropy to compute the loss.
+We use cross-entropy to compute the loss. nGraph does not currenty
+have a cross-entropy op, so we implement it directly, adding clipping
+to prevent underflow.
 
 .. _update:
 
 Update
 ------
+
+To compute the updates, we need the derivative of the inference
+function.  We use ``backprop_node`` on the loss to compute the
+derivative for each wieght using ``delta=learning_rate*loss``, as
+the initial backprop value. This returns a node for the amount we want
+to adjust each weight.
+
+nGraph nodes are stateless, so we will return the updated values for
+the weights; the sum of the initial weight and the update.
+
+Finally, we construct the functions. At this time, nGraph does not
+allow a node to be compiled in more than one function, so we create
+one function for training and one for inference and clone them to get
+functions we will compile.
 
 
 
