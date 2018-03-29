@@ -8,12 +8,12 @@ How to
    :caption: How to 
 
    execute.rst
-   mnist_mlp.rst
+   derive-for-training.rst
    import.rst
     
 
-The "How to" articles in this section explain how to do specific tasks with the 
-Intel nGraph++ library. The recipes are all framework agnostic; in other words, 
+The "How to" articles in this section explain how to do specific tasks with 
+nGraph components. The recipes are all framework agnostic; in other words, 
 if an entity (framework or user) wishes to make use of target-based computational 
 resources, it can either:
 
