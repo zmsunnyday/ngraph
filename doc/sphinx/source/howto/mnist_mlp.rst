@@ -41,7 +41,7 @@ Inference
 ---------
 
 We begin by building the graph, starting with the input parameter
-``X``. We define a fully-connected layer, including a parameter for
+``X``. We define a fully-connected layer, including parameters for
 weights and bias.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
