@@ -123,6 +123,13 @@ void ngraph::replace_node(std::shared_ptr<Node> target, std::shared_ptr<Node> re
         throw ngraph_error("Result nodes cannot be replaced.");
     }
 
+    if (target->get_outputs().size() > 1)
+    {
+        throw ngraph_error(
+            "Multi-output nodes should not be replaced directly. The corresponding "
+            "GetOutputElements should be replaced instead");
+    }
+
     // Fix input/output descriptors
     assert(target->get_outputs().size() == replacement->get_outputs().size());
 
@@ -183,8 +190,9 @@ std::list<std::shared_ptr<ngraph::Node>>
         result_list.push_back(node_map[independent_node]);
         independent_nodes.pop_front();
 
-        for (auto user : independent_node->users())
+        for (auto user_sp : independent_node->get_users())
         {
+            Node* user = user_sp.get();
             node_dependency_count[user] -= 1;
             size_t count = node_dependency_count[user];
             if (count == 0)

@@ -87,15 +87,19 @@ class Computation:
 
         external = self.runtime.manager.compile(self.function)
         call_frame = self.runtime.backend.make_call_frame(external)
-        call_frame.call(self.tensor_views, [result_view])
+        call_frame.call([result_view], self.tensor_views)
 
         Computation._read_tensor_view_to_ndarray(result_view, result_arr)
         result_arr = result_arr.reshape(result_shape)
         return result_arr
 
-    def serialize(self):  # type: () -> str
-        """Serialize function (compute graph) to a JSON string."""
-        return serialize(self.function)
+    def serialize(self, indent=0):  # type: (int) -> str
+        """Serialize function (compute graph) to a JSON string.
+
+        :param indent: set indent of serialized output
+        :return: serialized model
+        """
+        return serialize(self.function, indent)
 
     @staticmethod
     def _get_buffer_size(element_type, element_count):  # type: (TensorViewType, int) -> int
