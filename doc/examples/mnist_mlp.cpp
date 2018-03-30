@@ -22,169 +22,16 @@
 #include <memory>
 #include <random>
 #include <set>
+#include <stdexcept>
 #include <string>
 
 #include <ngraph/graph_util.hpp>
 #include <ngraph/ngraph.hpp>
 
 #include "mnist.hpp"
+#include "tensor_utils.hpp"
 
 using namespace ngraph;
-
-template <typename T>
-T read_scalar(const std::shared_ptr<runtime::TensorView>& t, size_t index = 0)
-{
-    T result;
-    t->read(&result, index * sizeof(T), sizeof(T));
-    return result;
-}
-
-template <typename T>
-void write_scalar(const std::shared_ptr<runtime::TensorView>& t, T value, size_t index = 0)
-{
-    t->write(&value, index * sizeof(T), sizeof(T));
-}
-
-class TensorDumper
-{
-protected:
-    TensorDumper(const std::string& name, const std::shared_ptr<runtime::TensorView>& tensor)
-        : m_name(name)
-        , m_tensor(tensor)
-    {
-    }
-
-public:
-    const std::string& get_name() const { return m_name; }
-    std::shared_ptr<runtime::TensorView> get_tensor() const { return m_tensor; }
-protected:
-    std::string m_name;
-    std::shared_ptr<runtime::TensorView> m_tensor;
-};
-
-class MinMax : public TensorDumper
-{
-public:
-    MinMax(const std::string& name, const std::shared_ptr<runtime::TensorView>& tensor)
-        : TensorDumper(name, tensor)
-    {
-        size_t n = m_tensor->get_element_count();
-        for (size_t i = 0; i < n; ++i)
-        {
-            float s = read_scalar<float>(m_tensor, i);
-            m_max = std::max(m_max, s);
-            m_min = std::min(m_min, s);
-        }
-    }
-
-    float get_min() const { return m_min; }
-    float get_max() const { return m_max; }
-protected:
-    float m_min{std::numeric_limits<float>::max()};
-    float m_max{std::numeric_limits<float>::min()};
-};
-
-std::ostream& operator<<(std::ostream& s, const MinMax& mm)
-{
-    return s << "MinMax[" << mm.get_name() << ":" << mm.get_min() << ", " << mm.get_max() << "]";
-}
-
-std::ostream& operator<<(std::ostream& s, const Shape& shape)
-{
-    s << "Shape{";
-    for (size_t i = 0; i < shape.size(); ++i)
-    {
-        s << shape.at(i);
-        if (i + 1 < shape.size())
-        {
-            s << ", ";
-        }
-    }
-    s << "}";
-    return s;
-}
-
-class DumpTensor : public TensorDumper
-{
-public:
-    DumpTensor(const std::string& name, const std::shared_ptr<runtime::TensorView>& tensor)
-        : TensorDumper(name, tensor)
-    {
-    }
-};
-
-std::ostream& operator<<(std::ostream& s, const DumpTensor& dumper)
-{
-    std::shared_ptr<runtime::TensorView> t{dumper.get_tensor()};
-    const Shape& shape = t->get_shape();
-    s << "Tensor<" << dumper.get_name() << ": ";
-    for (size_t i = 0; i < shape.size(); ++i)
-    {
-        s << shape.at(i);
-        if (i + 1 < shape.size())
-        {
-            s << ", ";
-        }
-    }
-    size_t pos = 0;
-    s << ">{";
-    size_t rank = shape.size();
-    if (rank == 0)
-    {
-        s << read_scalar<float>(t, pos++);
-    }
-    else if (rank <= 2)
-    {
-        s << "[";
-        for (size_t i = 0; i < shape.at(0); ++i)
-        {
-            if (rank == 1)
-            {
-                s << read_scalar<float>(t, pos++);
-            }
-            else if (rank == 2)
-            {
-                s << "[";
-                for (size_t j = 0; j < shape.at(1); ++j)
-                {
-                    s << read_scalar<float>(t, pos++);
-
-                    if (j + 1 < shape.at(1))
-                    {
-                        s << ", ";
-                    }
-                }
-                s << "]";
-            }
-            if (i + 1 < shape.at(0))
-            {
-                s << ", ";
-            }
-        }
-        s << "]";
-    }
-    s << "}";
-    return s;
-}
-
-std::shared_ptr<runtime::TensorView> make_output_tensor(std::shared_ptr<runtime::Backend> backend,
-                                                        std::shared_ptr<Node> node,
-                                                        size_t output)
-{
-    return backend->make_primary_tensor_view(node->get_output_element_type(output),
-                                             node->get_output_shape(output));
-}
-
-void randomize(std::function<float()> rand, std::shared_ptr<runtime::TensorView> t)
-{
-    size_t element_count = t->get_element_count();
-    std::vector<float> temp;
-    for (size_t i = 0; i < element_count; ++i)
-    {
-        temp.push_back(rand());
-    }
-    t->write(&temp[0], 0, element_count * sizeof(float));
-}
 
 size_t accuracy_count(const std::shared_ptr<runtime::TensorView>& t_sm,
                       const std::shared_ptr<runtime::TensorView>& t_Y)
@@ -201,18 +48,18 @@ size_t accuracy_count(const std::shared_ptr<runtime::TensorView>& t_sm,
     size_t count = 0;
     for (size_t i = 0; i < batch_size; ++i)
     {
-        float max_value = read_scalar<float>(t_sm, sm_pos++);
+        float max_value = get_scalar<float>(t_sm, sm_pos++);
         size_t max_idx = 0;
         for (size_t j = 1; j < label_size; ++j)
         {
-            float value = read_scalar<float>(t_sm, sm_pos++);
+            float value = get_scalar<float>(t_sm, sm_pos++);
             if (value > max_value)
             {
                 max_value = value;
                 max_idx = j;
             }
         }
-        float correct_idx = read_scalar<float>(t_Y, i);
+        float correct_idx = get_scalar<float>(t_Y, i);
         if (static_cast<size_t>(correct_idx) == static_cast<size_t>(max_idx))
         {
             count++;
@@ -285,7 +132,7 @@ int main(int argc, const char* argv[])
     // Softmax
     auto sm = std::make_shared<op::Softmax>(l1, AxisSet{1});
 
-    // Cost computation
+    // Loss computation
     auto Y = std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
     auto labels = std::make_shared<op::OneHot>(Y, Shape{batch_size, output_size}, 1);
     auto sm_clip_value =
@@ -338,7 +185,7 @@ int main(int argc, const char* argv[])
 
     auto t_learning_rate = make_output_tensor(backend, learning_rate, 0);
     auto t_N = make_output_tensor(backend, N, 0);
-    write_scalar(t_N, static_cast<float>(batch_size), 0);
+    set_scalar(t_N, static_cast<float>(batch_size), 0);
 
     // Allocate updated variables
     auto t_W0_next = make_output_tensor(backend, W0_next, 0);
@@ -368,7 +215,7 @@ int main(int argc, const char* argv[])
     auto inference_ext = manager->compile(inference_function);
     auto inference_cf = backend->make_call_frame(inference_ext);
 
-    write_scalar(t_learning_rate, .03f);
+    set_scalar(t_learning_rate, .03f);
 
     size_t last_epoch = 0;
     while (train_loader.get_epoch() < epochs)
@@ -387,14 +234,7 @@ int main(int argc, const char* argv[])
         t_b0.swap(t_b0_next);
         t_W1.swap(t_W1_next);
         t_b1.swap(t_b1_next);
-#if 0
-        float this_loss = read_scalar<float>(t_loss);
 
-        float acc = accuracy_count(t_sm, t_Y) / static_cast<float>(batch_size);
-
-        std::cout << "Pos: " << train_loader.get_pos() << " " << this_loss << " " << acc
-                  << std::endl;
-#endif
         if (train_loader.get_epoch() != last_epoch)
         {
             last_epoch = train_loader.get_epoch();
@@ -404,5 +244,8 @@ int main(int argc, const char* argv[])
                       << std::endl;
         }
     }
+
+    std::cout << MinMax("b0", t_b0) << std::endl << DumpTensor("b0", t_b0) << std::endl;
+
     return 0;
 }
