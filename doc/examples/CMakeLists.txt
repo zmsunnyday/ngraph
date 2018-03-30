@@ -37,7 +37,6 @@ if (NGRAPH_CPU_ENABLE)
     set_source_files_properties(abc.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
 
     set(MNIST_SRC
-        layers.cpp
         mnist.cpp 
         mnist_mlp.cpp
     )

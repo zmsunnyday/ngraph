@@ -57,7 +57,7 @@ weights and bias.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 213-122
+   :lines: 123-136
 
 
 We repeat the process for the next layer, which we
@@ -65,7 +65,7 @@ normalize with a ``softmax``.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 124-133
+   :lines: 138-150
 
 
 .. _loss:
@@ -79,7 +79,7 @@ to prevent underflow.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 135-146
+   :lines: 152-166
 
 
 .. _backprop:
@@ -137,5 +137,5 @@ compile clones of the nodes.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 230-236
+   :lines: 254-261
 

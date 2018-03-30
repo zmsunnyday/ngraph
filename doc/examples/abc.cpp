@@ -32,7 +32,8 @@ int main()
     auto t1 = std::make_shared<op::Multiply>(t0, c);
 
     // Make the function
-    auto f = std::make_shared<Function>(NodeVector{t1}, op::ParameterVector{a, b, c});
+    auto f = std::make_shared<Function>(NodeVector{t1},
+                                        op::ParameterVector{a, b, c});
 
     // Get the backend
     auto manager = runtime::Manager::get("CPU");

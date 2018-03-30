@@ -146,12 +146,14 @@ void MNistDataLoader::open()
     m_label_loader.open();
     if (m_image_loader.get_items() != m_label_loader.get_items())
     {
-        throw std::invalid_argument("Mismatch between image and label items");
+        throw std::invalid_argument(
+            "Mismatch between image and label items");
     }
     m_items = m_image_loader.get_items();
 
     m_image_sample_size = get_rows() * get_columns();
-    m_image_floats = std::unique_ptr<float[]>(new float[m_batch_size * m_image_sample_size]);
+    m_image_floats = std::unique_ptr<float[]>(
+        new float[m_batch_size * m_image_sample_size]);
     m_label_floats = std::unique_ptr<float[]>(new float[m_batch_size]);
     m_pos = 0;
     m_epoch = 0;

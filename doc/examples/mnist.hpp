@@ -84,7 +84,9 @@ public:
 class MNistDataLoader
 {
 public:
-    MNistDataLoader(size_t batch_size, const std::string& image, const std::string& label);
+    MNistDataLoader(size_t batch_size,
+                    const std::string& image,
+                    const std::string& label);
     ~MNistDataLoader();
 
     void open();
@@ -102,7 +104,10 @@ public:
 
     const float* get_image_floats() const { return m_image_floats.get(); }
     const float* get_label_floats() const { return m_label_floats.get(); }
-    size_t get_image_batch_size() const { return m_image_sample_size * m_batch_size; }
+    size_t get_image_batch_size() const
+    {
+        return m_image_sample_size * m_batch_size;
+    }
     size_t get_label_batch_size() const { return m_batch_size; }
 protected:
     size_t m_batch_size;

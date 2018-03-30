@@ -42,7 +42,8 @@ size_t accuracy_count(const std::shared_ptr<runtime::TensorView>& t_sm,
     const Shape& Y_shape = t_Y->get_shape();
     if (Y_shape.size() != 1 || Y_shape.at(0) != batch_size)
     {
-        throw std::invalid_argument("Y and softmax shapes are incomptible");
+        throw std::invalid_argument(
+            "Y and softmax shapes are incomptible");
     }
     size_t sm_pos = 0;
     size_t count = 0;
@@ -60,7 +61,8 @@ size_t accuracy_count(const std::shared_ptr<runtime::TensorView>& t_sm,
             }
         }
         float correct_idx = get_scalar<float>(t_Y, i);
-        if (static_cast<size_t>(correct_idx) == static_cast<size_t>(max_idx))
+        if (static_cast<size_t>(correct_idx) ==
+            static_cast<size_t>(max_idx))
         {
             count++;
         }
@@ -85,14 +87,19 @@ float test_accuracy(MNistDataLoader& loader,
     while (loader.get_epoch() < 1)
     {
         loader.load();
-        t_X->write(loader.get_image_floats(), 0, loader.get_image_batch_size() * sizeof(float));
-        t_Y->write(loader.get_label_floats(), 0, loader.get_label_batch_size() * sizeof(float));
+        t_X->write(loader.get_image_floats(),
+                   0,
+                   loader.get_image_batch_size() * sizeof(float));
+        t_Y->write(loader.get_label_floats(),
+                   0,
+                   loader.get_label_batch_size() * sizeof(float));
         cf->call({t_sm}, {t_X, t_W0, t_b0, t_W1, t_b1});
         size_t acc = accuracy_count(t_sm, t_Y);
         acc_count += acc;
         sample_count += batch_size;
     }
-    return static_cast<float>(acc_count) / static_cast<float>(sample_count);
+    return static_cast<float>(acc_count) /
+           static_cast<float>(sample_count);
 }
 
 int main(int argc, const char* argv[])
@@ -104,28 +111,38 @@ int main(int argc, const char* argv[])
     size_t l0_size = 600;
     size_t l1_size = output_size;
     float log_min = static_cast<float>(exp(-50.0));
-    MNistDataLoader test_loader{batch_size, MNistImageLoader::TEST, MNistLabelLoader::TEST};
-    MNistDataLoader train_loader{batch_size, MNistImageLoader::TRAIN, MNistLabelLoader::TRAIN};
+    MNistDataLoader test_loader{
+        batch_size, MNistImageLoader::TEST, MNistLabelLoader::TEST};
+    MNistDataLoader train_loader{
+        batch_size, MNistImageLoader::TRAIN, MNistLabelLoader::TRAIN};
     train_loader.open();
     test_loader.open();
-    size_t input_size = train_loader.get_columns() * train_loader.get_rows();
+    size_t input_size =
+        train_loader.get_columns() * train_loader.get_rows();
 
     // The data input
-    auto X = std::make_shared<op::Parameter>(element::f32, Shape{batch_size, input_size});
+    auto X = std::make_shared<op::Parameter>(
+        element::f32, Shape{batch_size, input_size});
 
     // Layer 0
-    auto W0 = std::make_shared<op::Parameter>(element::f32, Shape{input_size, l0_size});
-    auto b0 = std::make_shared<op::Parameter>(element::f32, Shape{l0_size});
+    auto W0 = std::make_shared<op::Parameter>(element::f32,
+                                              Shape{input_size, l0_size});
+    auto b0 =
+        std::make_shared<op::Parameter>(element::f32, Shape{l0_size});
     auto l0_dot = std::make_shared<op::Dot>(X, W0, 1);
-    auto b0_broadcast = std::make_shared<op::Broadcast>(b0, Shape{batch_size, l0_size}, AxisSet{0});
+    auto b0_broadcast = std::make_shared<op::Broadcast>(
+        b0, Shape{batch_size, l0_size}, AxisSet{0});
     auto l0_sum = std::make_shared<op::Add>(l0_dot, b0_broadcast);
     auto l0 = std::make_shared<op::Relu>(l0_sum);
 
     // Layer 1
-    auto W1 = std::make_shared<op::Parameter>(element::f32, Shape{l0_size, l1_size});
-    auto b1 = std::make_shared<op::Parameter>(element::f32, Shape{l1_size});
+    auto W1 = std::make_shared<op::Parameter>(element::f32,
+                                              Shape{l0_size, l1_size});
+    auto b1 =
+        std::make_shared<op::Parameter>(element::f32, Shape{l1_size});
     auto l1_dot = std::make_shared<op::Dot>(l0, W1, 1);
-    auto b1_broadcast = std::make_shared<op::Broadcast>(b1, Shape{batch_size, l1_size}, AxisSet{0});
+    auto b1_broadcast = std::make_shared<op::Broadcast>(
+        b1, Shape{batch_size, l1_size}, AxisSet{0});
     auto l1_sum = std::make_shared<op::Add>(l1_dot, b1_broadcast);
     auto l1 = std::make_shared<op::Relu>(l1_sum);
 
@@ -133,23 +150,27 @@ int main(int argc, const char* argv[])
     auto sm = std::make_shared<op::Softmax>(l1, AxisSet{1});
 
     // Loss computation
-    auto Y = std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
-    auto labels = std::make_shared<op::OneHot>(Y, Shape{batch_size, output_size}, 1);
-    auto sm_clip_value =
-        std::make_shared<op::Constant>(element::f32, Shape{}, std::vector<float>{log_min});
+    auto Y =
+        std::make_shared<op::Parameter>(element::f32, Shape{batch_size});
+    auto labels =
+        std::make_shared<op::OneHot>(Y, Shape{batch_size, output_size}, 1);
+    auto sm_clip_value = std::make_shared<op::Constant>(
+        element::f32, Shape{}, std::vector<float>{log_min});
     auto sm_clip_broadcast = std::make_shared<op::Broadcast>(
         sm_clip_value, Shape{batch_size, output_size}, AxisSet{0, 1});
     auto sm_clip = std::make_shared<op::Maximum>(sm, sm_clip_broadcast);
     auto sm_log = std::make_shared<op::Log>(sm_clip);
     auto prod = std::make_shared<op::Multiply>(sm_log, labels);
     auto N = std::make_shared<op::Parameter>(element::f32, Shape{});
-    auto loss = std::make_shared<op::Divide>(std::make_shared<op::Sum>(prod, AxisSet{0, 1}), N);
+    auto loss = std::make_shared<op::Divide>(
+        std::make_shared<op::Sum>(prod, AxisSet{0, 1}), N);
 
     // Backprop
     // Each of W0, b0, W1, and b1
-    auto learning_rate = std::make_shared<op::Parameter>(element::f32, Shape{});
-    auto delta =
-        std::make_shared<op::Multiply>(std::make_shared<op::Negative>(learning_rate), loss);
+    auto learning_rate =
+        std::make_shared<op::Parameter>(element::f32, Shape{});
+    auto delta = std::make_shared<op::Multiply>(
+        std::make_shared<op::Negative>(learning_rate), loss);
 
     auto W0_delta = loss->backprop_node(W0, delta);
     auto b0_delta = loss->backprop_node(b0, delta);
@@ -172,8 +193,9 @@ int main(int argc, const char* argv[])
     auto t_W1 = make_output_tensor(backend, W1, 0);
     auto t_b1 = make_output_tensor(backend, b1, 0);
 
-    std::function<float()> rand(std::bind(std::uniform_real_distribution<float>(-1.0f, 1.0f),
-                                          std::default_random_engine(0)));
+    std::function<float()> rand(
+        std::bind(std::uniform_real_distribution<float>(-1.0f, 1.0f),
+                  std::default_random_engine(0)));
     randomize(rand, t_W0);
     randomize(rand, t_b0);
     randomize(rand, t_W1);
@@ -200,8 +222,9 @@ int main(int argc, const char* argv[])
     // X, Y, learning_rate, W0, b0, W1, b1 -> loss, sm, W0_next, b0_next, W1_next, b1_next
     NodeMap train_node_map;
     auto train_function = clone_function(
-        std::make_shared<Function>(NodeVector{loss, sm, W0_next, b0_next, W1_next, b1_next},
-                                   op::ParameterVector{X, Y, N, learning_rate, W0, b0, W1, b1}),
+        std::make_shared<Function>(
+            NodeVector{loss, sm, W0_next, b0_next, W1_next, b1_next},
+            op::ParameterVector{X, Y, N, learning_rate, W0, b0, W1, b1}),
         train_node_map);
     auto train_ext = manager->compile(train_function);
     auto train_cf = backend->make_call_frame(train_ext);
@@ -210,7 +233,8 @@ int main(int argc, const char* argv[])
     // X, W0, b0, W1, b1 -> sm
     NodeMap inference_node_map;
     auto inference_function = clone_function(
-        std::make_shared<Function>(NodeVector{sm}, op::ParameterVector{X, W0, b0, W1, b1}),
+        std::make_shared<Function>(NodeVector{sm},
+                                   op::ParameterVector{X, W0, b0, W1, b1}),
         inference_node_map);
     auto inference_ext = manager->compile(inference_function);
     auto inference_cf = backend->make_call_frame(inference_ext);
@@ -227,8 +251,9 @@ int main(int argc, const char* argv[])
         t_Y->write(train_loader.get_label_floats(),
                    0,
                    train_loader.get_label_batch_size() * sizeof(float));
-        train_cf->call({t_loss, t_sm, t_W0_next, t_b0_next, t_W1_next, t_b1_next},
-                       {t_X, t_Y, t_N, t_learning_rate, t_W0, t_b0, t_W1, t_b1});
+        train_cf->call(
+            {t_loss, t_sm, t_W0_next, t_b0_next, t_W1_next, t_b1_next},
+            {t_X, t_Y, t_N, t_learning_rate, t_W0, t_b0, t_W1, t_b1});
 
         t_W0.swap(t_W0_next);
         t_b0.swap(t_b0_next);
@@ -238,14 +263,18 @@ int main(int argc, const char* argv[])
         if (train_loader.get_epoch() != last_epoch)
         {
             last_epoch = train_loader.get_epoch();
-            std::cout << "Test accuracy: "
-                      << test_accuracy(
-                             test_loader, inference_cf, t_X, t_Y, t_sm, t_W0, t_b0, t_W1, t_b1)
+            std::cout << "Test accuracy: " << test_accuracy(test_loader,
+                                                            inference_cf,
+                                                            t_X,
+                                                            t_Y,
+                                                            t_sm,
+                                                            t_W0,
+                                                            t_b0,
+                                                            t_W1,
+                                                            t_b1)
                       << std::endl;
         }
     }
-
-    std::cout << MinMax("b0", t_b0) << std::endl << DumpTensor("b0", t_b0) << std::endl;
 
     return 0;
 }
