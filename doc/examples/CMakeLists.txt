@@ -24,6 +24,7 @@ if (NGRAPH_CPU_ENABLE)
         "NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\""
     )
 
+    # abc
     set (ABC_SRC
         ${PROJECT_SOURCE_DIR}/doc/examples/abc.cpp
     )
@@ -33,6 +34,7 @@ if (NGRAPH_CPU_ENABLE)
     add_dependencies(abc ngraph)
     target_link_libraries(abc ngraph)
 
+    # abc_op
     set (ABC_OP_SRC
         ${PROJECT_SOURCE_DIR}/doc/examples/abc_operator.cpp
     )
@@ -42,6 +44,17 @@ if (NGRAPH_CPU_ENABLE)
     add_dependencies(abc_op ngraph)
     target_link_libraries(abc_op ngraph)
 
+    # update
+    set (UPDATE_SRC
+        ${PROJECT_SOURCE_DIR}/doc/examples/update.cpp
+    )
+
+    set_source_files_properties(${UPDATE_SRC} PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    add_executable(update ${UPDATE_SRC})
+    add_dependencies(update ngraph)
+    target_link_libraries(update ngraph)
+
+    # mnist_mlp
     set(MNIST_SRC
         ${PROJECT_SOURCE_DIR}/doc/examples/mnist.cpp 
         ${PROJECT_SOURCE_DIR}/doc/examples/mnist_mlp.cpp

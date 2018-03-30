@@ -15,13 +15,9 @@ An Example from C++
 Let's start with a simple C++ example, a function ``count`` that
 returns how many times it has already been called:
 
-.. code-block:: cpp
-
-   int count()
-   {
-     static int counter = 0;
-     return counter++;
-   }
+.. literalinclude:: ../../../examples/update.cpp
+   :language: cpp
+   :lines: 20-24
 
 This function has state kept in the static variable ``counter``. The
 state is initialized to 0. Every time ``count`` is called, the current
@@ -30,30 +26,15 @@ convert this to use a stateless function, we make a function that
 takes the current value of ``counter`` as an argument and returns the
 updated value.
 
-.. code-block:: cpp
-
-   std::tuple<int, int> stateless_count(int counter)
-   {
-     return std::tuple<int, int>(counter, counter + 1);
-   }
+.. literalinclude:: ../../../examples/update.cpp
+   :language: cpp
+   :lines: 26-29
 
 To use this version of counting,
 
-.. code-block:: cpp
-
-   static int count = 0;
-
-   {
-     auto r(stateless_count(count));
-     count = std::get<1>(r);
-     std::cout << std::get<0>(r) << std::endl;
-   }
-
-   {
-     auto r(stateless_count(count));
-     count = std::get<1>(r);
-     std::cout << std::get<0>(r) << std::endl;
-   }
+.. literalinclude:: ../../../examples/update.cpp
+   :language: cpp
+   :lines: 36-48
 
 Update in nGraph
 ================
