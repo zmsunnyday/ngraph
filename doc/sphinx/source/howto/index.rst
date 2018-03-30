@@ -8,6 +8,7 @@ How to
    :caption: How to 
 
    execute.rst
+   update.rst
    derive-for-training.rst
    import.rst
     

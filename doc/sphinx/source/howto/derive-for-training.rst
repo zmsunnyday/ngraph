@@ -135,8 +135,7 @@ use the same nodes in different functions, nGraph currently does not
 allow the same nodes to be compiled in different functions, so we
 compile clones of the nodes.
 
-
-
-
-
+.. literalinclude:: ../../../examples/mnist_mlp.cpp
+   :language: cpp
+   :lines: 383-389
 
