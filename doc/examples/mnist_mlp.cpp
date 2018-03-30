@@ -132,8 +132,7 @@ int main(int argc, const char* argv[])
     auto l0_dot = std::make_shared<op::Dot>(X, W0, 1);
     auto b0_broadcast = std::make_shared<op::Broadcast>(
         b0, Shape{batch_size, l0_size}, AxisSet{0});
-    auto l0_sum = std::make_shared<op::Add>(l0_dot, b0_broadcast);
-    auto l0 = std::make_shared<op::Relu>(l0_sum);
+    auto l0 = std::make_shared<op::Relu>(l0_dot + b0_broadcast);
 
     // Layer 1
     auto W1 = std::make_shared<op::Parameter>(element::f32,
@@ -143,8 +142,7 @@ int main(int argc, const char* argv[])
     auto l1_dot = std::make_shared<op::Dot>(l0, W1, 1);
     auto b1_broadcast = std::make_shared<op::Broadcast>(
         b1, Shape{batch_size, l1_size}, AxisSet{0});
-    auto l1_sum = std::make_shared<op::Add>(l1_dot, b1_broadcast);
-    auto l1 = std::make_shared<op::Relu>(l1_sum);
+    auto l1 = std::make_shared<op::Relu>(l1_dot + b1_broadcast);
 
     // Softmax
     auto sm = std::make_shared<op::Softmax>(l1, AxisSet{1});
@@ -169,19 +167,13 @@ int main(int argc, const char* argv[])
     // Each of W0, b0, W1, and b1
     auto learning_rate =
         std::make_shared<op::Parameter>(element::f32, Shape{});
-    auto delta = std::make_shared<op::Multiply>(
-        std::make_shared<op::Negative>(learning_rate), loss);
-
-    auto W0_delta = loss->backprop_node(W0, delta);
-    auto b0_delta = loss->backprop_node(b0, delta);
-    auto W1_delta = loss->backprop_node(W1, delta);
-    auto b1_delta = loss->backprop_node(b1, delta);
+    auto delta = -learning_rate * loss;
 
     // Updates
-    auto W0_next = std::make_shared<op::Add>(W0, W0_delta);
-    auto b0_next = std::make_shared<op::Add>(b0, b0_delta);
-    auto W1_next = std::make_shared<op::Add>(W1, W1_delta);
-    auto b1_next = std::make_shared<op::Add>(b1, b1_delta);
+    auto W0_next = W0 + loss->backprop_node(W0, delta);
+    auto b0_next = b0 + loss->backprop_node(b0, delta);
+    auto W1_next = W1 + loss->backprop_node(W1, delta);
+    auto b1_next = b1 + loss->backprop_node(b1, delta);
 
     // Get the backend
     auto manager = runtime::Manager::get("CPU");

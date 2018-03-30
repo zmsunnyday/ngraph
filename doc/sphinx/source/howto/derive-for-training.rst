@@ -57,7 +57,7 @@ weights and bias.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 123-136
+   :lines: 123-135
 
 
 We repeat the process for the next layer, which we
@@ -65,7 +65,7 @@ normalize with a ``softmax``.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 138-150
+   :lines: 137-148
 
 
 .. _loss:
@@ -79,7 +79,7 @@ to prevent underflow.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 152-166
+   :lines: 150-164
 
 
 .. _backprop:
@@ -112,13 +112,12 @@ update computation for ``N`` will be given by the node
 
    auto update = loss->backprop_node(N, delta);
 
-The different update nodes will
-share intermediate computations. So to get the updated value for ``W0`` we
-just say
+The different update nodes will share intermediate computations. So to
+get the updated value for the weights we just say:
 
-.. code-block:: cpp
-
-   auto W0_next = W0 + loss->backprop_node(W0, delta);
+.. literalinclude:: ../../../examples/mnist_mlp.cpp
+   :language: cpp
+   :lines: 166-176
 
 .. _update:
 
@@ -137,5 +136,5 @@ compile clones of the nodes.
 
 .. literalinclude:: ../../../examples/mnist_mlp.cpp
    :language: cpp
-   :lines: 254-261
+   :lines: 246-253
 

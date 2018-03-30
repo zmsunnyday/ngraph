@@ -19,33 +19,37 @@ if(MKLDNN_INCLUDE_DIR)
 endif()
 
 if (NGRAPH_CPU_ENABLE)
-    set (ABC_SRC
-        abc.cpp
-        ${PROJECT_SOURCE_DIR}/doc/examples/abc.cpp
-    )
-
-    add_executable(abc ${ABC_SRC})
-    add_dependencies(abc ngraph)
 
     set(HEADER_SEARCH_DEFINES
         "NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\""
     )
 
-    target_link_libraries(abc ngraph)
-    include_directories(SYSTEM ${JSON_INCLUDE_DIR})
-
-    set_source_files_properties(abc.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
-
-    set(MNIST_SRC
-        mnist.cpp 
-        mnist_mlp.cpp
+    set (ABC_SRC
+        ${PROJECT_SOURCE_DIR}/doc/examples/abc.cpp
     )
 
+    set_source_files_properties(${ABC_SRC} PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    add_executable(abc ${ABC_SRC})
+    add_dependencies(abc ngraph)
+    target_link_libraries(abc ngraph)
+
+    set (ABC_OP_SRC
+        ${PROJECT_SOURCE_DIR}/doc/examples/abc_operator.cpp
+    )
+
+    set_source_files_properties(${ABC_OP_SRC} PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+    add_executable(abc_op ${ABC_OP_SRC})
+    add_dependencies(abc_op ngraph)
+    target_link_libraries(abc_op ngraph)
+
+    set(MNIST_SRC
+        ${PROJECT_SOURCE_DIR}/doc/examples/mnist.cpp 
+        ${PROJECT_SOURCE_DIR}/doc/examples/mnist_mlp.cpp
+    )
+
+    set_source_files_properties(${MNIST_SRC} PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
     add_executable(mnist_mlp ${MNIST_SRC})
     add_dependencies(mnist_mlp ngraph)
     target_link_libraries(mnist_mlp ngraph)
-    set_source_files_properties(mnist.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
-    set_source_files_properties(layers.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
-    set_source_files_properties(mnist_mlp.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
 
 endif()

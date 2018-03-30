@@ -8,6 +8,7 @@ How to
    :caption: How to 
 
    execute.rst
+   operator.rst
    update.rst
    derive-for-training.rst
    import.rst
