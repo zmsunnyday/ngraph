@@ -56,3 +56,11 @@ vector<ngraph::runtime::PerformanceCounter>
 {
     return vector<PerformanceCounter>();
 }
+
+void runtime::Backend::validate_call(
+    std::shared_ptr<Function> func,
+    const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
+    const std::vector<std::shared_ptr<runtime::TensorView>>& inputs)
+{
+    NGRAPH_INFO;
+}
