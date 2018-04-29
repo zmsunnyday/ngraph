@@ -101,12 +101,17 @@ set(NGRAPH_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/doc")
 #-----------------------------------------------------------------------------------------------
 
 # Compiler-specific logic...
+message(STATUS "CMAKE_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID}")
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
     message( STATUS "Setting clang flags...")
     include( cmake/clang_4_0_flags.cmake )
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+if (MSVC)
+	# clang-cl defaults to c++11
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 ngraph_var(NGRAPH_WARNINGS_AS_ERRORS DEFAULT "OFF")
 if (NOT ${NGRAPH_WARNINGS_AS_ERRORS})
@@ -114,8 +119,12 @@ if (NOT ${NGRAPH_WARNINGS_AS_ERRORS})
     message(STATUS "Warnings as errors")
 endif()
 
-SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
-SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
+if (MSVC)
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+endif()
+
+SET(CMAKE_CXX_FLAGS_DEBUG  "-O0")
 
 # Enable build target CPU features
 set(NGRAPH_TARGET_ARCH native CACHE STRING "Target CPU architecture to build for. Defaults to the native CPU architecture")
@@ -124,10 +133,19 @@ if (NOT "${NGRAPH_TARGET_ARCH}" STREQUAL "native")
     message(WARNING "Build target architecture was overridden. The resulting build might not work correctly on the host CPU.")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=${NGRAPH_TARGET_ARCH}")
+if (MSVC)
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=${NGRAPH_TARGET_ARCH}")
+endif()
 
 # flags required for SDL-3
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fPIE -D_FORTIFY_SOURCE=2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2")
+if (MSVC)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
 if (NOT APPLE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z noexecstack")
