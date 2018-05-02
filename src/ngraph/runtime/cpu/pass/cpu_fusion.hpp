@@ -48,6 +48,7 @@ public:
         construct_sigmoid_bprop();
         construct_conv_bias();
         construct_batch_norm_relu();
+        construct_folded_batch_norm();
         construct_batch_norm_relu_global_stats();
         construct_conv_relu();
     }
@@ -65,4 +66,5 @@ private:
     void construct_batch_norm_relu();
     void construct_batch_norm_relu_global_stats();
     void construct_conv_relu();
+    void construct_folded_batch_norm();
 };

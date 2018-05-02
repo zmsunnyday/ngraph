@@ -29,7 +29,7 @@ namespace ngraph
         public:
             ConvolutionBias(const std::shared_ptr<op::Convolution>& conv,
                             const std::shared_ptr<Node>& bias);
-
+            
             ConvolutionBias(const std::shared_ptr<Node>& data_batch,
                             const std::shared_ptr<Node>& filters,
                             const std::shared_ptr<Node>& bias,

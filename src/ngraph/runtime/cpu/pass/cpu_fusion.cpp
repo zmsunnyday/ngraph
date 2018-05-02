@@ -941,3 +941,71 @@ void ngraph::runtime::cpu::pass::CPUFusion::construct_conv_relu()
     auto m = std::make_shared<pattern::Matcher>(prelu, callback);
     this->add_matcher(m);
 }
+
+void ngraph::runtime::cpu::pass::CPUFusion::construct_folded_batch_norm()
+{
+    Shape shape{2, 2, 1, 1};
+    auto input = std::make_shared<pattern::op::Label>(element::f32, shape);
+    auto filters = std::make_shared<pattern::op::Label>(element::f32, shape);
+
+    auto pconv = std::make_shared<op::Convolution>(input,
+                                                    filters,
+                                                    Strides{1, 1},
+                                                    Strides{1, 1},
+                                                    CoordinateDiff{0, 0},
+                                                    CoordinateDiff{0, 0},
+                                                    Strides{1, 1});
+    auto mean_shape = Shape{2};
+    auto mean = std::make_shared<pattern::op::Label>(element::f32, mean_shape);
+    auto var_shape = Shape{2};
+    auto var = std::make_shared<pattern::op::Label>(element::f32, var_shape);
+    auto gamma_shape = Shape{2};
+    auto gamma = std::make_shared<pattern::op::Label>(element::f32, gamma_shape);
+    auto beta_shape = Shape{2};
+    auto beta = std::make_shared<pattern::op::Label>(element::f32, beta_shape);
+    double eps = 0.001;
+    auto shape_r = Shape{1, 2, 2, 2};
+    auto bn = std::make_shared<op::BatchNorm>(eps, gamma, beta, pconv, mean, var);
+    auto prelu = std::make_shared<op::Relu>(bn);
+
+    ngraph::pattern::graph_rewrite_callback callback = [input, filters, mean, var, gamma, beta](pattern::Matcher& m) {
+        NGRAPH_DEBUG << "In callback for folded batch norm against node = "
+                     << m.match_root()->get_name();
+        auto pattern_map = m.get_pattern_map();
+
+        auto m_bn = std::dynamic_pointer_cast<op::BatchNorm>(
+                m.match_root()->get_inputs().at(0).get_output().get_node());
+        auto m_conv = std::dynamic_pointer_cast<op::Convolution>(m_bn->get_argument(2));
+        
+        // new weights = old weights * gamma / sqrt(variance + epsilon)
+        // new biases = -mean * gamma / sqrt(variance + epsilon) + beta
+        
+        auto bn_eps = op::Constant::create(element::f32, Shape{}, {m_bn->get_eps_value()});
+        auto var_eps = std::make_shared<op::Add>(pattern_map[var], 
+                std::make_shared<op::Broadcast>(bn_eps, pattern_map[var]->get_shape(), AxisSet{0}));
+        auto sqrt_var = std::make_shared<op::Sqrt>(var_eps);
+        auto neg_mean = std::make_shared<op::Negative>(pattern_map[mean]);
+        auto mean_gamma = std::make_shared<op::Multiply>(neg_mean, pattern_map[gamma]);
+        auto new_biases = std::make_shared<op::Add>(std::make_shared<op::Divide>(mean_gamma, sqrt_var), pattern_map[beta]);
+        auto weight_scaling = std::make_shared<op::Divide>(pattern_map[gamma], sqrt_var);
+        auto new_filters = std::make_shared<op::Multiply>(pattern_map[filters], 
+                std::make_shared<op::Broadcast>(weight_scaling, pattern_map[filters]->get_shape(), AxisSet{1,2,3}));
+
+        auto conv_bias = std::make_shared<op::ConvolutionBiasRelu>(
+                                                    pattern_map[input],
+                                                    new_filters,
+                                                    new_biases,
+                                                    m_conv->get_window_movement_strides(),
+                                                    m_conv->get_window_dilation_strides(),
+                                                    m_conv->get_padding_below(),
+                                                    m_conv->get_padding_above(),
+                                                    m_conv->get_data_dilation_strides());
+        ngraph::replace_node(m.match_root(), conv_bias);
+        
+        return true;
+        
+    };
+
+    auto m = std::make_shared<ngraph::pattern::Matcher>(prelu, callback);
+    this->add_matcher(m);
+}
