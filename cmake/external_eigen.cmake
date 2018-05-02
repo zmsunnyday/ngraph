@@ -35,12 +35,6 @@ if (${CMAKE_VERSION} VERSION_LESS 3.2)
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
-        TMP_DIR "eigen/tmp"
-        STAMP_DIR "eigen/stamp"
-        DOWNLOAD_DIR "eigen/download"
-        SOURCE_DIR "eigen/src"
-        BINARY_DIR "eigen/build"
-        INSTALL_DIR "eigen"
         )
 else()
     ExternalProject_Add(
@@ -52,17 +46,12 @@ else()
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
-        TMP_DIR "eigen/tmp"
-        STAMP_DIR "eigen/stamp"
-        DOWNLOAD_DIR "eigen/download"
-        SOURCE_DIR "eigen/src"
-        BINARY_DIR "eigen/build"
-        INSTALL_DIR "eigen"
-        BUILD_BYPRODUCTS "eigen/src/Eigen/Core"
+        BUILD_BYPRODUCTS "eigen/src/ext_eigen/Eigen/Core"
         )
 endif()
 
 #----------------------------------------------------------------------------------------------------------
 
 ExternalProject_Get_Property(ext_eigen SOURCE_DIR)
-set(EIGEN_INCLUDE_DIR "${SOURCE_DIR}")
+add_library(libeigen INTERFACE)
+target_include_directories(libeigen SYSTEM INTERFACE ${SOURCE_DIR})

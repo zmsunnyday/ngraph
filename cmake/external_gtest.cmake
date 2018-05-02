@@ -58,5 +58,9 @@ endif()
 
 ExternalProject_Get_Property(ext_gtest SOURCE_DIR BINARY_DIR)
 
-set(GTEST_INCLUDE_DIR ${SOURCE_DIR}/googletest/include)
+message(STATUS "^^^^^^^^^^^^^^^^^^ bin dir ${BINARY_DIR}")
+message(STATUS "^^^^^^^^^^^^^^^^^^ src dir ${SOURCE_DIR}")
+add_library(libgtest INTERFACE)
+target_include_directories(libgtest SYSTEM INTERFACE ${SOURCE_DIR}/googletest/include)
+target_link_libraries(libgtest INTERFACE ${BINARY_DIR}/googlemock/gtest/)
 link_directories(${BINARY_DIR}/googlemock/gtest)
