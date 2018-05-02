@@ -389,6 +389,26 @@ using namespace ngraph::runtime;
 
     writer << "void *__dso_handle = 0;\n\n";
 
+    size_t tensor_index = 0;
+    for (shared_ptr<Function> current_function : pass_manager.get_state().get_functions())
+    {
+        for (shared_ptr<Node> node : function_ordered_ops.at(current_function))
+        {
+            if (!node->is_parameter() && !node->is_constant())
+            {
+                for (const descriptor::Input& input : node->get_inputs())
+                {
+                    const descriptor::Output& output = input.get_output();
+                    shared_ptr<descriptor::TensorView> tv = output.get_tensor_view();
+                    m_tensor_index_map.insert({tv->get_tensor().get_name(), tensor_index++});
+                }
+            }
+        }
+    }
+
+    writer << "// Declare control flags\n;";
+    writer << "bool op_ctrl_flags[" << tensor_index << "];\n";
+
     if (m_emit_timing)
     {
         writer << "// Declare debug timers\n";
@@ -551,24 +571,6 @@ using namespace ngraph::runtime;
             }
         }
 
-        writer << "extern \"C\" void " << current_function->get_name();
-        writer << "(void** inputs, void** outputs, cpu::CPURuntimeContext* ctx)\n";
-        writer << "{\n";
-        writer.indent++;
-
-        if (m_use_tbb)
-        {
-            // TODO: This should be static but we don't codegen statics correctly yet
-            writer << "tbb::flow::graph G;\n\n";
-        }
-
-        // Execution tracing support
-        if (runtime::cpu::IsTracingEnabled() && current_function->get_name() == m_function_name)
-        {
-            writer << "cpu::Timestamp start_ts;\n"
-                   << "int profiler_count = 0;\n\n";
-        }
-
         bool temporaries_used = false;
         size_t worst_case_tmp_size = 0;
         for (shared_ptr<Node> node : ordered_ops)
@@ -606,6 +608,24 @@ using namespace ngraph::runtime;
             }
         }
 
+        writer << "extern \"C\" void " << current_function->get_name();
+        writer << "(void** inputs, void** outputs, cpu::CPURuntimeContext* ctx)\n";
+        writer << "{\n";
+        writer.indent++;
+
+        if (m_use_tbb)
+        {
+            // TODO: This should be static but we don't codegen statics correctly yet
+            writer << "tbb::flow::graph G;\n\n";
+        }
+
+        // Execution tracing support
+        if (runtime::cpu::IsTracingEnabled() && current_function->get_name() == m_function_name)
+        {
+            writer << "cpu::Timestamp start_ts;\n"
+                   << "int profiler_count = 0;\n\n";
+        }
+
         // Add inputs to the variable name map
         size_t arg_index = 0;
         for (shared_ptr<ngraph::op::Parameter> param : current_function->get_parameters())
@@ -618,6 +638,7 @@ using namespace ngraph::runtime;
                 stringstream ss;
                 ss << "((" << type << "*)(inputs[" << arg_index << "]))";
                 m_variable_name_map[tv->get_tensor().get_name()] = ss.str();
+                m_param_index_map[tv->get_tensor().get_name()] = arg_index;
                 arg_index++;
             }
         }
@@ -699,6 +720,34 @@ using namespace ngraph::runtime;
                     m_op_attrs.emplace_back(
                         node->description(), node_output_names, node_input_names);
                 }
+
+                writer << "if (";
+                size_t index = 0;
+                for (const descriptor::Input& input : node->get_inputs())
+                {
+                    const descriptor::Output& output = input.get_output();
+                    shared_ptr<descriptor::TensorView> tv = output.get_tensor_view();
+                    auto input_name = tv->get_tensor().get_name();
+                    if (index)
+                    {
+                        writer << " || ";
+                    }
+                    if (output.get_node()->is_parameter())
+                    {
+                        writer << "ctx->param_ctrl_flags[" << m_param_index_map[input_name] << "]";
+                    }
+                    else if (output.get_node()->is_constant())
+                    {
+                        writer << "0";
+                    }
+                    else
+                    {
+                        writer << "op_ctrl_flags[" << m_tensor_index_map[input_name] << "]";
+                    }
+                    index++;
+                }
+                writer << ") {\n";
+                writer.indent++;
                 if (m_use_tbb)
                 {
                     writer << "tbb::flow::continue_node<tbb::flow::continue_msg> "
@@ -717,10 +766,10 @@ using namespace ngraph::runtime;
             if (!node->is_parameter() && !node->is_constant())
             {
                 writer << "\n// " << node->get_name() << "(";
-                vector<string> parameter_nodes = node_input_names;
-                parameter_nodes.insert(
-                    parameter_nodes.end(), node_output_names.begin(), node_output_names.end());
-                writer << join(parameter_nodes);
+                vector<string> arg_nodes = node_input_names;
+                arg_nodes.insert(
+                    arg_nodes.end(), node_output_names.begin(), node_output_names.end());
+                writer << join(arg_nodes);
                 writer << ")\n";
             }
 
@@ -788,6 +837,19 @@ using namespace ngraph::runtime;
                     writer.indent--;
                     writer << "});\n";
                 }
+                for (auto output_name : node_output_names)
+                {
+                    writer << "op_ctrl_flags[" << m_tensor_index_map[output_name] << "] = true;\n";
+                }
+                writer.indent--;
+                writer << "} else {\n";
+                writer.indent++;
+                for (auto output_name : node_output_names)
+                {
+                    writer << "op_ctrl_flags[" << m_tensor_index_map[output_name] << "] = false;\n";
+                }
+                writer.indent--;
+                writer << "}\n";
             }
         }
 
