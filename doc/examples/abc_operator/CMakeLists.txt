@@ -14,19 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
-cmake_minimum_required(VERSION 3.1)
-
-include(ExternalProject)
-
-project(tbb-fetch NONE)
-
-ExternalProject_Add(
-    ext_tbb
-    GIT_REPOSITORY ${TBB_GIT_REPO_URL}
-    GIT_TAG ${TBB_GIT_TAG}
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/tbb/tbb-src"
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    UPDATE_COMMAND ""
-    INSTALL_COMMAND ""
-)
+add_executable(abc_op abc_operator.cpp)
+add_dependencies(abc_op ngraph cpu_backend)
+target_link_libraries(abc_op ngraph cpu_backend)

@@ -15,38 +15,40 @@
 # ******************************************************************************
 
 set(SRC
-    cpu_call_frame.cpp
     cpu_backend.cpp
-    cpu_kernels.cpp
-    cpu_kernel_emitters.cpp
-    cpu_kernel_utils.cpp
+    cpu_call_frame.cpp
     cpu_emitter.cpp
     cpu_external_function.cpp
-    cpu_tensor_view.cpp
-    cpu_tensor_view_wrapper.cpp
+    cpu_kernel_emitters.cpp
+    cpu_kernel_utils.cpp
+    cpu_kernels.cpp
     cpu_layout_descriptor.cpp
+    cpu_tensor_view_wrapper.cpp
+    cpu_tensor_view.cpp
     cpu_tracing.cpp
-    mkldnn_emitter.cpp
-    mkldnn_invoke.cpp
-    mkldnn_utils.cpp
     kernel/eigen_thread_pool.cpp
     kernel/pad.cpp
     kernel/reduce_max.cpp
     kernel/reduce_sum.cpp
     kernel/reshape.cpp
+    mkldnn_emitter.cpp
+    mkldnn_invoke.cpp
+    mkldnn_utils.cpp
+    op/batch_norm_relu.cpp
     op/conv_bias.cpp
     op/conv_relu.cpp
     op/convert_layout.cpp
-    op/sigmoid.cpp
     op/matmul_bias.cpp
-    op/batch_norm_relu.cpp
+    op/max_pool_with_indices.cpp
+    op/sigmoid.cpp
     pass/cpu_assignment.cpp
     pass/cpu_fusion.cpp
     pass/cpu_layout.cpp
     pass/cpu_nop_elimination.cpp
+    pass/cpu_post_layout_optimizations.cpp
     pass/cpu_rnn_mat_fusion.cpp
     pass/cpu_shuffle_folding.cpp
-    pass/cpu_post_layout_optimizations.cpp
+    pass/cpu_workspace_insertion.cpp
 )
 
 if (NGRAPH_TBB_ENABLE)
@@ -60,7 +62,7 @@ if (NGRAPH_TBB_ENABLE)
         message(STATUS "Found TBB and imported target ${TBB_IMPORTED_TARGETS}")
     endif()
 
-    set_source_files_properties(runtime/cpu/cpu_external_function.cpp
+    set_source_files_properties(cpu_external_function.cpp
         PROPERTIES COMPILE_DEFINITIONS "NGRAPH_TBB_ENABLE")
 endif()
 

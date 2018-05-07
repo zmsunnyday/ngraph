@@ -20,9 +20,9 @@ include(ExternalProject)
 set(EIGEN_GIT_TAG patched)
 set(EIGEN_GIT_URL https://github.com/NervanaSystems/eigen)
 
-#----------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Download Eigen
-#----------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # The 'BUILD_BYPRODUCTS' argument was introduced in CMake 3.2.
 if (${CMAKE_VERSION} VERSION_LESS 3.2)
@@ -35,6 +35,12 @@ if (${CMAKE_VERSION} VERSION_LESS 3.2)
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
+        TMP_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/tmp"
+        STAMP_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/stamp"
+        DOWNLOAD_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/download"
+        SOURCE_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/src"
+        BINARY_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/build"
+        INSTALL_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen"
         )
 else()
     ExternalProject_Add(
@@ -46,11 +52,17 @@ else()
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
-        BUILD_BYPRODUCTS "eigen/src/ext_eigen/Eigen/Core"
+        TMP_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/tmp"
+        STAMP_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/stamp"
+        DOWNLOAD_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/download"
+        SOURCE_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/src"
+        BINARY_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen/build"
+        INSTALL_DIR "${EXTERNAL_PROJECTS_ROOT}/eigen"
+        BUILD_BYPRODUCTS "${EXTERNAL_PROJECTS_ROOT}/eigen/src/Eigen/Core"
         )
 endif()
 
-#----------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 ExternalProject_Get_Property(ext_eigen SOURCE_DIR)
 add_library(libeigen INTERFACE)
