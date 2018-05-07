@@ -59,15 +59,9 @@ if (NGRAPH_TBB_ENABLE)
     else()
         message(STATUS "Found TBB and imported target ${TBB_IMPORTED_TARGETS}")
     endif()
-endif()
 
-if (NGRAPH_TBB_ENABLE)
     set_source_files_properties(runtime/cpu/cpu_external_function.cpp
         PROPERTIES COMPILE_DEFINITIONS "NGRAPH_TBB_ENABLE")
-    set(HEADER_SEARCH_DEFINES ${HEADER_SEARCH_DEFINES}
-        "TBB_HEADERS_PATH=\"${TBB_ROOT}/include\""
-        "NGRAPH_TBB_ENABLE"
-    )
 endif()
 
 set(NGRAPH_CPU_DEBUGINFO_ENABLE 0 CACHE STRING "Enable debuginfo in the CPU backend")
