@@ -149,7 +149,6 @@ if(NGRAPH_ADDRESS_SANITIZER)
 endif()
 
 include_directories("${NGRAPH_INCLUDE_PATH}")
-include_directories(SYSTEM "${EIGEN_INCLUDE_DIR}")
 
 add_subdirectory(codegen)
 add_subdirectory(runtime)

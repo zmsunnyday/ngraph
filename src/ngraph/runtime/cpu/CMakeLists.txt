@@ -83,5 +83,5 @@ if(NGRAPH_DISTRIBUTED_ENABLE)
 endif()
 
 add_dependencies(cpu_backend ngraph codegen libmkldnn libjson)
-target_link_libraries(cpu_backend PUBLIC ngraph codegen libmkldnn libjson ${TBB_IMPORTED_TARGETS})
+target_link_libraries(cpu_backend PUBLIC ngraph codegen libmkldnn libeigen libjson ${TBB_IMPORTED_TARGETS})
 target_include_directories(cpu_backend SYSTEM PUBLIC libmkldnn)

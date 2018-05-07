@@ -17,7 +17,6 @@
 include_directories(
     SYSTEM
     ${GTEST_INCLUDE_DIR}
-    ${EIGEN_INCLUDE_DIR}
     )
 
 include_directories(
@@ -151,10 +150,10 @@ endif()
 
 add_executable(unit-test ${SRC})
 
-target_link_libraries(unit-test ngraph gtest pthread)
+target_link_libraries(unit-test ngraph libgtest pthread)
 target_link_libraries(unit-test ${CMAKE_DL_LIBS})
 
-add_dependencies(unit-test ngraph ext_gtest ext_json int_backend)
+add_dependencies(unit-test ngraph libgtest ext_json int_backend)
 target_link_libraries(unit-test int_backend)
 
 if (NGRAPH_CPU_ENABLE)

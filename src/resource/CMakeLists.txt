@@ -22,6 +22,8 @@ set (SRC
 )
 
 get_target_property(MKLDNN_INCLUDE_DIR libmkldnn INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(EIGEN_INCLUDE_DIR libeigen INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "***************** eigen dir ${EIGEN_INCLUDE_DIR}")
 
 set(HEADER_SEARCH_DEFINES
     "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\""

@@ -14,10 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
-if(MKLDNN_INCLUDE_DIR)
-    link_directories(${MKLDNN_LIB_DIR})
-endif()
-
 if (NGRAPH_CPU_ENABLE)
 
     set(HEADER_SEARCH_DEFINES

@@ -25,6 +25,9 @@ set(SRC
 # This must be kept in sync with the LLVM + Clang version in use
 set_source_files_properties(compiler.cpp PROPERTIES COMPILE_FLAGS "-fno-rtti")
 
+get_target_property(MKLDNN_INCLUDE_DIR libmkldnn INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(EIGEN_INCLUDE_DIR libeigen INTERFACE_INCLUDE_DIRECTORIES)
+
 set(HEADER_SEARCH_DEFINES
     "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\""
     "MKLDNN_HEADERS_PATH=\"${MKLDNN_INCLUDE_DIR}\""
@@ -32,17 +35,15 @@ set(HEADER_SEARCH_DEFINES
     "NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\""
     "INSTALLED_HEADERS_PATH=\"${CMAKE_INSTALL_PREFIX}/include\""
 )
-set_source_files_properties(compiler.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES};")
 
-if(NGRAPH_DISTRIBUTED_ENABLE AND MPI_CXX_INCLUDE_PATH)
-    set_property(SOURCE compiler.cpp APPEND PROPERTY COMPILE_DEFINITIONS
-        "MPI_HEADER_PATH=\"${MPI_C_INCLUDE_PATH}\";")
+if(NGRAPH_DISTRIBUTED_ENABLE)
+    list(APPEND HEADER_SEARCH_DEFINES "MPI_HEADER_PATH=\"${MPI_C_INCLUDE_PATH}\"")
 endif()
 
-set_property(SOURCE compiler.cpp APPEND_STRING PROPERTY COMPILE_DEFINITIONS
-"CUDA_HEADER_PATHS=\"${CUDA_INCLUDE_DIRS}\";")
-set_property(SOURCE compiler.cpp APPEND_STRING PROPERTY COMPILE_DEFINITIONS
-"CUDNN_HEADER_PATHS=\"${CUDNN_INCLUDE_DIRS}\";")
+list(APPEND HEADER_SEARCH_DEFINES "CUDA_HEADER_PATHS=\"${CUDA_INCLUDE_DIRS}\"")
+list(APPEND HEADER_SEARCH_DEFINES "CUDNN_HEADER_PATHS=\"${CUDNN_INCLUDE_DIRS}\"")
+
+set_source_files_properties(compiler.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
 
 # Generate the resource file containing all headers used by the codegen compiler
 add_custom_target(header_resource
@@ -52,7 +53,7 @@ add_custom_target(header_resource
 )
 
 add_library(codegen SHARED ${SRC})
-add_dependencies(codegen header_resource ext_llvm)
+add_dependencies(codegen header_resource ext_llvm libmkldnn libeigen)
 target_include_directories(codegen PUBLIC ${CMAKE_BINARY_DIR})
 target_include_directories(codegen SYSTEM PUBLIC ${LLVM_INCLUDE_DIR})
 target_link_libraries(codegen PUBLIC ${LLVM_LINK_LIBS} pthread dl)
