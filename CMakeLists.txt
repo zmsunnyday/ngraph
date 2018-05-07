@@ -214,11 +214,9 @@ endif()
 #     ...
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
-message(STATUS "EXTERNAL_PROJECTS_ROOT ${EXTERNAL_PROJECTS_ROOT}")
 if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
     set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 endif()
-message(STATUS "EXTERNAL_PROJECTS_ROOT ${EXTERNAL_PROJECTS_ROOT}")
 include(cmake/external_gtest.cmake)
 include(cmake/external_json.cmake)
 include(cmake/external_eigen.cmake)
