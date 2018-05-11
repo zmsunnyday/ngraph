@@ -190,10 +190,6 @@ endif()
 target_include_directories(ngraph PUBLIC "${NGRAPH_INCLUDE_PATH}")
 target_link_libraries(ngraph PUBLIC dl pthread)
 
-if((NGRAPH_CPU_ENABLE OR NGRAPH_GPU_ENABLE) AND LLVM_LINK_LIBS)
-    target_link_libraries(ngraph PRIVATE ${LLVM_LINK_LIBS})
-endif()
-
 if (APPLE)
     set_property(TARGET ngraph PROPERTY PREFIX "lib")
     set_property(TARGET ngraph PROPERTY OUTPUT_NAME "ngraph.so")
@@ -201,23 +197,19 @@ if (APPLE)
 endif()
 
 # Nvidia
-if(NGRAPH_GPU_ENABLE AND CUDA_LIBRARIES)
-    find_library(CUDA_nvrtc_LIBRARY nvrtc /usr/local/cuda/lib64)
-    find_library(CUDA_cuda_LIBRARY cuda /usr/local/cuda/lib64/stubs)
-    target_link_libraries(ngraph PUBLIC ${CUDA_cuda_LIBRARY} ${CUDA_nvrtc_LIBRARY} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDNN_LIBRARIES})
-endif()
-
-if(MPI_CXX_INCLUDE_PATH)
-    target_link_libraries(ngraph PRIVATE ${MPI_CXX_LIBRARIES})
-endif()
+# if(NGRAPH_GPU_ENABLE AND CUDA_LIBRARIES)
+#     find_library(CUDA_nvrtc_LIBRARY nvrtc /usr/local/cuda/lib64)
+#     find_library(CUDA_cuda_LIBRARY cuda /usr/local/cuda/lib64/stubs)
+#     target_link_libraries(ngraph PUBLIC ${CUDA_cuda_LIBRARY} ${CUDA_nvrtc_LIBRARY} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDNN_LIBRARIES})
+# endif()
 
 # NNP
-if (NGRAPH_NNP_ENABLE)
-    target_link_libraries(ngraph PRIVATE ${NNP_TRANSFORMER_LIB_DIR}/libnnp.so)
-    target_link_libraries(ngraph PRIVATE ${ARGON_API_LIBS})
-    add_dependencies(ngraph ext_nnp_transformer)
-    add_dependencies(ext_nnp_transformer ext_llvm)
-endif()
+# if (NGRAPH_NNP_ENABLE)
+#     target_link_libraries(ngraph PRIVATE ${NNP_TRANSFORMER_LIB_DIR}/libnnp.so)
+#     target_link_libraries(ngraph PRIVATE ${ARGON_API_LIBS})
+#     add_dependencies(ngraph ext_nnp_transformer)
+#     add_dependencies(ext_nnp_transformer ext_llvm)
+# endif()
 
 #-----------------------------------------------------------------------------------------------
 # Installation logic...

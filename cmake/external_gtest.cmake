@@ -71,5 +71,6 @@ endif()
 ExternalProject_Get_Property(ext_gtest SOURCE_DIR BINARY_DIR)
 
 add_library(libgtest INTERFACE)
+add_dependencies(libgtest ext_gtest)
 target_include_directories(libgtest SYSTEM INTERFACE ${SOURCE_DIR}/googletest/include)
 target_link_libraries(libgtest INTERFACE ${BINARY_DIR}/googlemock/gtest/libgtest.a)

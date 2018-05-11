@@ -15,11 +15,5 @@
 # ******************************************************************************
 
 add_subdirectory(interpreter)
-
-if(NGRAPH_CPU_ENABLE)
-    add_subdirectory(cpu)
-endif()
-
-# if(NGRAPH_GPU_ENABLED)
-#     add_subdirectory(gpu)
-# endif()
+add_subdirectory(cpu)
+add_subdirectory(gpu)

@@ -163,6 +163,10 @@ if (NGRAPH_CPU_ENABLE)
     add_dependencies(unit-test cpu_backend)
     target_link_libraries(unit-test cpu_backend)
 endif()
+if (NGRAPH_GPU_ENABLE)
+    add_dependencies(unit-test gpu_backend)
+    target_link_libraries(unit-test gpu_backend)
+endif()
 # include_directories(SYSTEM ${JSON_INCLUDE_DIR})
 
 add_custom_target(style-check

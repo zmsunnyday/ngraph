@@ -39,8 +39,15 @@ set(SRC
     cuda_emitter.cpp
     type_info.cpp
     )
-endif()
 
-add_library(cpu_backend SHARED ${SRC})
-add_dependencies(cpu_backend codegen)
+if (NGRAPH_GPU_ENABLE)
+    add_library(gpu_backend SHARED ${SRC})
+    add_dependencies(gpu_backend ngraph codegen)
+    target_link_libraries(gpu_backend PUBLIC ngraph codegen)
+    find_library(CUDA_nvrtc_LIBRARY nvrtc /usr/local/cuda/lib64)
+    find_library(CUDA_cuda_LIBRARY cuda /usr/local/cuda/lib64/stubs)
+    find_package(CUDA 8 REQUIRED)
+    find_package(CUDNN 7 REQUIRED)
+    target_link_libraries(gpu_backend PUBLIC ${CUDA_cuda_LIBRARY} ${CUDA_nvrtc_LIBRARY} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDNN_LIBRARIES})
+endif()
 
