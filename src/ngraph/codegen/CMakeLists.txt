@@ -53,7 +53,7 @@ add_custom_target(header_resource
 )
 
 add_library(codegen SHARED ${SRC})
-add_dependencies(codegen header_resource ext_llvm libmkldnn libeigen)
+add_dependencies(codegen header_resource)
 target_include_directories(codegen PUBLIC ${CMAKE_BINARY_DIR})
-target_include_directories(codegen SYSTEM PUBLIC ${LLVM_INCLUDE_DIR})
-target_link_libraries(codegen PUBLIC ${LLVM_LINK_LIBS} pthread dl)
+# target_include_directories(codegen SYSTEM PUBLIC ${LLVM_INCLUDE_DIR})
+target_link_libraries(codegen PUBLIC libllvm libmkldnn libeigen pthread dl)

@@ -18,6 +18,8 @@ include(ExternalProject)
 
 message(STATUS "Fetching LLVM from llvm.org")
 
+find_package(ZLIB REQUIRED)
+
 # Override default LLVM binaries
 if(NOT DEFINED LLVM_TARBALL_URL)
     set(LLVM_TARBALL_URL http://releases.llvm.org/5.0.1/clang+llvm-5.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
@@ -51,85 +53,87 @@ else()
         )
 endif()
 
-ExternalProject_Get_Property(ext_llvm source_dir)
-set(LLVM_INCLUDE_DIR "${source_dir}/include")
-set(LLVM_LIB_DIR "${source_dir}/lib")
+ExternalProject_Get_Property(ext_llvm SOURCE_DIR)
 
 set(LLVM_LINK_LIBS
-    ${source_dir}/lib/libclangTooling.a
-    ${source_dir}/lib/libclangFrontendTool.a
-    ${source_dir}/lib/libclangFrontend.a
-    ${source_dir}/lib/libclangDriver.a
-    ${source_dir}/lib/libclangSerialization.a
-    ${source_dir}/lib/libclangCodeGen.a
-    ${source_dir}/lib/libclangParse.a
-    ${source_dir}/lib/libclangSema.a
-    ${source_dir}/lib/libclangStaticAnalyzerFrontend.a
-    ${source_dir}/lib/libclangStaticAnalyzerCheckers.a
-    ${source_dir}/lib/libclangStaticAnalyzerCore.a
-    ${source_dir}/lib/libclangAnalysis.a
-    ${source_dir}/lib/libclangARCMigrate.a
-    ${source_dir}/lib/libclangRewriteFrontend.a
-    ${source_dir}/lib/libclangEdit.a
-    ${source_dir}/lib/libclangAST.a
-    ${source_dir}/lib/libclangLex.a
-    ${source_dir}/lib/libclangBasic.a
-    ${source_dir}/lib/libLLVMLTO.a
-    ${source_dir}/lib/libLLVMPasses.a
-    ${source_dir}/lib/libLLVMObjCARCOpts.a
-    ${source_dir}/lib/libLLVMSymbolize.a
-    ${source_dir}/lib/libLLVMDebugInfoPDB.a
-    ${source_dir}/lib/libLLVMDebugInfoDWARF.a
-    ${source_dir}/lib/libLLVMMIRParser.a
-    ${source_dir}/lib/libLLVMCoverage.a
-    ${source_dir}/lib/libLLVMTableGen.a
-    ${source_dir}/lib/libLLVMDlltoolDriver.a
-    ${source_dir}/lib/libLLVMOrcJIT.a
-    ${source_dir}/lib/libLLVMObjectYAML.a
-    ${source_dir}/lib/libLLVMLibDriver.a
-    ${source_dir}/lib/libLLVMOption.a
-    ${source_dir}/lib/libLLVMX86Disassembler.a
-    ${source_dir}/lib/libLLVMX86AsmParser.a
-    ${source_dir}/lib/libLLVMX86CodeGen.a
-    ${source_dir}/lib/libLLVMGlobalISel.a
-    ${source_dir}/lib/libLLVMSelectionDAG.a
-    ${source_dir}/lib/libLLVMAsmPrinter.a
-    ${source_dir}/lib/libLLVMDebugInfoCodeView.a
-    ${source_dir}/lib/libLLVMDebugInfoMSF.a
-    ${source_dir}/lib/libLLVMX86Desc.a
-    ${source_dir}/lib/libLLVMMCDisassembler.a
-    ${source_dir}/lib/libLLVMX86Info.a
-    ${source_dir}/lib/libLLVMX86AsmPrinter.a
-    ${source_dir}/lib/libLLVMX86Utils.a
-    ${source_dir}/lib/libLLVMMCJIT.a
-    ${source_dir}/lib/libLLVMLineEditor.a
-    ${source_dir}/lib/libLLVMInterpreter.a
-    ${source_dir}/lib/libLLVMExecutionEngine.a
-    ${source_dir}/lib/libLLVMRuntimeDyld.a
-    ${source_dir}/lib/libLLVMCodeGen.a
-    ${source_dir}/lib/libLLVMTarget.a
-    ${source_dir}/lib/libLLVMCoroutines.a
-    ${source_dir}/lib/libLLVMipo.a
-    ${source_dir}/lib/libLLVMInstrumentation.a
-    ${source_dir}/lib/libLLVMVectorize.a
-    ${source_dir}/lib/libLLVMScalarOpts.a
-    ${source_dir}/lib/libLLVMLinker.a
-    ${source_dir}/lib/libLLVMIRReader.a
-    ${source_dir}/lib/libLLVMAsmParser.a
-    ${source_dir}/lib/libLLVMInstCombine.a
-    ${source_dir}/lib/libLLVMTransformUtils.a
-    ${source_dir}/lib/libLLVMBitWriter.a
-    ${source_dir}/lib/libLLVMAnalysis.a
-    ${source_dir}/lib/libLLVMProfileData.a
-    ${source_dir}/lib/libLLVMObject.a
-    ${source_dir}/lib/libLLVMMCParser.a
-    ${source_dir}/lib/libLLVMMC.a
-    ${source_dir}/lib/libLLVMBitReader.a
-    ${source_dir}/lib/libLLVMCore.a
-    ${source_dir}/lib/libLLVMBinaryFormat.a
-    ${source_dir}/lib/libLLVMSupport.a
-    ${source_dir}/lib/libLLVMDemangle.a
+    ${SOURCE_DIR}/lib/libclangTooling.a
+    ${SOURCE_DIR}/lib/libclangFrontendTool.a
+    ${SOURCE_DIR}/lib/libclangFrontend.a
+    ${SOURCE_DIR}/lib/libclangDriver.a
+    ${SOURCE_DIR}/lib/libclangSerialization.a
+    ${SOURCE_DIR}/lib/libclangCodeGen.a
+    ${SOURCE_DIR}/lib/libclangParse.a
+    ${SOURCE_DIR}/lib/libclangSema.a
+    ${SOURCE_DIR}/lib/libclangStaticAnalyzerFrontend.a
+    ${SOURCE_DIR}/lib/libclangStaticAnalyzerCheckers.a
+    ${SOURCE_DIR}/lib/libclangStaticAnalyzerCore.a
+    ${SOURCE_DIR}/lib/libclangAnalysis.a
+    ${SOURCE_DIR}/lib/libclangARCMigrate.a
+    ${SOURCE_DIR}/lib/libclangRewriteFrontend.a
+    ${SOURCE_DIR}/lib/libclangEdit.a
+    ${SOURCE_DIR}/lib/libclangAST.a
+    ${SOURCE_DIR}/lib/libclangLex.a
+    ${SOURCE_DIR}/lib/libclangBasic.a
+    ${SOURCE_DIR}/lib/libLLVMLTO.a
+    ${SOURCE_DIR}/lib/libLLVMPasses.a
+    ${SOURCE_DIR}/lib/libLLVMObjCARCOpts.a
+    ${SOURCE_DIR}/lib/libLLVMSymbolize.a
+    ${SOURCE_DIR}/lib/libLLVMDebugInfoPDB.a
+    ${SOURCE_DIR}/lib/libLLVMDebugInfoDWARF.a
+    ${SOURCE_DIR}/lib/libLLVMMIRParser.a
+    ${SOURCE_DIR}/lib/libLLVMCoverage.a
+    ${SOURCE_DIR}/lib/libLLVMTableGen.a
+    ${SOURCE_DIR}/lib/libLLVMDlltoolDriver.a
+    ${SOURCE_DIR}/lib/libLLVMOrcJIT.a
+    ${SOURCE_DIR}/lib/libLLVMObjectYAML.a
+    ${SOURCE_DIR}/lib/libLLVMLibDriver.a
+    ${SOURCE_DIR}/lib/libLLVMOption.a
+    ${SOURCE_DIR}/lib/libLLVMX86Disassembler.a
+    ${SOURCE_DIR}/lib/libLLVMX86AsmParser.a
+    ${SOURCE_DIR}/lib/libLLVMX86CodeGen.a
+    ${SOURCE_DIR}/lib/libLLVMGlobalISel.a
+    ${SOURCE_DIR}/lib/libLLVMSelectionDAG.a
+    ${SOURCE_DIR}/lib/libLLVMAsmPrinter.a
+    ${SOURCE_DIR}/lib/libLLVMDebugInfoCodeView.a
+    ${SOURCE_DIR}/lib/libLLVMDebugInfoMSF.a
+    ${SOURCE_DIR}/lib/libLLVMX86Desc.a
+    ${SOURCE_DIR}/lib/libLLVMMCDisassembler.a
+    ${SOURCE_DIR}/lib/libLLVMX86Info.a
+    ${SOURCE_DIR}/lib/libLLVMX86AsmPrinter.a
+    ${SOURCE_DIR}/lib/libLLVMX86Utils.a
+    ${SOURCE_DIR}/lib/libLLVMMCJIT.a
+    ${SOURCE_DIR}/lib/libLLVMLineEditor.a
+    ${SOURCE_DIR}/lib/libLLVMInterpreter.a
+    ${SOURCE_DIR}/lib/libLLVMExecutionEngine.a
+    ${SOURCE_DIR}/lib/libLLVMRuntimeDyld.a
+    ${SOURCE_DIR}/lib/libLLVMCodeGen.a
+    ${SOURCE_DIR}/lib/libLLVMTarget.a
+    ${SOURCE_DIR}/lib/libLLVMCoroutines.a
+    ${SOURCE_DIR}/lib/libLLVMipo.a
+    ${SOURCE_DIR}/lib/libLLVMInstrumentation.a
+    ${SOURCE_DIR}/lib/libLLVMVectorize.a
+    ${SOURCE_DIR}/lib/libLLVMScalarOpts.a
+    ${SOURCE_DIR}/lib/libLLVMLinker.a
+    ${SOURCE_DIR}/lib/libLLVMIRReader.a
+    ${SOURCE_DIR}/lib/libLLVMAsmParser.a
+    ${SOURCE_DIR}/lib/libLLVMInstCombine.a
+    ${SOURCE_DIR}/lib/libLLVMTransformUtils.a
+    ${SOURCE_DIR}/lib/libLLVMBitWriter.a
+    ${SOURCE_DIR}/lib/libLLVMAnalysis.a
+    ${SOURCE_DIR}/lib/libLLVMProfileData.a
+    ${SOURCE_DIR}/lib/libLLVMObject.a
+    ${SOURCE_DIR}/lib/libLLVMMCParser.a
+    ${SOURCE_DIR}/lib/libLLVMMC.a
+    ${SOURCE_DIR}/lib/libLLVMBitReader.a
+    ${SOURCE_DIR}/lib/libLLVMCore.a
+    ${SOURCE_DIR}/lib/libLLVMBinaryFormat.a
+    ${SOURCE_DIR}/lib/libLLVMSupport.a
+    ${SOURCE_DIR}/lib/libLLVMDemangle.a
     tinfo
     z
     m
 )
+
+add_library(libllvm INTERFACE)
+target_include_directories(libllvm SYSTEM INTERFACE ${SOURCE_DIR}/include)
+target_link_libraries(libllvm INTERFACE ${LLVM_LINK_LIBS})

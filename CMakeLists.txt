@@ -169,28 +169,28 @@ if (NOT DEFINED NGRAPH_TBB_ENABLE)
     set(NGRAPH_TBB_ENABLE ${NGRAPH_CPU_ENABLE})
 endif()
 
-#-----------------------------------------------------------------------------------------------
-# GPU support
-#-----------------------------------------------------------------------------------------------
-# Setup CUDA and cuDNN if NGRAPH_GPU_ENABLE=TRUE
-if(NGRAPH_GPU_ENABLE)
-    find_package(CUDA 8 REQUIRED)
-    message(STATUS "GPU Backend Enabled")
-    set(NGRAPH_GPU_ENABLE TRUE)
-    find_package(CUDNN 7 REQUIRED)
-    include_directories(SYSTEM ${CUDA_INCLUDE_DIRS} ${CUDNN_INCLUDE_DIR} ${LLVM_INCLUDE_DIR})
-    if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND
-        NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 6.0 AND
-        CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
-        message(FATAL_ERROR
-        "CUDA 8.0 is not compatible with GCC version >= 6.\n"
-        "Please select a correct compiler version\n"
-        )
-    endif()
-    unit_test_control(BACKEND GPU MANIFEST src/ngraph/runtime/gpu/unit_test.manifest)
-elseif(NGRAPH_GPU_ENABLE)
-    message(FATAL_ERROR "GPU was required but CUDA library was not found")
-endif()
+# #-----------------------------------------------------------------------------------------------
+# # GPU support
+# #-----------------------------------------------------------------------------------------------
+# # Setup CUDA and cuDNN if NGRAPH_GPU_ENABLE=TRUE
+# if(NGRAPH_GPU_ENABLE)
+#     find_package(CUDA 8 REQUIRED)
+#     message(STATUS "GPU Backend Enabled")
+#     set(NGRAPH_GPU_ENABLE TRUE)
+#     find_package(CUDNN 7 REQUIRED)
+#     include_directories(SYSTEM ${CUDA_INCLUDE_DIRS} ${CUDNN_INCLUDE_DIR} ${LLVM_INCLUDE_DIR})
+#     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND
+#         NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 6.0 AND
+#         CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
+#         message(FATAL_ERROR
+#         "CUDA 8.0 is not compatible with GCC version >= 6.\n"
+#         "Please select a correct compiler version\n"
+#         )
+#     endif()
+#     unit_test_control(BACKEND GPU MANIFEST src/ngraph/runtime/gpu/unit_test.manifest)
+# elseif(NGRAPH_GPU_ENABLE)
+#     message(FATAL_ERROR "GPU was required but CUDA library was not found")
+# endif()
 
 #-----------------------------------------------------------------------------------------------
 # enable or disable output from NGRAPH_DEBUG statements
