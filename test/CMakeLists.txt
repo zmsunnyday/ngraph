@@ -163,7 +163,7 @@ if(CUDA_INCLUDE_DIRS)
     target_link_libraries(unit-test ${CUDA_NVRTC_LIBRARY} ${CUDA_LIBRARIES} ${CUDNN_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 endif()
 
-target_link_libraries(unit-test ngraph libgtest pthread)
+target_link_libraries(unit-test ngraph libgtest pthread m)
 target_link_libraries(unit-test ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test ngraph libgtest ext_json)

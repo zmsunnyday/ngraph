@@ -436,6 +436,7 @@ void codegen::StaticCompiler::load_headers_from_resource()
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
     for (const string& search_path : builtin_search_paths)
     {
+        NGRAPH_INFO << search_path;
         string builtin = builtin_root + search_path;
         hso.AddPath(builtin, clang::frontend::System, false, false);
     }

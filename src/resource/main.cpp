@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
     vector<ResourceInfo> include_paths;
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
     include_paths.push_back({EIGEN_HEADERS_PATH, {}, true});
     include_paths.push_back({MKLDNN_HEADERS_PATH, {}, true});
 #ifdef NGRAPH_TBB_ENABLE
@@ -95,17 +95,38 @@ int main(int argc, char** argv)
     include_paths.push_back({NGRAPH_HEADERS_PATH, {}, true});
     include_paths.push_back({CLANG_BUILTIN_HEADERS_PATH, {}, true});
     include_paths.push_back({"/Library/Developer/CommandLineTools/usr/include/c++/v1", {}});
-#else // __APPLE__
+#elif defined(__GNUC__)
+    string cpp0 = find_path("/usr/lib/gcc/x86_64-linux-gnu/");
+    string cpp1 = find_path("/usr/include/c++/");
+    string cpp2 = find_path("/usr/include/x86_64-linux-gnu/c++/");
+    cout << "cpp0 " << cpp0 << endl;
+
+    include_paths.push_back({cpp0 + "/include", {}});
+    include_paths.push_back({cpp0 + "/include-fixed", {}});
+    include_paths.push_back({cpp1, {"bits", "ext", "debug", "backward"}});
+    include_paths.push_back({cpp2, {"bits", "ext"}});
+    include_paths.push_back({CLANG_BUILTIN_HEADERS_PATH, {}, true});
+    include_paths.push_back(
+        {"/usr/include/x86_64-linux-gnu", {"asm", "sys", "bits", "bits/types", "gnu"}});
+    include_paths.push_back(
+        {"/usr/include", {"asm", "sys", "bits", "gnu", "linux", "asm-generic"}});
+    include_paths.push_back({EIGEN_HEADERS_PATH, {}, true});
+    include_paths.push_back({MKLDNN_HEADERS_PATH, {}, true});
+    include_paths.push_back({NGRAPH_HEADERS_PATH, {}, true});
+#ifdef NGRAPH_TBB_ENABLE
+    include_paths.push_back({TBB_HEADERS_PATH, {}, true});
+#endif
+#elif defined(__clang__)
     string cpp0 = find_path("/usr/include/x86_64-linux-gnu/c++/");
     string cpp1 = find_path("/usr/include/c++/");
 
+    include_paths.push_back({cpp1, {"bits", "ext", "debug", "backward"}});
     include_paths.push_back({CLANG_BUILTIN_HEADERS_PATH, {}, true});
     include_paths.push_back({"/usr/include/x86_64-linux-gnu", {"asm", "sys", "bits", "gnu"}});
     include_paths.push_back(
         {"/usr/include", {"asm", "sys", "bits", "gnu", "linux", "asm-generic"}});
     include_paths.push_back({cpp0, {"bits"}});
     include_paths.push_back({"/usr/include/c++/4.8.2/x86_64-redhat-linux", {"bits"}});
-    include_paths.push_back({cpp1, {"bits", "ext", "debug", "backward"}});
     include_paths.push_back({EIGEN_HEADERS_PATH, {}, true});
     include_paths.push_back({MKLDNN_HEADERS_PATH, {}, true});
     include_paths.push_back({NGRAPH_HEADERS_PATH, {}, true});
@@ -133,6 +154,7 @@ int main(int argc, char** argv)
         }
         for (const string& p : path_list)
         {
+            cout << "file path " << p << endl;
             iterate_files(p,
                           [&](const string& file, bool is_dir) {
                               if (!is_dir)
@@ -167,6 +189,7 @@ int main(int argc, char** argv)
         }
     }
 
+    ofstream debug("files.txt");
     if (update_needed)
     {
         size_t total_size = 0;
@@ -181,6 +204,7 @@ int main(int argc, char** argv)
         out << "    {\n";
         for (const ResourceInfo& path : include_paths)
         {
+            std::cout << "search path " << path.search_path << std::endl;
             out << "        \"" << path.search_path << "\",\n";
         }
         out << "    };\n";
@@ -191,6 +215,7 @@ int main(int argc, char** argv)
         {
             for (const string& header_path : path.files)
             {
+                debug << header_path << "\n";
                 string header_data = read_file_to_string(header_path);
                 string relative_path = header_path.substr(path.search_path.size() + 1);
                 header_data = rewrite_header(header_data, relative_path);
