@@ -89,9 +89,6 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(ext_llvm INSTALL_DIR)
 
-set(LLVM_INCLUDE_DIR "${EXTERNAL_PROJECTS_ROOT}/llvm/include")
-set(LLVM_LIB_DIR "${EXTERNAL_PROJECTS_ROOT}/llvm/lib/")
-
 set(LLVM_LINK_LIBS
     ${EXTERNAL_PROJECTS_ROOT}/llvm/lib/libclangTooling.a
     ${EXTERNAL_PROJECTS_ROOT}/llvm/lib/libclangFrontendTool.a
@@ -173,3 +170,7 @@ if(APPLE)
 else()
     set(LLVM_LINK_LIBS ${LLVM_LINK_LIBS} tinfo z m)
 endif()
+
+add_library(libllvm INTERFACE)
+target_include_directories(libllvm SYSTEM INTERFACE ${EXTERNAL_PROJECTS_ROOT}/llvm/include)
+target_link_libraries(libllvm INTERFACE ${LLVM_LINK_LIBS})
