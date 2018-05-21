@@ -65,7 +65,7 @@
 #error "This source file interfaces with LLVM and Clang and must be compiled with RTTI disabled"
 #endif
 
-#define USE_BUILTIN
+// #define USE_BUILTIN
 
 using namespace clang;
 using namespace llvm;
@@ -279,6 +279,7 @@ std::unique_ptr<codegen::Module>
     codegen::StaticCompiler::compile(std::unique_ptr<clang::CodeGenAction>& m_compiler_action,
                                      const string& source)
 {
+    NGRAPH_INFO;
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
 
     preprocessor_options.RetainRemappedFileBuffers = true;
@@ -375,72 +376,75 @@ void codegen::StaticCompiler::configure_search_path()
 
     add_header_search_path("/Library/Developer/CommandLineTools/usr/include/c++/v1");
 #else
-    // Add base toolchain-supplied header paths
-    // Ideally one would use the Linux toolchain definition in clang/lib/Driver/ToolChains.h
-    // But that's a private header and isn't part of the public libclang API
-    // Instead of re-implementing all of that functionality in a custom toolchain
-    // just hardcode the paths relevant to frequently used build/test machines for now
-    add_header_search_path(CLANG_BUILTIN_HEADERS_PATH);
-    add_header_search_path("/usr/include/x86_64-linux-gnu");
-    add_header_search_path("/usr/include");
+    add_header_search_path(HEADER_SEARCH_PATH_LIST);
+// // Add base toolchain-supplied header paths
+// // Ideally one would use the Linux toolchain definition in clang/lib/Driver/ToolChains.h
+// // But that's a private header and isn't part of the public libclang API
+// // Instead of re-implementing all of that functionality in a custom toolchain
+// // just hardcode the paths relevant to frequently used build/test machines for now
+// add_header_search_path(CLANG_BUILTIN_HEADERS_PATH);
+// add_header_search_path("/usr/include/x86_64-linux-gnu");
+// add_header_search_path("/usr/include");
 
-    // Search for headers in
-    //    /usr/include/x86_64-linux-gnu/c++/N.N
-    //    /usr/include/c++/N.N
-    // and add them to the header search path
+// // Search for headers in
+// //    /usr/include/x86_64-linux-gnu/c++/N.N
+// //    /usr/include/c++/N.N
+// // and add them to the header search path
 
-    file_util::iterate_files("/usr/include/x86_64-linux-gnu/c++/",
-                             [&](const std::string& file, bool is_dir) {
-                                 if (is_dir)
-                                 {
-                                     string dir_name = file_util::get_file_name(file);
-                                     if (is_version_number(dir_name))
-                                     {
-                                         add_header_search_path(file);
-                                     }
-                                 }
-                             });
+// file_util::iterate_files("/usr/include/x86_64-linux-gnu/c++/",
+//                          [&](const std::string& file, bool is_dir) {
+//                              if (is_dir)
+//                              {
+//                                  string dir_name = file_util::get_file_name(file);
+//                                  if (is_version_number(dir_name))
+//                                  {
+//                                      add_header_search_path(file);
+//                                  }
+//                              }
+//                          });
 
-    file_util::iterate_files("/usr/include/c++/", [&](const std::string& file, bool is_dir) {
-        if (is_dir)
-        {
-            string dir_name = file_util::get_file_name(file);
-            if (is_version_number(dir_name))
-            {
-                add_header_search_path(file);
-            }
-        }
-    });
+// file_util::iterate_files("/usr/include/c++/", [&](const std::string& file, bool is_dir) {
+//     if (is_dir)
+//     {
+//         string dir_name = file_util::get_file_name(file);
+//         if (is_version_number(dir_name))
+//         {
+//             add_header_search_path(file);
+//         }
+//     }
+// });
 
-    add_header_search_path(EIGEN_HEADERS_PATH);
-    add_header_search_path(MKLDNN_HEADERS_PATH);
-    add_header_search_path(TBB_HEADERS_PATH);
-    add_header_search_path(NGRAPH_HEADERS_PATH);
-    add_header_search_path(INSTALLED_HEADERS_PATH);
+// add_header_search_path(EIGEN_HEADERS_PATH);
+// add_header_search_path(MKLDNN_HEADERS_PATH);
+// // add_header_search_path(TBB_HEADERS_PATH);
+// add_header_search_path(NGRAPH_HEADERS_PATH);
+// add_header_search_path(INSTALLED_HEADERS_PATH);
 #endif
 
-#ifdef CUDA_HEADER_PATHS
-    // Only needed for GPU backend
-    add_header_search_path(CUDA_HEADER_PATHS);
-#endif
+    // #ifdef CUDA_HEADER_PATHS
+    //     // Only needed for GPU backend
+    //     add_header_search_path(CUDA_HEADER_PATHS);
+    // #endif
 
-#ifdef CUDNN_HEADER_PATHS
-    // Only needed for GPU backend
-    add_header_search_path(CUDNN_HEADER_PATHS);
-#endif
+    // #ifdef CUDNN_HEADER_PATHS
+    //     // Only needed for GPU backend
+    //     add_header_search_path(CUDNN_HEADER_PATHS);
+    // #endif
 
-#ifdef NGRAPH_DISTRIBUTED
-    add_header_search_path(MPI_HEADER_PATH);
-#endif
+    // #ifdef NGRAPH_DISTRIBUTED
+    //     add_header_search_path(MPI_HEADER_PATH);
+    // #endif
 }
 
 void codegen::StaticCompiler::load_headers_from_resource()
 {
+    NGRAPH_INFO;
     const string builtin_root = "/$builtin";
     HeaderSearchOptions& hso = m_compiler->getInvocation().getHeaderSearchOpts();
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
     for (const string& search_path : builtin_search_paths)
     {
+        NGRAPH_INFO << search_path;
         string builtin = builtin_root + search_path;
         hso.AddPath(builtin, clang::frontend::System, false, false);
     }

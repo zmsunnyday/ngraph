@@ -14,6 +14,11 @@
 # limitations under the License.
 # ******************************************************************************
 
+include(get_header_search_paths)
+
+ngraph_get_header_search_paths()
+message(STATUS "*********** Search Paths ${NGRAPH_SEARCH_PATHS}")
+
 set(SRC
     code_writer.cpp
     compiler.cpp
@@ -27,31 +32,34 @@ set_source_files_properties(compiler.cpp PROPERTIES COMPILE_FLAGS "-fno-rtti")
 
 get_target_property(MKLDNN_INCLUDE_DIR libmkldnn INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(EIGEN_INCLUDE_DIR libeigen INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(LLVM_LIB_DIR libllvm INTERFACE_INCLUDE_DIRECTORIES)
 
-set(HEADER_SEARCH_DEFINES
-    "EIGEN_HEADERS_PATH=\"${EIGEN_INCLUDE_DIR}\""
-    "MKLDNN_HEADERS_PATH=\"${MKLDNN_INCLUDE_DIR}\""
-    "CLANG_BUILTIN_HEADERS_PATH=\"${LLVM_LIB_DIR}/clang/5.0.1/include\""
-    "NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\""
-    "INSTALLED_HEADERS_PATH=\"${CMAKE_INSTALL_PREFIX}/include\""
+set(HEADER_SEARCH_PATH_LIST
+    ${NGRAPH_SEARCH_PATHS}
+    ${EIGEN_INCLUDE_DIR}
+    ${MKLDNN_INCLUDE_DIR}
+    ${LLVM_LIB_DIR}/../lib/clang/5.0.1/include
+    ${NGRAPH_INCLUDE_PATH}
+    ${CMAKE_INSTALL_PREFIX}/include
 )
 
 if(NGRAPH_DISTRIBUTED_ENABLE)
     find_package(MPI REQUIRED)
     include_directories(SYSTEM ${MPI_C_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
     link_directories(${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
-
-    string(REPLACE ";" "\\;" MPI_C_INCLUDE_PATH "${MPI_C_INCLUDE_PATH}")
-    add_definitions("-DMPI_HEADER_PATH=\"${MPI_C_INCLUDE_PATH}\"")
+    set(HEADER_SEARCH_PATH_LIST ${HEADER_SEARCH_PATH_LIST} ${MPI_C_INCLUDE_PATH})
     add_definitions(-DNGRAPH_DISTRIBUTED)
 endif()
 
 if(NGRAPH_GPU_ENABLE)
-    list(APPEND HEADER_SEARCH_DEFINES "CUDA_HEADER_PATHS=\"${CUDA_INCLUDE_DIRS}\"")
-    list(APPEND HEADER_SEARCH_DEFINES "CUDNN_HEADER_PATHS=\"${CUDNN_INCLUDE_DIRS}\"")
+    set(HEADER_SEARCH_PATH_LIST ${HEADER_SEARCH_PATH_LIST} ${CUDA_INCLUDE_DIRS})
+    set(HEADER_SEARCH_PATH_LIST ${HEADER_SEARCH_PATH_LIST} ${CUDNN_INCLUDE_DIRS})
 endif()
 
-set_source_files_properties(compiler.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
+string(REPLACE ";" "\\;" HEADER_SEARCH_PATH_LIST "${HEADER_SEARCH_PATH_LIST}")
+message(STATUS "&&&&&&&&&&& ${HEADER_SEARCH_PATH_LIST}")
+set_source_files_properties(compiler.cpp PROPERTIES COMPILE_DEFINITIONS
+    "HEADER_SEARCH_PATH_LIST=\"${HEADER_SEARCH_PATH_LIST}\"")
 
 # Generate the resource file containing all headers used by the codegen compiler
 add_custom_target(header_resource
