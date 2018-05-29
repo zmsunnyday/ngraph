@@ -80,3 +80,7 @@ bool onnx_import::ValueInfo::has_initializer() const
     // @ TODO: Implement
     return false;
 }
+
+const std::string onnx_import::ValueInfo::get_name() const {
+    return m_value_info_proto.name();
+}

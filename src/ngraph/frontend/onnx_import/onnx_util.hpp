@@ -17,14 +17,24 @@
 #pragma once
 
 #include <string>
-
-#include "onnx.pb.h"
+#include "ngraph/function.hpp"
 
 namespace ngraph
 {
     class onnx_util
     {
     public:
-        static onnx::ModelProto load_model_file(const std::string&);
+        /// Load an ONNX model from a file.
+        static onnx::ModelProto load_onnx_file(const std::string&);
+
+        /// Convert an ONNX model to a vector of nGraph Functions
+        static std::vector<std::shared_ptr<ngraph::Function>>
+            import_onnx_model(const onnx::ModelProto&);
+
+        /// Convert the first output of an ONNX model to an nGraph Function
+        static std::shared_ptr<ngraph::Function> import_onnx_function(const onnx::ModelProto&);
+
+        /// Load an ONNX model from a file and convert to a vector of nGraph Functions
+        static std::vector<std::shared_ptr<ngraph::Function>> import_onnx_file(const std::string&);
     };
 } // namespace ngraph

@@ -38,6 +38,7 @@ namespace ngraph
         public:
             ValueInfo(const onnx::ValueInfoProto& proto, Graph* graph_ptr);
 
+            const std::string get_name() const;
             const ngraph::Shape get_shape() const;
             const ngraph::element::Type get_element_type() const;
             std::shared_ptr<op::Parameter> get_ng_parameter() const;
