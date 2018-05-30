@@ -32,7 +32,9 @@ TEST(onnx, model_add_abc)
 {
     // Load ONNX protobuf from file
     const string filepath = file_util::path_join(SERIALIZED_ZOO, "onnx/add_abc.onnx");
-    onnx::ModelProto model_proto = ngraph::onnx_util::load_onnx_file(filepath);
+    onnx::ModelProto model_proto;
+    fstream input(filepath, ios::in | ios::binary);
+    model_proto.ParseFromIstream(&input);
     ASSERT_EQ("ngraph ONNXImporter", model_proto.producer_name());
 
     // Wrap ONNX Model protobuf
@@ -111,24 +113,16 @@ TEST(onnx, public_api)
     copy_data(c, vector<float>{5});
     auto result = backend->create_tensor(element::f32, shape);
 
-    // Test load_onnx_file
+    // Test import_onnx_model
     const string filepath = file_util::path_join(SERIALIZED_ZOO, "onnx/add_abc.onnx");
-    onnx::ModelProto model_proto = ngraph::onnx_util::load_onnx_file(filepath);
-    vector<shared_ptr<Function>> model_functions = onnx_util::import_onnx_model(model_proto);
+    vector<shared_ptr<Function>> model_functions = onnx_util::import_onnx_model(filepath);
     ASSERT_EQ(model_functions.size(), 1);
     shared_ptr<Function> model_function = model_functions[0];
     backend->call(model_function, {result}, {a, b, c});
     EXPECT_EQ((vector<float>{12}), read_vector<float>(result));
 
-    // Test import_onnx_file
-    model_functions = onnx_util::import_onnx_file(filepath);
-    ASSERT_EQ(model_functions.size(), 1);
-    shared_ptr<Function> model_function2 = model_functions[0];
-    backend->call(model_function2, {result}, {a, b, c});
-    EXPECT_EQ((vector<float>{12}), read_vector<float>(result));
-
     // Test import_onnx_function
-    shared_ptr<Function> model_function3 = onnx_util::import_onnx_function(model_proto);
+    shared_ptr<Function> model_function3 = onnx_util::import_onnx_function(filepath);
     backend->call(model_function3, {result}, {a, b, c});
     EXPECT_EQ((vector<float>{12}), read_vector<float>(result));
 }

@@ -14,8 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "pyngraph/util.hpp"
 #include <pybind11/numpy.h>
+#include "pyngraph/util.hpp"
+#include "ngraph/frontend/onnx_import/onnx_util.hpp"
 
 namespace py = pybind11;
 
@@ -29,4 +30,5 @@ void regmodule_pyngraph_util(py::module m)
 {
     py::module mod = m.def_submodule("util", "ngraph.impl.util");
     mod.def("numpy_to_c", &numpy_to_c);
+    mod.def("import_onnx_function", &ngraph::onnx_util::import_onnx_function, py::arg());
 }

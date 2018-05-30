@@ -25,7 +25,7 @@
 using namespace std;
 using namespace ngraph;
 
-onnx::ModelProto onnx_util::load_onnx_file(const string& filepath)
+static onnx::ModelProto load_onnx_file(const string& filepath)
 {
     onnx::ModelProto model_proto;
 
@@ -44,15 +44,10 @@ onnx::ModelProto onnx_util::load_onnx_file(const string& filepath)
     return model_proto;
 }
 
-vector<shared_ptr<Function>> onnx_util::import_onnx_file(const string& filepath)
-{
-    onnx::ModelProto model_proto = ngraph::onnx_util::load_onnx_file(filepath);
-    return onnx_util::import_onnx_model(model_proto);
-}
-
-vector<shared_ptr<Function>> onnx_util::import_onnx_model(const onnx::ModelProto& onnx_model)
+vector<shared_ptr<Function>> onnx_util::import_onnx_model(const std::string& filepath)
 {
     vector<shared_ptr<Function>> output_functions;
+    onnx::ModelProto onnx_model = load_onnx_file(filepath);
     onnx_import::Model model_wrapper(onnx_model);
     onnx_import::Graph graph_wrapper(onnx_model.graph());
 
@@ -67,7 +62,7 @@ vector<shared_ptr<Function>> onnx_util::import_onnx_model(const onnx::ModelProto
     return output_functions;
 }
 
-shared_ptr<Function> onnx_util::import_onnx_function(const onnx::ModelProto& onnx_model)
+shared_ptr<Function> onnx_util::import_onnx_function(const std::string& filepath)
 {
-    return onnx_util::import_onnx_model(onnx_model)[0];
+    return onnx_util::import_onnx_model(filepath)[0];
 }

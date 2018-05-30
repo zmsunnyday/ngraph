@@ -24,17 +24,11 @@ namespace ngraph
     class onnx_util
     {
     public:
-        /// Load an ONNX model from a file.
-        static onnx::ModelProto load_onnx_file(const std::string&);
-
         /// Convert an ONNX model to a vector of nGraph Functions
         static std::vector<std::shared_ptr<ngraph::Function>>
-            import_onnx_model(const onnx::ModelProto&);
+            import_onnx_model(const std::string&);
 
         /// Convert the first output of an ONNX model to an nGraph Function
-        static std::shared_ptr<ngraph::Function> import_onnx_function(const onnx::ModelProto&);
-
-        /// Load an ONNX model from a file and convert to a vector of nGraph Functions
-        static std::vector<std::shared_ptr<ngraph::Function>> import_onnx_file(const std::string&);
+        static std::shared_ptr<ngraph::Function> import_onnx_function(const std::string&);
     };
 } // namespace ngraph
