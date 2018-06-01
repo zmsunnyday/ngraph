@@ -175,8 +175,8 @@ target_link_libraries(unit-test ngraph libgtest pthread)
 target_link_libraries(unit-test ${CMAKE_DL_LIBS})
 
 if(NGRAPH_ONNX_IMPORT_ENABLE)
-    add_dependencies(unit-test onnx_import)
-    target_link_libraries(unit-test onnx_import)
+    target_include_directories(unit-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../src/ngraph/frontend/onnx_import)
+    target_link_libraries(unit-test ${PROTOBUF_LIBRARIES})
 endif()
 
 add_dependencies(unit-test ngraph libgtest ext_json)
