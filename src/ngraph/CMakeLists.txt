@@ -317,8 +317,9 @@ add_dependencies(ngraph ext_json)
 include_directories(SYSTEM ${JSON_INCLUDE_DIR})
 
 if (NGRAPH_ONNX_IMPORT_ENABLE)
-    target_sources(ngraph PRIVATE $<TARGET_OBJECTS:onnx_import>)
-    target_link_libraries(ngraph PRIVATE ${PROTOBUF_LIBRARIES})
+    target_sources(ngraph PRIVATE $<TARGET_OBJECTS:onnx_import_interface>)
+    add_dependencies(ngraph onnx_import)
+    target_link_libraries(ngraph PRIVATE onnx_import)
 endif()
 
 if (NOT APPLE)
