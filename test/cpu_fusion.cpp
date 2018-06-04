@@ -66,8 +66,8 @@
 #include "util/matcher.hpp"
 #include "util/random.hpp"
 #include "util/test_tools.hpp"
-
 #include "util/random.hpp"
+#include "util.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -881,6 +881,7 @@ TEST(cpu_fusion, fuse_conv_relu)
     ASSERT_GT(cb, 0);
 }
 
+#if 0
 template <typename T>
 static std::vector<std::vector<T>>
     execute(std::shared_ptr<Function> f, std::vector<std::vector<T>> args, std::string cbackend)
@@ -920,6 +921,7 @@ static std::vector<std::vector<T>>
     }
     return result_vectors;
 }
+#endif
 
 TEST(cpu_fusion, conv_relu_n2c1h2w2_2)
 {
