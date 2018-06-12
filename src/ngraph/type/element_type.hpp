@@ -55,7 +55,6 @@ namespace ngraph
             virtual ~Type() {}
             const std::string& c_type_string() const;
             size_t size() const;
-            size_t hash() const;
             bool is_real() const { return m_is_real; }
             bool is_signed() const { return m_is_signed; }
             size_t bitwidth() const { return m_bitwidth; }
@@ -64,9 +63,6 @@ namespace ngraph
             bool operator<(const Type& other) const;
             friend std::ostream& operator<<(std::ostream&, const Type&);
             static std::vector<const Type*> get_known_types();
-
-            /// Returns true if the type is floating point, else false.
-            bool get_is_real() const { return m_is_real; }
         private:
             size_t m_bitwidth;
             bool m_is_real;
@@ -103,6 +99,8 @@ namespace ngraph
         const Type& from<uint32_t>();
         template <>
         const Type& from<uint64_t>();
+
+        Type from(const std::string& c_type_string);
 
         std::ostream& operator<<(std::ostream& out, const ngraph::element::Type& obj);
     }

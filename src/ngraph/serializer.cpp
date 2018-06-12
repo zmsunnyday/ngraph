@@ -128,23 +128,13 @@ static element::Type read_element_type(const json& j)
         is_real = j.at("is_real").get<bool>();
         is_signed = j.at("is_signed").get<bool>();
         c_type_string = j.at("c_type_string").get<string>();
+        return element::Type(bitwidth, is_real, is_signed, c_type_string);
     }
     else
     {
         string c_type = j.get<string>();
-        for (const element::Type* t : element::Type::get_known_types())
-        {
-            if (t->c_type_string() == c_type)
-            {
-                bitwidth = t->bitwidth();
-                is_real = t->is_real();
-                is_signed = t->is_signed();
-                c_type_string = t->c_type_string();
-                break;
-            }
-        }
+        return element::from(c_type);
     }
-    return element::Type(bitwidth, is_real, is_signed, c_type_string);
 }
 
 void ngraph::serialize(const string& path, shared_ptr<ngraph::Function> func, size_t indent)

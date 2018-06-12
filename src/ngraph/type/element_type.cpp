@@ -93,14 +93,6 @@ size_t element::Type::size() const
     return std::ceil(static_cast<float>(m_bitwidth) / 8.0f);
 }
 
-size_t element::Type::hash() const
-{
-    size_t h1 = std::hash<size_t>{}(m_bitwidth);
-    size_t h2 = std::hash<bool>{}(m_is_real);
-    size_t h3 = std::hash<bool>{}(m_is_signed);
-    return h1 ^ ((h2 ^ (h3 << 1)) << 1);
-}
-
 namespace ngraph
 {
     namespace element
@@ -166,6 +158,55 @@ namespace ngraph
             return u64;
         }
     }
+}
+
+element::Type element::from(const std::string& c_type_string)
+{
+    if (c_type_string == "char")
+    {
+        return element::Type(8, false, true, "char");
+    }
+    else if (c_type_string == "float")
+    {
+        return element::Type(32, true, true, "float");
+    }
+    else if (c_type_string == "double")
+    {
+        return element::Type(64, true, true, "double");
+    }
+    else if (c_type_string == "int8_t")
+    {
+        return element::Type(8, false, true, "int8_t");
+    }
+    else if (c_type_string == "int16_t")
+    {
+        return element::Type(16, false, true, "int16_t");
+    }
+    else if (c_type_string == "int32_t")
+    {
+        return element::Type(32, false, true, "int32_t");
+    }
+    else if (c_type_string == "int64_t")
+    {
+        return element::Type(64, false, true, "int64_t");
+    }
+    else if (c_type_string == "uint8_t")
+    {
+        return element::Type(8, false, false, "uint8_t");
+    }
+    else if (c_type_string == "uint16_t")
+    {
+        return element::Type(16, false, false, "uint16_t");
+    }
+    else if (c_type_string == "uint32_t")
+    {
+        return element::Type(32, false, false, "uint32_t");
+    }
+    else if (c_type_string == "uint64_t")
+    {
+        return element::Type(64, false, false, "uint64_t");
+    }
+    throw std::runtime_error("unknown C type '" + c_type_string + "' in element::from");
 }
 
 std::ostream& element::operator<<(std::ostream& out, const element::Type& obj)
