@@ -168,8 +168,6 @@ if(NGRAPH_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-include_directories("${NGRAPH_INCLUDE_PATH}")
-
 add_subdirectory(codegen)
 add_subdirectory(runtime)
 
@@ -198,7 +196,7 @@ if (NOT APPLE)
 endif()
 
 # Defines macro in C++ to load backend plugin
-target_include_directories(ngraph PUBLIC "${NGRAPH_INCLUDE_PATH}")
+target_include_directories(ngraph PUBLIC ${NGRAPH_INCLUDE_PATH})
 target_link_libraries(ngraph PUBLIC dl pthread)
 
 if (APPLE)

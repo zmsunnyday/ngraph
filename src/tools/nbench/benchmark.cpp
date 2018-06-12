@@ -22,10 +22,16 @@
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/serializer.hpp"
 #include "ngraph/util.hpp"
-#include "random.hpp"
+#include "ngraph/file_util.hpp"
 
 using namespace std;
 using namespace ngraph;
+
+template <typename T>
+void write_vector(std::shared_ptr<ngraph::runtime::TensorView> tv, const std::vector<T>& values)
+{
+    tv->write(values.data(), 0, values.size() * sizeof(T));
+}
 
 multimap<size_t, string>
     aggregate_timing_details(const vector<runtime::PerformanceCounter>& perf_data,
@@ -117,10 +123,11 @@ template <typename T>
 void init_int_tv(shared_ptr<runtime::TensorView> tv, T min, T max)
 {
     uniform_int_distribution<T> dist(min, max);
-    std::vector<T> vec = read_vector<T>(tv);
-    for (T& element : vec)
+    auto size = shape_size(tv->get_shape());
+    std::vector<T> vec;
+    for (size_t i=0; i<size; i++)
     {
-        element = dist(s_random_engine);
+        vec.push_back(dist(s_random_engine));
     }
     write_vector(tv, vec);
 }
@@ -129,10 +136,11 @@ template <typename T>
 void init_real_tv(shared_ptr<runtime::TensorView> tv, T min, T max)
 {
     uniform_real_distribution<T> dist(min, max);
-    std::vector<T> vec = read_vector<T>(tv);
-    for (T& element : vec)
+    auto size = shape_size(tv->get_shape());
+    std::vector<T> vec;
+    for (size_t i=0; i<size; i++)
     {
-        element = dist(s_random_engine);
+        vec.push_back(dist(s_random_engine));
     }
     write_vector(tv, vec);
 }

@@ -15,18 +15,7 @@
 # ******************************************************************************
 
 if (NGRAPH_CPU_ENABLE)
-    set (SRC
-        nbench.cpp
-        ${PROJECT_SOURCE_DIR}/test/util/benchmark.cpp
-    )
-
-    add_executable(nbench ${SRC})
-    add_dependencies(nbench ngraph cpu_backend)
-
-    set(HEADER_SEARCH_DEFINES
-        "NGRAPH_HEADERS_PATH=\"${NGRAPH_INCLUDE_PATH}\""
-    )
-
+    add_executable(nbench nbench.cpp benchmark.cpp)
     target_link_libraries(nbench ngraph cpu_backend)
     if (NGRAPH_GPU_ENABLE)
         target_link_libraries(nbench gpu_backend)
@@ -35,8 +24,5 @@ if (NGRAPH_CPU_ENABLE)
         target_link_libraries(nbench interpreter_backend)
     endif()
 
-    include_directories("${PROJECT_SOURCE_DIR}/test")
-
-    set_source_files_properties(nbench.cpp PROPERTIES COMPILE_DEFINITIONS "${HEADER_SEARCH_DEFINES}")
     install(TARGETS nbench RUNTIME DESTINATION ${NGRAPH_INSTALL_BIN})
 endif()

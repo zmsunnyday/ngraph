@@ -26,10 +26,10 @@
 #include <ngraph/pass/manager.hpp>
 #include <ngraph/pass/visualize_tree.hpp>
 #include <ngraph/runtime/backend.hpp>
+#include <ngraph/serializer.hpp>
 #include <ngraph/util.hpp>
 
-#include "util/benchmark.hpp"
-#include "util/test_tools.hpp"
+#include "benchmark.hpp"
 
 using namespace std;
 using namespace ngraph;

@@ -18,7 +18,6 @@ set (SRC
     autodiff/backprop_function.cpp
     all_close_f.cpp
     test_tools.cpp
-    benchmark.cpp
     test_control.cpp
 )
 
