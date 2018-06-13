@@ -62,7 +62,6 @@ namespace ngraph
             bool operator!=(const Type& other) const { return !(*this == other); }
             bool operator<(const Type& other) const;
             friend std::ostream& operator<<(std::ostream&, const Type&);
-            static std::vector<const Type*> get_known_types();
         private:
             size_t m_bitwidth;
             bool m_is_real;
