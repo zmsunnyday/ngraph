@@ -68,6 +68,7 @@ add_custom_target(header_resource
     resource_generator --output ${CMAKE_BINARY_DIR}/header_resource.hpp --base codegen
     DEPENDS resource_generator ext_eigen ext_llvm ext_mkldnn
     BYPRODUCTS
+    COMMENT "Generating header file resource"
 )
 
 # The conditional is a hack. I want to use EXCLUDE_FROM_ALL and OPTIONAL but that does not
