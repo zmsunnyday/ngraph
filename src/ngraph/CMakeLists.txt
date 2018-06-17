@@ -158,6 +158,11 @@ message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/ops_list.txt")
 string(REPLACE ";" "\n" OP_CLASS_LINES "${OP_CLASS_LIST}")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ops_list.txt" "${OP_CLASS_LINES}")
 
+    message(STATUS "**************xx************ ${PROJECT_SOURCE_DIR}/cmake/Modules/find_header_search_path.cmake")
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/find_header_search_path.cmake)
+NGRAPH_FIND_HEADER_SEARCH_PATHS(OUTPUT_VAR HEADER_SEARCH_PATHS)
+message(STATUS "********@****************** ${HEADER_SEARCH_PATHS}")
+
 find_package(Graphviz QUIET)
 if (GRAPHVIZ_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGRAPHVIZ_FOUND")
