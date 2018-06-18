@@ -82,6 +82,8 @@ namespace ngraph
                                const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                                const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
 
+            virtual void configure(const std::string&);
+
         private:
             static void* open_shared_library(std::string type);
             static std::unordered_map<std::string, std::shared_ptr<Backend>>& get_backend_map();

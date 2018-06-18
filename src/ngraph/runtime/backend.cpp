@@ -40,6 +40,10 @@ runtime::Backend::~Backend()
 {
 }
 
+void runtime::Backend::configure(const std::string&)
+{
+}
+
 void* runtime::Backend::open_shared_library(string type)
 {
     string ext = SHARED_LIB_EXT;
@@ -88,6 +92,7 @@ shared_ptr<runtime::Backend> runtime::Backend::create(const string& type)
             throw runtime_error("Backend '" + type + "' not found in registered backends.");
         }
     }
+    it->second->configure(type);
     return it->second;
 }
 
