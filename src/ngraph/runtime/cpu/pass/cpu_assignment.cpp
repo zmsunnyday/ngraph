@@ -35,9 +35,9 @@
 #include "ngraph/runtime/cpu/cpu_op_annotations.hpp"
 #include "ngraph/runtime/cpu/mkldnn_utils.hpp"
 #include "ngraph/runtime/cpu/op/batch_norm_relu.hpp"
+#include "ngraph/runtime/cpu/op/conv_add.hpp"
 #include "ngraph/runtime/cpu/op/conv_bias.hpp"
 #include "ngraph/runtime/cpu/op/conv_relu.hpp"
-#include "ngraph/runtime/cpu/op/conv_add.hpp"
 #include "ngraph/runtime/cpu/op/max_pool_with_indices.hpp"
 #include "ngraph/runtime/cpu/op/sigmoid.hpp"
 
@@ -171,6 +171,30 @@ namespace ngraph
                 void CPUAssignment::ASSIGN_DECL(ngraph::op::ConvolutionAdd)
                 {
                     auto convolution = static_cast<op::ConvolutionAdd*>(node);
+
+                    auto arg0_rank = node->get_input_shape(0).size();
+                    auto arg1_rank = node->get_input_shape(1).size();
+
+                    bool data_dilated = false;
+                    for (size_t s : convolution->get_data_dilation_strides())
+                    {
+                        data_dilated = data_dilated || (s != 1);
+                    }
+
+                    if (!data_dilated && arg0_rank == 4 && arg1_rank == 4 &&
+                        node->get_input_element_type(0) == element::f32)
+                    {
+                        auto op_annotations =
+                            std::make_shared<ngraph::runtime::cpu::CPUOpAnnotations>();
+                        op_annotations->set_mkldnn_op(true);
+                        convolution->set_op_annotations(op_annotations);
+                    }
+                }
+
+                template <>
+                void CPUAssignment::ASSIGN_DECL(ngraph::op::ConvolutionBiasAdd)
+                {
+                    auto convolution = static_cast<op::ConvolutionBiasAdd*>(node);
 
                     auto arg0_rank = node->get_input_shape(0).size();
                     auto arg1_rank = node->get_input_shape(1).size();
@@ -545,7 +569,9 @@ static const runtime::cpu::pass::AssignOpMap s_dispatcher{
     {TI(ngraph::op::ConvolutionBiasRelu),
      &runtime::cpu::pass::CPUAssignment::assign<ngraph::op::ConvolutionBiasRelu>},
     {TI(ngraph::op::ConvolutionAdd),
-     &runtime::cpu::pass::CPUAssignment::assign<ngraph::op::ConvolutionAdd>}, 
+     &runtime::cpu::pass::CPUAssignment::assign<ngraph::op::ConvolutionAdd>},
+    {TI(ngraph::op::ConvolutionBiasAdd),
+     &runtime::cpu::pass::CPUAssignment::assign<ngraph::op::ConvolutionBiasAdd>},
     {TI(ngraph::op::BatchNormRelu),
      &runtime::cpu::pass::CPUAssignment::assign<ngraph::op::BatchNormRelu>},
     {TI(ngraph::op::ConvolutionBackpropData),
