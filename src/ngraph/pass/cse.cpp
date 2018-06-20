@@ -24,12 +24,38 @@
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/op/abs.hpp"
+#include "ngraph/op/abs.hpp"
+#include "ngraph/op/acos.hpp"
 #include "ngraph/op/add.hpp"
+#include "ngraph/op/asin.hpp"
+#include "ngraph/op/atan.hpp"
 #include "ngraph/op/broadcast.hpp"
+#include "ngraph/op/ceiling.hpp"
 #include "ngraph/op/constant.hpp"
+#include "ngraph/op/cos.hpp"
+#include "ngraph/op/cosh.hpp"
+#include "ngraph/op/divide.hpp"
+#include "ngraph/op/exp.hpp"
+#include "ngraph/op/floor.hpp"
+#include "ngraph/op/log.hpp"
+#include "ngraph/op/maximum.hpp"
+#include "ngraph/op/minimum.hpp"
 #include "ngraph/op/multiply.hpp"
+#include "ngraph/op/multiply.hpp"
+#include "ngraph/op/negative.hpp"
+#include "ngraph/op/power.hpp"
 #include "ngraph/op/product.hpp"
+#include "ngraph/op/relu.hpp"
+#include "ngraph/op/remainder.hpp"
+#include "ngraph/op/sign.hpp"
+#include "ngraph/op/sin.hpp"
+#include "ngraph/op/sinh.hpp"
+#include "ngraph/op/softmax.hpp"
+#include "ngraph/op/sqrt.hpp"
+#include "ngraph/op/subtract.hpp"
 #include "ngraph/op/sum.hpp"
+#include "ngraph/op/tan.hpp"
+#include "ngraph/op/tanh.hpp"
 #include "ngraph/pattern/matcher.hpp"
 
 using namespace ngraph;
@@ -51,13 +77,52 @@ static bool cse_binarywise(std::shared_ptr<Node> a, std::shared_ptr<Node> b)
            (a->get_argument(1) == b->get_argument(0) && a->get_argument(0) == b->get_argument(1));
 }
 
+static bool cse_reduction(std::shared_ptr<Node> a, std::shared_ptr<Node> b)
+{
+    NGRAPH_DEBUG << "In cse_reduction for " << a->get_name() << " and " << b->get_name();
+
+    auto ar_a = std::dynamic_pointer_cast<op::util::ArithmeticReduction>(a);
+    auto ar_b = std::dynamic_pointer_cast<op::util::ArithmeticReduction>(b);
+
+    return ar_a->get_argument(0) == ar_b->get_argument(0) &&
+           ar_a->get_reduction_axes() == ar_b->get_reduction_axes();
+}
+
 static std::unordered_map<std::type_index,
                           std::function<bool(std::shared_ptr<Node>, std::shared_ptr<Node>)>>
     initialize_ops_to_cse_handlers()
 {
     return std::unordered_map<std::type_index,
                               std::function<bool(std::shared_ptr<Node>, std::shared_ptr<Node>)>>({
-        {TI(op::Abs), cse_unarywise}, {TI(op::Add), cse_binarywise},
+        {TI(op::Abs), cse_unarywise},
+        {TI(op::Acos), cse_unarywise},
+        {TI(op::Asin), cse_unarywise},
+        {TI(op::Atan), cse_unarywise},
+        {TI(op::Ceiling), cse_unarywise},
+        {TI(op::Cos), cse_unarywise},
+        {TI(op::Cosh), cse_unarywise},
+        {TI(op::Exp), cse_unarywise},
+        {TI(op::Floor), cse_unarywise},
+        {TI(op::Log), cse_unarywise},
+        {TI(op::Negative), cse_unarywise},
+        {TI(op::Relu), cse_unarywise},
+        {TI(op::Sign), cse_unarywise},
+        {TI(op::Sin), cse_unarywise},
+        {TI(op::Sinh), cse_unarywise},
+        //{TI(op::Softmax), cse_unarywise},
+        {TI(op::Sqrt), cse_unarywise},
+        {TI(op::Tan), cse_unarywise},
+        {TI(op::Tanh), cse_unarywise},
+        {TI(op::Add), cse_binarywise},
+        {TI(op::Divide), cse_binarywise},
+        {TI(op::Maximum), cse_binarywise},
+        {TI(op::Minimum), cse_binarywise},
+        {TI(op::Multiply), cse_binarywise},
+        {TI(op::Power), cse_binarywise},
+        //{TI(op::Remainder), cse_binarywise},
+        {TI(op::Subtract), cse_binarywise},
+        {TI(op::Sum), cse_reduction},
+        {TI(op::Product), cse_reduction},
     });
 }
 

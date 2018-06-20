@@ -17,6 +17,7 @@
 #pragma once
 
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -79,7 +80,10 @@ namespace ngraph
 
                 const LayoutDescriptorPtrs& get_parameter_layout_descriptors();
                 const LayoutDescriptorPtrs& get_result_layout_descriptors();
-
+                const std::vector<size_t>& get_memory_buffer_sizes() const
+                {
+                    return m_memory_buffer_sizes;
+                }
                 const std::vector<OpAttributes>& get_op_attrs() const { return m_op_attrs; }
                 const std::unique_ptr<MKLDNNEmitter>& get_mkldnn_emitter() const
                 {
@@ -88,7 +92,22 @@ namespace ngraph
 
                 const std::string& get_function_name() const { return m_function_name; }
                 const std::shared_ptr<ngraph::Function> get_function() { return m_function; }
+                // Temporary Memory Pool alignment
+                static const size_t s_memory_pool_alignment;
+
+                std::list<std::function<void(CPURuntimeContext*)>>& get_functors()
+                {
+                    return functors;
+                }
+                std::unordered_map<std::string, void*>& get_tensor_data() { return tensor_data; }
+                std::function<void(CPURuntimeContext*, std::vector<void*>&, std::vector<void*>&)>&
+                    get_executor()
+                {
+                    return executor;
+                }
+                bool is_direct_execution() const { return m_direct_execution; }
             protected:
+                void build();
                 void compile();
 
             private:
@@ -120,6 +139,7 @@ namespace ngraph
                 std::unique_ptr<codegen::ExecutionEngine> m_execution_engine;
                 bool m_emit_timing;
                 bool m_use_tbb;
+
                 std::unordered_map<std::string, std::string> m_variable_name_map;
                 std::map<std::string, size_t> m_name_index_map;
 
@@ -130,11 +150,21 @@ namespace ngraph
 
                 LayoutDescriptorPtrs parameter_layout_descriptors;
                 LayoutDescriptorPtrs result_layout_descriptors;
+                std::vector<size_t> m_memory_buffer_sizes;
                 std::vector<OpAttributes> m_op_attrs;
 
                 std::unique_ptr<MKLDNNEmitter> m_mkldnn_emitter;
 
                 std::string m_function_name;
+
+                std::list<std::function<void(CPURuntimeContext*)>> functors;
+                std::function<void(CPURuntimeContext*, std::vector<void*>&, std::vector<void*>&)>
+                    executor;
+                std::unordered_map<std::string, void*> tensor_data;
+                std::unordered_map<std::string, size_t> intermediates_offsets;
+                std::unordered_map<std::string, size_t> function_input_index, function_output_index;
+                bool m_is_built;
+                bool m_direct_execution;
             };
         }
     }
