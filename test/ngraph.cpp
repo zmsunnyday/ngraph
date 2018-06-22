@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "gtest/gtest.h"
 #include "ngraph/ngraph.hpp"
+#include "gtest/gtest.h"
 
 using namespace std;
 

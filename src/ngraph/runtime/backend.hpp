@@ -44,6 +44,7 @@ namespace ngraph
             ///   does not exist.
             static std::shared_ptr<Backend> create(const std::string& type);
 
+            virtual void close() {}
             static void initialize();
             static void finalize();
 

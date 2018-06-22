@@ -17,10 +17,10 @@
 #include <dlfcn.h>
 #include <sstream>
 
+#include "ngraph/file_util.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/runtime/cpu/cpu_tensor_view.hpp"
 #include "ngraph/util.hpp"
-#include "ngraph/file_util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -50,7 +50,7 @@ void runtime::Backend::initialize()
 {
     string my_directory = file_util::get_directory(find_my_file());
     vector<string> backends;
-    auto func = [](const std::string& file, bool is_dir){
+    auto func = [](const std::string& file, bool is_dir) {
         if (is_backend(file))
         {
             NGRAPH_INFO << "found backend " << file;
@@ -94,43 +94,76 @@ void* runtime::Backend::open_shared_library(string type)
         type = type.substr(0, colon);
     }
     string name = "lib" + to_lower(type) + "_backend" + ext;
-    handle = dlopen(name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-    if (handle)
+    auto it = s_open_backends.find(name);
+    if (it != s_open_backends.end())
     {
-        function<void()> create_backend =
-            reinterpret_cast<void (*)()>(dlsym(handle, "create_backend"));
-        if (create_backend)
-        {
-            create_backend();
-        }
-        else
-        {
-            dlclose(handle);
-            throw runtime_error("Failed to find create_backend function in library '" + name + "'");
-        }
-        s_open_backends.insert({name, handle});
+        handle = it->second;
     }
     else
     {
-        string err = dlerror();
-        throw runtime_error("Library open for Backend '" + name + "' failed with error:\n" + err);
+        handle = dlopen(name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        if (handle)
+        {
+            function<void()> create_backend =
+                reinterpret_cast<void (*)()>(dlsym(handle, "create_backend"));
+            if (create_backend)
+            {
+                create_backend();
+            }
+            else
+            {
+                dlclose(handle);
+                throw runtime_error("Failed to find create_backend function in library '" + name +
+                                    "'");
+            }
+            s_open_backends.insert({name, handle});
+        }
+        else
+        {
+            string err = dlerror();
+            throw runtime_error("Library open for Backend '" + name + "' failed with error:\n" +
+                                err);
+        }
     }
     return handle;
 }
 
 shared_ptr<runtime::Backend> runtime::Backend::create(const string& type)
 {
-    auto it = get_backend_map().find(type);
-    if (it == get_backend_map().end())
+    shared_ptr<runtime::Backend> rc;
+    void* handle = open_shared_library(type);
+    if (!handle)
     {
-        open_shared_library(type);
-        it = get_backend_map().find(type);
-        if (it == get_backend_map().end())
+        throw runtime_error("Backend '" + type + "' not found");
+    }
+    else
+    {
+        function<runtime::Backend*(const char*)> new_backend =
+            reinterpret_cast<runtime::Backend* (*)(const char*)>(dlsym(handle, "new_backend"));
+        if (new_backend)
         {
-            throw runtime_error("Backend '" + type + "' not found in registered backends.");
+            runtime::Backend* backend = new_backend(type.c_str());
+            rc = shared_ptr<runtime::Backend>(backend,
+                                              [](runtime::Backend* b) { b->close(); });
+        }
+        else
+        {
+            throw runtime_error("Backend '" + type + "' does not implement new_backend");
         }
     }
-    return it->second;
+    return rc;
+
+    // auto it = get_backend_map().find(type);
+    // if (it == get_backend_map().end())
+    // {
+    //     open_shared_library(type);
+    //     it = get_backend_map().find(type);
+    //     if (it == get_backend_map().end())
+    //     {
+    //         throw runtime_error("Backend '" + type + "' not found in registered backends.");
+    //     }
+    // }
+    // return it->second;
 }
 
 vector<string> runtime::Backend::get_registered_devices()

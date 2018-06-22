@@ -28,6 +28,11 @@ extern "C" void create_backend()
     runtime::Backend::register_backend("GPU", make_shared<runtime::gpu::GPU_Backend>());
 };
 
+extern "C" runtime::Backend* new_backend(const char* configuration_string)
+{
+    return new runtime::gpu::GPU_Backend();
+};
+
 shared_ptr<runtime::gpu::GPU_CallFrame> runtime::gpu::GPU_Backend::make_call_frame(
     const shared_ptr<GPU_ExternalFunction>& external_function)
 {

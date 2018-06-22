@@ -14,9 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-extern "C"
-{
-    #include "ngraph/ngraph.h"
+extern "C" {
+#include "ngraph/ngraph.h"
 }
 
 #include <mutex>
@@ -41,7 +40,8 @@ extern "C" void ngraph_finalize()
     std::lock_guard<std::mutex> guard(s_init_mutex);
     if (s_init_count <= 0)
     {
-        throw std::runtime_error("ngraph_finalize must be called exactly once for every ngraph_initialize call");
+        throw std::runtime_error(
+            "ngraph_finalize must be called exactly once for every ngraph_initialize call");
     }
     if (--s_init_count == 0)
     {

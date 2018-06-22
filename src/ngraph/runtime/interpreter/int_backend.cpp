@@ -35,6 +35,11 @@ extern "C" void create_backend()
                                        make_shared<runtime::interpreter::INTBackend>());
 };
 
+extern "C" runtime::Backend* new_backend(const char* configuration_string)
+{
+    return new runtime::interpreter::INTBackend();
+};
+
 shared_ptr<runtime::TensorView>
     runtime::interpreter::INTBackend::create_tensor(const element::Type& type, const Shape& shape)
 {

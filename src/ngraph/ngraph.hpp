@@ -130,7 +130,6 @@
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/type/type.hpp"
 
-extern "C"
-{
-    #include "ngraph/ngraph.h"
+extern "C" {
+#include "ngraph/ngraph.h"
 }
