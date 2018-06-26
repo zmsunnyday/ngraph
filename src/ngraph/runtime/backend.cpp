@@ -26,6 +26,7 @@ using namespace std;
 using namespace ngraph;
 
 std::unordered_map<string, void*> runtime::Backend::s_open_backends;
+static unordered_map<string, shared_ptr<runtime::Backend>> s_backend_map;
 
 bool runtime::Backend::register_backend(const string& name, shared_ptr<Backend> backend)
 {
@@ -35,8 +36,7 @@ bool runtime::Backend::register_backend(const string& name, shared_ptr<Backend> 
 
 unordered_map<string, shared_ptr<runtime::Backend>>& runtime::Backend::get_backend_map()
 {
-    static unordered_map<string, shared_ptr<Backend>> backend_map;
-    return backend_map;
+    return s_backend_map;
 }
 
 runtime::Backend::~Backend()
