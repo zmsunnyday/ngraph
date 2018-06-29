@@ -67,6 +67,8 @@ void* runtime::Backend::open_shared_library(string type)
 {
     string ext = SHARED_LIB_EXT;
     string ver = LIBRARY_VERSION;
+    NGRAPH_INFO << ext;
+    NGRAPH_INFO << ver;
 
     void* handle = nullptr;
 

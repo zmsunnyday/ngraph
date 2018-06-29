@@ -171,14 +171,12 @@ if(NGRAPH_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-include_directories("${NGRAPH_INCLUDE_PATH}")
-
-add_subdirectory(codegen)
-add_subdirectory(runtime)
-
 add_library(ngraph SHARED ${SRC})
-add_definitions("-DSHARED_LIB_EXT=\"${CMAKE_SHARED_LIBRARY_SUFFIX}\"")
-add_definitions("-DLIBRARY_VERSION=\"${NGRAPH_VERSION}\"")
+target_compile_definitions(ngraph
+    PRIVATE
+        SHARED_LIB_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+        LIBRARY_VERSION="${NGRAPH_VERSION}"
+)
 set_target_properties(ngraph PROPERTIES VERSION ${NGRAPH_VERSION} SOVERSION ${NGRAPH_API_VERSION})
 target_link_libraries(ngraph PUBLIC libjson)
 
@@ -207,7 +205,8 @@ if (NOT APPLE)
 endif()
 
 # Defines macro in C++ to load backend plugin
-target_include_directories(ngraph PUBLIC "${NGRAPH_INCLUDE_PATH}")
+message(STATUS "************************ NGRAPH_INCLUDE_PATH ${NGRAPH_INCLUDE_PATH}")
+target_include_directories(ngraph PUBLIC ${NGRAPH_INCLUDE_PATH})
 target_link_libraries(ngraph PUBLIC dl pthread)
 
 if (NGRAPH_ONNX_IMPORT_ENABLE)
@@ -215,18 +214,35 @@ if (NGRAPH_ONNX_IMPORT_ENABLE)
     target_link_libraries(ngraph PRIVATE onnx_import)
 endif()
 
+add_subdirectory(codegen)
+add_subdirectory(runtime)
+
 #-----------------------------------------------------------------------------------------------
 # Installation logic...
 #-----------------------------------------------------------------------------------------------
 
 # nGraph
 install(FILES ${CMAKE_BINARY_DIR}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(TARGETS ngraph DESTINATION ${NGRAPH_INSTALL_LIB})  # libngraph.so
+# install(TARGETS ngraph
+#     EXPORT ngraph-export
+#     LIBRARY DESTINATION ${NGRAPH_INSTALL_LIB}
+#     ARCHIVE DESTINATION ${NGRAPH_INSTALL_LIB}
+# )
+
 install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/
     DESTINATION "${NGRAPH_INSTALL_INCLUDE}/ngraph"
     FILES_MATCHING PATTERN "*.hpp"
 )
+
+# install(EXPORT ngraph-export
+#     FILE
+#         ngraphTargets.cmake
+#     NAMESPACE
+#         ngraph::
+#     DESTINATION
+#         ${CMAKE_INSTALL_LIBDIR}/cmake/ngraph
+# )
 
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
