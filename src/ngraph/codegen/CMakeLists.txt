@@ -77,11 +77,6 @@ if (NGRAPH_CPU_ENABLE OR NGRAPH_GPU_ENABLE)
     set_target_properties(codegen PROPERTIES VERSION ${NGRAPH_VERSION} SOVERSION ${NGRAPH_API_VERSION})
     add_dependencies(codegen header_resource libmkldnn libeigen)
     target_include_directories(codegen SYSTEM PUBLIC ${CMAKE_BINARY_DIR})
-<<<<<<< 09adba0cce34786b1a05142b1a5c4bb1c6f8c59e
     target_link_libraries(codegen PRIVATE libllvm ngraph)
-=======
-    target_link_libraries(codegen PRIVATE ngraph libllvm)
-    target_link_libraries(codegen PUBLIC libmkldnn libeigen pthread dl)
->>>>>>> wip
     install(TARGETS codegen DESTINATION ${NGRAPH_INSTALL_LIB})
 endif()
