@@ -58,7 +58,6 @@ bool autodiff_numeric_compare(const std::shared_ptr<ngraph::runtime::Backend>& b
         interpreter_backend, f, interpreter_args, delta, f->get_parameters());
 
     // Use the backend being tested to compute symbolic derivatives
-    std::cout << "g " << g << "\n";
     auto results_sym =
         ngraph::autodiff::backprop_derivative<T>(backend, g, args, g->get_parameters());
 

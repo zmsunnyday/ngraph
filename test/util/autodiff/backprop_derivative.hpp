@@ -157,7 +157,6 @@ namespace ngraph
             df_input_params.insert(df_input_params.begin(), c_param);
 
             // df/dX* = f'(c, X)
-            std::cout << "f " << f << "\n";
             if (!s_df_map[f])
             {
                 s_df_map[f] = std::make_shared<Function>(df_output_params, df_input_params);
