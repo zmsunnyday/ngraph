@@ -158,9 +158,9 @@ namespace ngraph
 
             // df/dX* = f'(c, X)
             std::cout << "f " << f << "\n";
-            if (!contains_key(s_df_map, f))
+            if (!s_df_map[f])
             {
-                s_df_map.insert({f, std::make_shared<Function>(df_output_params, df_input_params)});
+                s_df_map[f] = std::make_shared<Function>(df_output_params, df_input_params);
                 std::cout << "not cached " << s_df_map.size() << "\n";
             }
             else
