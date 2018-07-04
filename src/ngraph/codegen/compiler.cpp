@@ -277,6 +277,7 @@ std::unique_ptr<codegen::Module>
     codegen::StaticCompiler::compile(std::unique_ptr<clang::CodeGenAction>& m_compiler_action,
                                      const string& source)
 {
+    cout << "Compile\n";
     PreprocessorOptions& preprocessor_options = m_compiler->getInvocation().getPreprocessorOpts();
 
     preprocessor_options.RetainRemappedFileBuffers = true;

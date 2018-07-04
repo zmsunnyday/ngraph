@@ -1404,15 +1404,17 @@ NGRAPH_TEST(${BACKEND_NAME}, backwards_tan)
                                      std::vector<std::shared_ptr<op::Parameter>>{X});
     };
 
+    auto f = make_graph();
+    auto g = make_graph();
     for (auto i = 0; i < ${TEST_LOOPS}; i++)
     {
         auto x_r = rng_r.initialize(backend->create_tensor<float>(shape));
 
-        EXPECT_TRUE(autodiff_numeric_compare<float>(backend, make_graph, {x_r}, .01f, .01f));
+        EXPECT_TRUE(autodiff_numeric_compare<float>(backend, f, g, {x_r}, .01f, .01f));
 
         auto x_l = rng_l.initialize(backend->create_tensor<float>(shape));
 
-        EXPECT_TRUE(autodiff_numeric_compare<float>(backend, make_graph, {x_l}, .01f, .01f));
+        EXPECT_TRUE(autodiff_numeric_compare<float>(backend, f, g, {x_l}, .01f, .01f));
     }
 }
 
@@ -1453,6 +1455,7 @@ NGRAPH_TEST(${BACKEND_NAME}, backwards_abc)
         return make_shared<Function>((X0 + X1) * X2,
                                      std::vector<std::shared_ptr<op::Parameter>>{X0, X1, X2});
     };
+
     EXPECT_TRUE(autodiff_numeric_compare<float>(backend, make_graph, {x0, x1, x2}, .01f, .01f));
 }
 

@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include "ngraph/autodiff/adjoints.hpp"
 #include "ngraph/graph_util.hpp"
@@ -25,6 +26,9 @@
 #include "ngraph/util.hpp"
 #include "util/all_close.hpp"
 #include "util/test_tools.hpp"
+
+static std::unordered_map<std::shared_ptr<ngraph::Function>, std::shared_ptr<ngraph::Function>>
+    s_df_map;
 
 namespace ngraph
 {
@@ -145,7 +149,6 @@ namespace ngraph
             for (auto x : indep_params)
             {
                 // add df/dx to df/dX*
-                auto x_shape = x->get_shape();
                 df_output_params.push_back(adjoints.backprop_node(x));
             }
 
@@ -154,7 +157,17 @@ namespace ngraph
             df_input_params.insert(df_input_params.begin(), c_param);
 
             // df/dX* = f'(c, X)
-            auto df = std::make_shared<Function>(df_output_params, df_input_params);
+            std::cout << "f " << f << "\n";
+            if (!contains_key(s_df_map, f))
+            {
+                s_df_map.insert({f, std::make_shared<Function>(df_output_params, df_input_params)});
+                std::cout << "not cached " << s_df_map.size() << "\n";
+            }
+            else
+            {
+                std::cout << "cached\n";
+            }
+            auto df = s_df_map[f];
 
             // (c, X) arguments
             std::vector<std::shared_ptr<runtime::TensorView>> df_input_args = f_input_args;
