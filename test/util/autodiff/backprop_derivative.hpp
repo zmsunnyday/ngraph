@@ -27,13 +27,13 @@
 #include "util/all_close.hpp"
 #include "util/test_tools.hpp"
 
-static std::unordered_map<std::shared_ptr<ngraph::Function>, std::shared_ptr<ngraph::Function>>
-    s_df_map;
-
 namespace ngraph
 {
     class Node;
     class Function;
+
+    static std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<Function>> s_df_map;
+    static std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<Function>> s_clone_fwd_map;
 
     namespace runtime
     {
@@ -197,7 +197,17 @@ namespace ngraph
             }
 
             // compile and run modified (y, cached) = f(x)
-            auto clone_fwd = clone_function(*fprop_cache.fprop);
+            if (!s_clone_fwd_map[f])
+            {
+                s_clone_fwd_map[f] = clone_function(*fprop_cache.fprop);
+                std::cout << "clone_fwd not cached " << s_clone_fwd_map.size() << "\n";
+            }
+            else
+            {
+                std::cout << "clone_fwd cached\n";
+            }
+            auto clone_fwd = s_clone_fwd_map[f];
+
             backend->call(clone_fwd, mod_f_output_args, f_input_args);
 
             // call modfied f'(c, cached) to get df/dX*
