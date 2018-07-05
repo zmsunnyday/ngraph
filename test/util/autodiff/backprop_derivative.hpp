@@ -160,11 +160,6 @@ namespace ngraph
             if (!s_df_map[f])
             {
                 s_df_map[f] = std::make_shared<Function>(df_output_params, df_input_params);
-                std::cout << "not cached " << s_df_map.size() << "\n";
-            }
-            else
-            {
-                std::cout << "cached\n";
             }
             auto df = s_df_map[f];
 
@@ -199,11 +194,6 @@ namespace ngraph
             if (!s_clone_fwd_map[f])
             {
                 s_clone_fwd_map[f] = clone_function(*fprop_cache.fprop);
-                std::cout << "clone_fwd not cached " << s_clone_fwd_map.size() << "\n";
-            }
-            else
-            {
-                std::cout << "clone_fwd cached\n";
             }
             auto clone_fwd = s_clone_fwd_map[f];
 
